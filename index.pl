@@ -48,7 +48,7 @@ say <<"END";
         <form>
 END
 
-say "            <h1>G&quot;Day Grizzly</h1>";
+say "            <h1>G&apos;Day Grizzly</h1>";
 
 if(defined $key){
     say "            <p>\$key == $key</p>";
