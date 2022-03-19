@@ -41,7 +41,7 @@ say <<"END";
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Grizzly's links page</title>
+        <title>Grizzly&apos;s links page</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     </head>
     <body>
