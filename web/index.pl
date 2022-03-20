@@ -24,6 +24,7 @@ use v5.32.1;
 use Apache2::Request;
 use Data::Dumper;
 use Config::IniFiles;
+use FileHandle;
 use lib '/var/www/html/grizzly';
 use Urls;
 
@@ -43,8 +44,9 @@ my $cfg = Config::IniFiles->new( -file => $inipath );
 
 my $logpath = '/var/log/urls'; # TODO: define on server.
 
+my $log;
 if($debug){
-    if(my $log, '>>', "$logpath/debug.log"){
+    if($log, '>>', "$logpath/debug.log"){
         $log->autoflush(1);
     }else{
         die "could not open $logpath/debug.log $!";
