@@ -43,10 +43,11 @@ my $cfg = Config::IniFiles->new( -file => $inipath );
 
 my $logpath = '/var/log/urls'; # TODO: define on server.
 
-if(!$debug){
+if($debug){
     if(my $log, '>>', "$logpath/debug.log"){
         $log->autoflush(1);
     }else{
+        die "could not open $logpath/debug.log $!";
     }
 }
 
