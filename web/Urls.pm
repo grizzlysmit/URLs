@@ -18,6 +18,8 @@
 use strict;
 use warnings;
 use v5.32.1;
+use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
+                        weaken isvstring looks_like_number set_prototype);
 use Apache2::Request;
 use Data::Dumper;
 use FileHandle;
@@ -25,6 +27,7 @@ use Config::IniFiles;
 use Class::Std::Utils;
 use JSON;
 use JSON::XS;
+use File::Basename;
 use DBI;
 
 {
