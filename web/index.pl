@@ -25,7 +25,7 @@ use Apache2::Request;
 use Data::Dumper;
 use Config::IniFiles;
 use FileHandle;
-use lib '/var/www/html/grizzly';
+use lib '/usr/share/mod_perl';
 use Urls;
 
 my $r = shift;
