@@ -23,6 +23,8 @@ use utf8;
 use v5.32.1;
 use Apache2::Request;
 use Data::Dumper;
+use Config::IniFiles;
+use Urls;
 
 my $r = shift;
 
@@ -33,6 +35,25 @@ my $unique          = $req->param('unique');
 my $from_address    = $req->param('from_address');
 my $debug           = $req->param('debug');
 my @argnames        = $req->param;
+
+# make a inifile object to get the inifile data #
+my $inipath = "/etc/urls/config.ini"; # TODO: define on server.
+my $cfg = Config::IniFiles->new( -file => $inipath );
+
+my $logpath = '/var/log/urls'; # TODO: define on server.
+
+if(!$debug){
+    if(my $log, '>>', "$logpath/debug.log"){
+        $log->autoflush(1);
+    }else{
+    }
+}
+
+my $id = qx(id);
+chomp $id;
+
+my $urls = Urls->new($logpath, $cfg);
+
 
 #print "Content-type:text/plain\r\n\r\n";
 print "content-type:text/html; charset=utf-8\n\n";
@@ -49,6 +70,8 @@ say <<"END";
 END
 
 say "            <h1>G&apos;Day Grizzly</h1>";
+
+say "            <h2>\$id == $id</h2>";
 
 if(defined $key){
     say "            <p>\$key == $key</p>";
