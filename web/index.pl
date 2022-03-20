@@ -46,7 +46,7 @@ my $logpath = '/var/log/urls'; # TODO: define on server.
 
 my $log;
 if($debug){
-    if($log, '>>', "$logpath/debug.log"){
+    if(open($log, '>>', "$logpath/debug.log")){
         $log->autoflush(1);
     }else{
         die "could not open $logpath/debug.log $!";
