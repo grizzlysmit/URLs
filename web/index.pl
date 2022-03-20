@@ -24,6 +24,7 @@ use v5.32.1;
 use Apache2::Request;
 use Data::Dumper;
 use Config::IniFiles;
+use lib '.';
 use Urls;
 
 my $r = shift;
