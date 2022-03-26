@@ -58,6 +58,8 @@ chomp $id;
 
 my $urls = Urls->new($logpath, $cfg);
 
+$urls->debug_init($debug, $log);
+
 
 #print "Content-type:text/plain\r\n\r\n";
 print "content-type:text/html; charset=utf-8\n\n";
@@ -72,6 +74,8 @@ say <<"END";
     <body>
         <form>
 END
+
+$urls->main($req, $cfg, $r);
 
 say "            <h1>G&apos;Day Grizzly</h1>";
 
