@@ -84,7 +84,7 @@ use DBI;
 
 
     sub main {
-        my ($self, $req, $cfg, $r) = @_;
+        my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $current_page    = $req->param('page');
         $current_page       = 'pseudo-page^all' unless defined $current_page or $current_page =~ m/^\s*$/;
