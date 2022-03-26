@@ -87,7 +87,7 @@ use DBI;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $current_page    = $req->param('page');
-        $current_page       = 'pseudo-page^all' unless defined $current_page or $current_page =~ m/^\s*$/;
+        $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
         my $current_section = $req->param('section');
         my $dbserver        = $cfg->param('dbserver');
         my $dbuser          = $cfg->param('dbuser');
