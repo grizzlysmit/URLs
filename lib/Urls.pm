@@ -109,8 +109,8 @@ use DBI;
         my @sections;
         $sql = "SELECT al.type, al.section FROM alias_links al\n";
         $sql = "ORDER BY al.section\n";
-        my $query           = $db->prepare($sql);
-        my $result          = $query->execute();
+        $query           = $db->prepare($sql);
+        $result          = $query->execute();
         $r                  = $query->fetchrow_hashref();
         while($r){
             push @sections, $r;
@@ -138,7 +138,7 @@ use DBI;
                 $r  = $query->fetchrow_hashref();
             }
         }elsif($current_page =~ m/^page\^(.*)$/){
-            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n"
+            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
             $sql .= "WHERE lv.page_name = ?\n";
             $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
             $result = $query->execute($1);
