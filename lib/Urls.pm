@@ -95,6 +95,7 @@ use DBI;
         my $dbname          = $cfg->val('urls_db', 'dbname');
         my $dbport          = $cfg->val('urls_db', 'dbport');
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         my $sql             = "SELECT * FROM pagelike pl\n";
         $sql               .= "ORDER BY pl.name, pl.full_name\n";
