@@ -157,7 +157,7 @@ use DBI;
         }
 
         say "            <form action=\"/grizzly\" method=\"POST\">\n";
-        say "                <h1>Urls</h1>"\n;
+        say "                <h1>Urls</h1>\n";
         say "                <table>\n";
         say "                    <tr>\n";
         say "                        <td>\n";
