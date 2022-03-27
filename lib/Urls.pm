@@ -125,6 +125,7 @@ use DBI;
         }
         $query->finish();
         my @body;
+        $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         if($current_section =~ m/^alias\^(.*)$/){
             $sql  = "SELECT a.section FROM aliases a\n";
             $sql .= "WHERE a.name = ?\n";
@@ -135,6 +136,7 @@ use DBI;
             $query->finish();
             $current_section = "links^$sec";
         }
+        $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         if($current_page =~ m/^pseudo-page\^(.*)/){
             my $pp = $1;
             if($current_section =~ m/^links\^(.*)$/){
