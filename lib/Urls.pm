@@ -86,6 +86,7 @@ use DBI;
     sub main {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
+        my $debug = $debug{$ident};
         my $current_page    = $req->param('page');
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
         $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
