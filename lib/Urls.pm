@@ -254,9 +254,13 @@ use DBI;
         say "                        <td>";
         if($debug){
             say "                            <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        </td>";
+            say "                        <td>";
             say "                            <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
         }else{
             say "                            <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        </td>";
+            say "                        <td>";
             say "                            <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
         }
         say "                        </td>";
