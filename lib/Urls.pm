@@ -97,8 +97,8 @@ use DBI;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
-        my $sql             = "SELECT * FROM pagelike pl";
-        $sql               .= "ORDER BY pl.name, pl.full_name";
+        my $sql             = "SELECT * FROM pagelike pl\n";
+        $sql               .= "ORDER BY pl.name, pl.full_name\n";
         my $query           = $db->prepare($sql);
         my $result          = $query->execute();
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
@@ -112,8 +112,8 @@ use DBI;
         }
         $query->finish();
         my @sections;
-        $sql  = "SELECT al.type, al.section FROM alias_links al";
-        $sql .= "ORDER BY al.section";
+        $sql  = "SELECT al.type, al.section FROM alias_links al\n";
+        $sql .= "ORDER BY al.section\n";
         $query           = $db->prepare($sql);
         $result          = $query->execute();
         $r                  = $query->fetchrow_hashref();
@@ -124,9 +124,9 @@ use DBI;
         $query->finish();
         my @body;
         if($current_page =~ m/^pseudo-page\^(.*)/){
-            $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id";
-            $sql   .= "WHERE pp.name = ?";
-            $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link";
+            $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
+            $sql   .= "WHERE pp.name = ?\n";
+            $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
             $query  = $db->prepare($sql);
             $result = $query->execute($1);
             $r      = $query->fetchrow_hashref();
@@ -145,9 +145,10 @@ use DBI;
             }
             $query->finish();
         }elsif($current_page =~ m/^page\^(.*)$/){
-            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv";
-            $sql .= "WHERE lv.page_name = ?";
-            $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;";
+            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
+            $sql .= "WHERE lv.page_name = ?\n";
+            $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
+            $query  = $db->prepare($sql);
             $result = $query->execute($1);
             $r      = $query->fetchrow_hashref();
             while($r){
