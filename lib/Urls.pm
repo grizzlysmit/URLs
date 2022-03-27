@@ -182,10 +182,10 @@ use DBI;
             }
         }
         say "                            </select>";
-        say "                        <td>";
+        say "                        </td>";
         say "                        <td>";
         say "                            <select name=\"section\">";
-        if($current_section){
+        if(defined $current_section && $current_section !~ m/^\s*$/){
             say "                                <option value=\"\">All Sections</option>";
         }else{
             say "                                <option value=\"\" selected>All Sections</option>";
