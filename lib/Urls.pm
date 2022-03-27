@@ -160,8 +160,8 @@ use DBI;
                 my $link      = $r->{link};
                 my $status    = $r->{status};
                 next if $status eq 'invalid';
-                next if $status eq 'unassigned' && in_a_page($section);
-                next if $status eq 'assigned'   && !in_a_page($section);
+                next if $status eq 'unassigned' && in_a_page($section, $db);
+                next if $status eq 'assigned'   && !in_a_page($section, $db);
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
                 $r  = $query->fetchrow_hashref();
             }
