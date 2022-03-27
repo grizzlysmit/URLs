@@ -113,17 +113,6 @@ use DBI;
             $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
-        my @sections;
-        $sql  = "SELECT al.type, al.section FROM alias_links al\n";
-        $sql .= "ORDER BY al.section\n";
-        $query           = $db->prepare($sql);
-        $result          = $query->execute();
-        $r                  = $query->fetchrow_hashref();
-        while($r){
-            push @sections, $r;
-            $r           = $query->fetchrow_hashref();
-        }
-        $query->finish();
         my @body;
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         if($current_section =~ m/^alias\^(.*)$/){
@@ -137,6 +126,17 @@ use DBI;
             $current_section = "links^$sec";
         }
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
+        my @sections;
+        $sql  = "SELECT al.type, al.section FROM alias_links al\n";
+        $sql .= "ORDER BY al.section\n";
+        $query           = $db->prepare($sql);
+        $result          = $query->execute();
+        $r                  = $query->fetchrow_hashref();
+        while($r){
+            push @sections, $r;
+            $r           = $query->fetchrow_hashref();
+        }
+        $query->finish();
         if($current_page =~ m/^pseudo-page\^(.*)/){
             my $pp = $1;
             if($current_section =~ m/^links\^(.*)$/){
