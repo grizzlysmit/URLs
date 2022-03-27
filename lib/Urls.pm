@@ -107,7 +107,7 @@ use DBI;
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         while($r){
             push @pages, $r;
-            my $r           = $query->fetchrow_hashref();
+            $r           = $query->fetchrow_hashref();
             $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
@@ -119,7 +119,7 @@ use DBI;
         $r                  = $query->fetchrow_hashref();
         while($r){
             push @sections, $r;
-            my $r           = $query->fetchrow_hashref();
+            $r           = $query->fetchrow_hashref();
         }
         my @body;
         if($current_page =~ m/^pseudo-page\^(.*)/){
