@@ -188,7 +188,7 @@ use DBI;
         if(defined $current_section && $current_section !~ m/^\s*$/){
             say "                                <option value=\"\">All Sections</option>";
         }else{
-            say "                                <option value=\"\" selected>All Sections</option>";
+            say "                                <option value=\" \" selected>All Sections</option>";
         }
         for my $section (@sections){
             my $type      = $section->{type};
