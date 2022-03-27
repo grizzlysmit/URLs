@@ -187,7 +187,7 @@ use DBI;
             # error
         }
 
-        say "            <form action=\"grizzly\" method=\"post\">";
+        say "            <form action=\"index.pl\" method=\"post\">";
         say "                <h1>Urls</h1>";
         say "                <table>";
         say "                    <tr>";
