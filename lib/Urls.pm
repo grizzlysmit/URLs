@@ -185,10 +185,10 @@ use DBI;
         say "                        </td>";
         say "                        <td>";
         say "                            <select name=\"section\">";
-        if(defined $current_section && $current_section !~ m/^\s*$/){
-            say "                                <option value=\"\">All Sections</option>";
+        if(defined $current_section && $current_section ne 'all_sections'){
+            say "                                <option value=\"all_sections\">All Sections</option>";
         }else{
-            say "                                <option value=\" \" selected>All Sections</option>";
+            say "                                <option value=\"all_sections\" selected>All Sections</option>";
         }
         for my $section (@sections){
             my $type      = $section->{type};
