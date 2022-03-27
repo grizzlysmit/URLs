@@ -104,9 +104,11 @@ use DBI;
         $self->log(Data::Dumper->Dump([$query, $result], [qw(query result)]));
         my @pages;
         my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         while($r){
             push @pages, $r;
             my $r           = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
         my @sections;
