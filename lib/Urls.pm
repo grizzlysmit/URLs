@@ -101,7 +101,7 @@ use DBI;
         $sql               .= "ORDER BY pl.name, pl.full_name\n";
         my $query           = $db->prepare($sql);
         my $result          = $query->execute();
-        $self->log(Data::Dumper->Dump([$query, $result], [qw(query result)]));
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @pages;
         my $r               = $query->fetchrow_hashref();
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
