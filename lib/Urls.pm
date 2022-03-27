@@ -251,7 +251,11 @@ use DBI;
         }
         say "                    <tr>";
         say "                        <td>";
-        say "                            <input name=\"debug\" type=\"checkbox\" value=\"debug\">";
+        if($debug){
+            say "                            <input name=\"debug\" id=\"debug\" type=\"checkbox\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+        }else{
+            say "                            <input name=\"debug\" id=\"debug\" type=\"checkbox\" value=\"1\"><label for=\"debug\"> debug</label>";
+        }
         say "                        </td>";
         say "                        <td>";
         say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
