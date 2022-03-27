@@ -123,12 +123,32 @@ use DBI;
         }
         $query->finish();
         my @body;
-        if($current_page =~ m/^pseudo-page\^(.*)/){
-            $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-            $sql   .= "WHERE pp.name = ?\n";
-            $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
+        if($current_section =~ m/^alias\^(.*)$/){
+            $sql  = "SELECT a.section FROM aliases a\n";
+            $sql .= "WHERE a.name = ?\n";
             $query  = $db->prepare($sql);
             $result = $query->execute($1);
+            $r      = $query->fetchrow_hashref();
+            my $sec = $r->{section};
+            $query->finish();
+            $current_section = "links^$sec";
+        }
+        if($current_page =~ m/^pseudo-page\^(.*)/){
+            my $pp = $1;
+            if($current_section =~ m/^links\^(.*)$/){
+                my $secn = $1;
+                $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
+                $sql   .= "WHERE pp.name = ? AND ls.section = ?\n";
+                $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
+                $query  = $db->prepare($sql);
+                $result = $query->execute($pp, $secn);
+            }else{
+                $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
+                $sql   .= "WHERE pp.name = ?\n";
+                $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
+                $query  = $db->prepare($sql);
+                $result = $query->execute($pp);
+            }
             $r      = $query->fetchrow_hashref();
             while($r){
                 my $page_name = $r->{page_name};
