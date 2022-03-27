@@ -112,8 +112,8 @@ use DBI;
         }
         $query->finish();
         my @sections;
-        $sql = "SELECT al.type, al.section FROM alias_links al\n";
-        $sql = "ORDER BY al.section\n";
+        $sql  = "SELECT al.type, al.section FROM alias_links al\n";
+        $sql .= "ORDER BY al.section\n";
         $query           = $db->prepare($sql);
         $result          = $query->execute();
         $r                  = $query->fetchrow_hashref();
@@ -121,6 +121,7 @@ use DBI;
             push @sections, $r;
             $r           = $query->fetchrow_hashref();
         }
+        $query->finish();
         my @body;
         if($current_page =~ m/^pseudo-page\^(.*)/){
             $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
@@ -142,6 +143,7 @@ use DBI;
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
                 $r  = $query->fetchrow_hashref();
             }
+            $query->finish();
         }elsif($current_page =~ m/^page\^(.*)$/){
             $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
             $sql .= "WHERE lv.page_name = ?\n";
@@ -157,6 +159,7 @@ use DBI;
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
                 $r  = $query->fetchrow_hashref();
             }
+            $query->finish();
         }else{
             # error
         }
