@@ -75,7 +75,7 @@ use DBI;
 
     sub in_a_page {
         my ($self, $section, $db) = @_;
-        my $query  = $db->prepare('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?;');
+        my $query  = $db->prepare('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?');
         my $result = $query->execute($section);
         my $r      = $query->fetchrow_hashref();
         my $n      = $r->{n};
@@ -160,8 +160,8 @@ use DBI;
                 my $link      = $r->{link};
                 my $status    = $r->{status};
                 next if $status eq 'invalid';
-                next if $status eq 'unassigned' && in_a_page($section, $db);
-                next if $status eq 'assigned'   && !in_a_page($section, $db);
+                next if $status eq 'unassigned' && $self->in_a_page($section, $db);
+                next if $status eq 'assigned'   && !$self->in_a_page($section, $db);
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
                 $r  = $query->fetchrow_hashref();
             }
