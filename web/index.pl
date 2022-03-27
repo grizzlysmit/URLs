@@ -72,7 +72,6 @@ say <<"END";
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     </head>
     <body>
-        <form>
 END
 
 $urls->main($req, $cfg, $r);
@@ -119,7 +118,6 @@ for my $name (@argnames){
 say "            <p>[", __LINE__, "]</p>\n            <pre>\n", Data::Dumper->Dump([\@argnames, \%args], [qw(@argnames %args)]), "\n            </pre>\n";
 
 say <<"DONE";
-        </form>
     </body>
 </html>
 DONE
