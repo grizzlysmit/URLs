@@ -251,6 +251,9 @@ use DBI;
         }
         say "                    <tr>";
         say "                        <td>";
+        say "                            <input name=\"debug\" type=\"checkbox\" value=\"debug\">";
+        say "                        </td>";
+        say "                        <td>";
         say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
         say "                        </td>";
         say "                    </tr>";
