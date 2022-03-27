@@ -97,8 +97,8 @@ use DBI;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
-        my $sql             = "SELECT * FROM pagelike pl\n";
-        $sql               .= "ORDER BY pl.name, pl.full_name\n";
+        my $sql             = "SELECT * FROM pagelike pl";
+        $sql               .= "ORDER BY pl.name, pl.full_name";
         my $query           = $db->prepare($sql);
         my $result          = $query->execute();
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
@@ -112,8 +112,8 @@ use DBI;
         }
         $query->finish();
         my @sections;
-        $sql  = "SELECT al.type, al.section FROM alias_links al\n";
-        $sql .= "ORDER BY al.section\n";
+        $sql  = "SELECT al.type, al.section FROM alias_links al";
+        $sql .= "ORDER BY al.section";
         $query           = $db->prepare($sql);
         $result          = $query->execute();
         $r                  = $query->fetchrow_hashref();
@@ -124,8 +124,8 @@ use DBI;
         $query->finish();
         my @body;
         if($current_page =~ m/^pseudo-page\^(.*)/){
-            $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-            $sql   .= "WHERE pp.name = ?\n";
+            $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id";
+            $sql   .= "WHERE pp.name = ?";
             $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link";
             $query  = $db->prepare($sql);
             $result = $query->execute($1);
@@ -145,9 +145,9 @@ use DBI;
             }
             $query->finish();
         }elsif($current_page =~ m/^page\^(.*)$/){
-            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
-            $sql .= "WHERE lv.page_name = ?\n";
-            $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
+            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv";
+            $sql .= "WHERE lv.page_name = ?";
+            $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;";
             $result = $query->execute($1);
             $r      = $query->fetchrow_hashref();
             while($r){
@@ -164,50 +164,63 @@ use DBI;
             # error
         }
 
-        say "            <form action=\"/grizzly\" method=\"POST\">\n";
-        say "                <h1>Urls</h1>\n";
-        say "                <table>\n";
-        say "                    <tr>\n";
-        say "                        <td>\n";
-        say "                            <select name=\"page\">\n";
+        say "            <form action=\"/grizzly\" method=\"POST\">";
+        say "                <h1>Urls</h1>";
+        say "                <table>";
+        say "                    <tr>";
+        say "                        <td>";
+        say "                            <select name=\"page\">";
         for my $page (@pages){
             my $type      = $page->{type};
             my $name      = $page->{name};
             my $full_name = $page->{full_name};
             if($current_page eq "$type^$name"){
-                say "                                <option value=\"$type^$name\" selected>$full_name</option>\n";
+                say "                                <option value=\"$type^$name\" selected>$full_name</option>";
             }else{
-                say "                                <option value=\"$type^$name\">$full_name</option>\n";
+                say "                                <option value=\"$type^$name\">$full_name</option>";
             }
         }
-        say "                            </select>\n";
-        say "                        <td>\n";
-        say "                        <td>\n";
-        say "                            <select name=\"section\">\n";
+        say "                            </select>";
+        say "                        <td>";
+        say "                        <td>";
+        say "                            <select name=\"section\">";
+        if($current_section){
+            say "                                <option value=\"\">All Sections</option>";
+        }else{
+            say "                                <option value=\"\" selected>All Sections</option>";
+        }
         for my $section (@sections){
             my $type      = $section->{type};
             my $name      = $section->{section};
             if($current_section eq "$type^$name"){
-                say "                                <option value=\"$type^$name\" selected>$type $name</option>\n";
+                say "                                <option value=\"$type^$name\" selected>$type $name</option>";
             }else{
-                say "                                <option value=\"$type^$name\">$type $name</option>\n";
-            }
-            if($current_section){
-                say "                                <option value=\"\">All Sections</option>\n";
-            }else{
-                say "                                <option value=\"\">All Sections</option>\n";
+                say "                                <option value=\"$type^$name\">$type $name</option>";
             }
         }
-        say "                            </select>\n";
-        say "                        <td>\n";
-        say "                    </tr>\n";
-        say "                    <tr>\n";
-        say "                        <td>\n";
-        say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">\n";
-        say "                        <td>\n";
-        say "                    </tr>\n";
-        say "                </table>\n";
-        say "            </form>\n";
+        say "                            </select>";
+        say "                        </td>";
+        say "                        <td>";
+        say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        </td>";
+        say "                    </tr>";
+        for my $bod (@body){
+            say "                    <tr>";
+            my $section = $bod->{section};
+            my $name    = $bod->{name};
+            my $link    = $bod->{link};
+            say "                        <td>$section</td>";
+            say "                        <td>$name</td>";
+            say "                        <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
+            say "                    </tr>";
+        }
+        say "                    <tr>";
+        say "                        <td>";
+        say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        </td>";
+        say "                    </tr>";
+        say "                </table>";
+        say "            </form>";
         return 1;
     } ## --- end sub main
 
