@@ -76,46 +76,6 @@ END
 
 $urls->main($req, $cfg, $r);
 
-say "            <h1>G&apos;Day Grizzly</h1>";
-
-say "            <h2>\$id == $id</h2>";
-
-if(defined $key){
-    say "            <p>\$key == $key</p>";
-}else{
-    say "            <p>parameter 'key' not found</p>";
-}
-
-if(defined $unique){
-    say "            <p>\$unique == $unique</p>";
-}else{
-    say "            <p>parameter 'unique' not found</p>";
-}
-
-if(defined $from_address){
-    say "            <p>\$from_address == $from_address</p>";
-}else{
-    say "            <p>parameter 'from_address' not found</p>";
-}
-
-if(defined $debug){
-    say "            <p>\$debug == $debug</p>";
-}else{
-    say "            <p>parameter 'debug' not found</p>";
-}
-
-my %args;
-for my $name (@argnames){
-    next if $name eq 'key';
-    next if $name eq 'unique';
-    next if $name eq 'nodein';
-    next if $name eq 'from_address';
-    next if $name eq 'debug';
-    #$args{$name} = $cgiquery->param($name); 
-    $args{$name} = $req->param($name); 
-}
-
-say "            <p>[", __LINE__, "]</p>\n            <pre>\n", Data::Dumper->Dump([\@argnames, \%args], [qw(@argnames %args)]), "\n            </pre>\n";
 
 say <<"DONE";
     </body>
