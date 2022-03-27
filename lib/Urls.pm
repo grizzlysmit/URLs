@@ -169,11 +169,21 @@ use DBI;
             }
             $query->finish();
         }elsif($current_page =~ m/^page\^(.*)$/){
-            $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
-            $sql .= "WHERE lv.page_name = ?\n";
-            $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
-            $query  = $db->prepare($sql);
-            $result = $query->execute($1);
+            my $pp = $1;
+            if($current_section =~ m/^links\^(.*)$/){
+                my $secn = $1;
+                $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
+                $sql .= "WHERE lv.page_name = ? AND lv.section = ?\n";
+                $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
+                $query  = $db->prepare($sql);
+                $result = $query->execute($pp, $secn);
+            }else{
+                $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
+                $sql .= "WHERE lv.page_name = ?\n";
+                $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
+                $query  = $db->prepare($sql);
+                $result = $query->execute($pp);
+            }
             $r      = $query->fetchrow_hashref();
             while($r){
                 my $page_name = $r->{page_name};
