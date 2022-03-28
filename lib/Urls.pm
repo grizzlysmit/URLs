@@ -253,7 +253,7 @@ use DBI;
         say "                        </select>";
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
         say "                    </td>";
         say "                </tr>";
         for my $bod (@body){
@@ -281,7 +281,7 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
