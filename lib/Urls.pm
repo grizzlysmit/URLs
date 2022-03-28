@@ -348,6 +348,7 @@ use DBI;
         $query->finish();
         say "        <h1>Aliases</h1>";
         say "        <table>";
+        say "            <tr><th>alias</th><th>target section</th></tr>";
         for my $alias (@aliases){
             my $name    = $alias->{name};
             my $section = $alias->{section};
