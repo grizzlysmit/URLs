@@ -273,6 +273,14 @@ use DBI;
         return 1;
     } ## --- end sub main
 
+
+    sub list_aliases {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        return 1;
+    } ## --- end sub list_aliases
+
 }
 
 1;
