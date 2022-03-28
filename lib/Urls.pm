@@ -257,6 +257,7 @@ use DBI;
         say "                    </td>";
         say "                </tr>";
         say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
+        my $cnt = 0;
         for my $bod (@body){
             say "                <tr>";
             my $section = $bod->{section};
@@ -266,6 +267,9 @@ use DBI;
             say "                    <td>$name</td>";
             say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
             say "                </tr>";
+            if($cnt % 20 == 0){
+                say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
+            }
         }
         say "                <tr>";
         say "                    <td>";
