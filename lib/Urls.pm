@@ -200,76 +200,101 @@ use DBI;
             # error
         }
 
-        say "            <form action=\"index.pl\" method=\"post\">";
-        say "                <h1>Urls</h1>";
-        say "                <table>";
-        say "                    <tr>";
-        say "                        <td>";
-        say "                            <select name=\"page\">";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <a href=\"list-aliases.pl\" >list aliases</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-alias.pl\" >add alias</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-link.pl\" >add link</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-page.pl\" >add page</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-pseudo-page.pl\" >add pseudo-page</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-alias.pl\" >add alias</a>\n";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <a href=\"add-alias.pl\" >add alias</a>\n";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        <form action=\"index.pl\" method=\"post\">";
+        say "            <h1>Urls</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <select name=\"page\">";
         for my $page (@pages){
             my $type      = $page->{type};
             my $name      = $page->{name};
             my $full_name = $page->{full_name};
             if($current_page eq "$type^$name"){
-                say "                                <option value=\"$type^$name\" selected>$full_name</option>";
+                say "                            <option value=\"$type^$name\" selected>$full_name</option>";
             }else{
-                say "                                <option value=\"$type^$name\">$full_name</option>";
+                say "                            <option value=\"$type^$name\">$full_name</option>";
             }
         }
-        say "                            </select>";
-        say "                        </td>";
-        say "                        <td>";
-        say "                            <select name=\"section\">";
+        say "                        </select>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <select name=\"section\">";
         if(defined $current_section && $current_section ne 'all_sections'){
-            say "                                <option value=\"all_sections\">All Sections</option>";
+            say "                            <option value=\"all_sections\">All Sections</option>";
         }else{
-            say "                                <option value=\"all_sections\" selected>All Sections</option>";
+            say "                            <option value=\"all_sections\" selected>All Sections</option>";
         }
         for my $section (@sections){
             my $type      = $section->{type};
             my $name      = $section->{section};
             if($current_section eq "$type^$name"){
-                say "                                <option value=\"$type^$name\" selected>$type $name</option>";
+                say "                            <option value=\"$type^$name\" selected>$type $name</option>";
             }else{
-                say "                                <option value=\"$type^$name\">$type $name</option>";
+                say "                            <option value=\"$type^$name\">$type $name</option>";
             }
         }
-        say "                            </select>";
-        say "                        </td>";
-        say "                        <td>";
-        say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
-        say "                        </td>";
-        say "                    </tr>";
+        say "                        </select>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                    </td>";
+        say "                </tr>";
         for my $bod (@body){
-            say "                    <tr>";
+            say "                <tr>";
             my $section = $bod->{section};
             my $name    = $bod->{name};
             my $link    = $bod->{link};
-            say "                        <td>$section</td>";
-            say "                        <td>$name</td>";
-            say "                        <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
-            say "                    </tr>";
+            say "                    <td>$section</td>";
+            say "                    <td>$name</td>";
+            say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
+            say "                </tr>";
         }
-        say "                    <tr>";
-        say "                        <td>";
+        say "                <tr>";
+        say "                    <td>";
         if($debug){
-            say "                            <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
-            say "                        </td>";
-            say "                        <td>";
-            say "                            <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
         }else{
-            say "                            <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
-            say "                        </td>";
-            say "                        <td>";
-            say "                            <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
         }
-        say "                        </td>";
-        say "                        <td>";
-        say "                            <input name=\"submit\" type=\"submit\" value=\"OK\">";
-        say "                        </td>";
-        say "                    </tr>";
-        say "                </table>";
-        say "            </form>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
         return 1;
     } ## --- end sub main
 
