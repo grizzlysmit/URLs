@@ -32,11 +32,7 @@ my $r = shift;
 
 
 my $req             = Apache2::Request->new($r);
-my $key             = $req->param('key');
-my $unique          = $req->param('unique');
-my $from_address    = $req->param('from_address');
 my $debug           = $req->param('debug');
-my @argnames        = $req->param;
 
 # make a inifile object to get the inifile data #
 my $inipath = "/etc/urls/config.ini"; # TODO: define on server.
