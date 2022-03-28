@@ -314,7 +314,7 @@ use DBI;
         say "        <table>";
         say "            <tr>";
         say "                <td>";
-        say "                    <a href=\"list-aliases.pl\" >list aliases</a>\n";
+        say "                    <a href=\"index.pl\" >home page</a>\n";
         say "                </td>";
         say "                <td>";
         say "                    <a href=\"add-alias.pl\" >add alias</a>\n";
