@@ -146,7 +146,7 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
         next unless $page_name.starts-with($page-name);
         $section      = %row«section»;
         next unless $section.starts-with($prefix);
-        next if $status eq Status::invalid;
+        return False if $status eq Status::invalid;
         next if $status eq Status::unassigned && in-a-page($section);
         next if $status eq Status::assigned   && !in-a-page($section);
         if $page_name ne $last_page_name {
