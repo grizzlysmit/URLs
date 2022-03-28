@@ -346,6 +346,7 @@ use DBI;
             $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
+        say "        <h1>Aliases</h1>";
         say "        <table>";
         for my $alias (@aliases){
             my $name    = $alias->{name};
