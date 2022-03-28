@@ -344,6 +344,15 @@ use DBI;
     } ## --- end sub add_page
 
 
+    sub add_link {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub add_link
+
+
     sub add_pseudo_page {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
