@@ -219,7 +219,7 @@ use DBI;
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
         my $page_length = $req->param('page_length');
-        $page_length    = 40 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
         say "            <label for=\"page_length\">";
         say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\">";
         say "            </label>";
