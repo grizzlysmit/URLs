@@ -324,6 +324,37 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('list_aliases');
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        my $sql  = "SELECT a.name, a.section FROM aliases a\n";
+        $sql    .= "ORDER BY a.name\n";
+        my $query           = $db->prepare($sql);
+        my $result          = $query->execute();
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @aliases;
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        while($r){
+            push @aliases, $r;
+            $r           = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        }
+        $query->finish();
+        say "        <table>";
+        for my $alias (@aliases){
+            my $name    = $alias->{name};
+            my $section = $alias->{section};
+            say "            <tr>";
+            say "                    <td>$name</td><td>$section</td>";
+            say "            </tr>";
+        }
+        say "        </table>";
         return 1;
     } ## --- end sub list_aliases
 
