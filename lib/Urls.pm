@@ -36,7 +36,7 @@ use DBI;
     my %db_handle;
     my %debug;
     my %logfiles;
-    my %Pages;
+    my %PAGES;
 
     
     sub new {
@@ -51,7 +51,7 @@ use DBI;
 
         $logpaths{$ident} = $logpath;
 
-        $Pages{$ident} = [
+        $PAGES{$ident} = [
             { href => 'index.pl', name => 'home page', fun => 'main', }, 
             { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', }, 
             { href => 'add-alias.pl', name => 'add alias', fun => 'add_alias', }, 
@@ -294,7 +294,7 @@ use DBI;
         my ($self, $fun) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        my @pages = @$Pages{$ident};
+        my @pages = @{$PAGES{$ident}};
         say "        <table>";
         say "            <tr>";
         my $cnt = 0;
