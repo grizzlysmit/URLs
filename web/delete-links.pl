@@ -73,6 +73,9 @@ say <<"END";
             select {
                 width: 100%;
             }
+            table, th, td {
+                border: 1px solid black;
+            }
         </style>
     </head>
     <body>
