@@ -304,7 +304,7 @@ use DBI;
             my $name = $page->{name};
             next if $page->{fun} eq $fun;
             say "                <td>";
-            say "                    <a href=\"index.pl\" >home page</a>\n";
+            say "                    <a href=\"$href\" >$name</a>\n";
             say "                </td>";
             if($cnt % 5 == 0){
                 say "            </tr>";
