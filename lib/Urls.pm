@@ -325,6 +325,69 @@ use DBI;
         return 1;
     } ## --- end sub list_aliases
 
+
+    sub add_alias {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub add_alias
+
+
+    sub add_page {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_page');
+        return 1;
+    } ## --- end sub add_page
+
+
+    sub add_pseudo_page {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub add_pseudo_page
+
+
+    sub delete_links {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub delete_links
+
+
+    sub delete_pages {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub delete_pages
+
+
+    sub delete_pseudo_page {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub delete_pseudo_page
+
+
+    sub delete_aliases {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        $self->links('add_alias');
+        return 1;
+    } ## --- end sub delete_aliases
+
 }
 
 1;
