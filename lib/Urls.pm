@@ -36,6 +36,7 @@ use DBI;
     my %db_handle;
     my %debug;
     my %logfiles;
+    my %Pages;
 
     
     sub new {
@@ -49,6 +50,19 @@ use DBI;
         my $ident = ident $new_object;
 
         $logpaths{$ident} = $logpath;
+
+        $Pages{$ident} = [
+            { href => 'index.pl', name => 'home page', fun => 'main', }, 
+            { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', }, 
+            { href => 'add-alias.pl', name => 'add alias', fun => 'add_alias', }, 
+            { href => 'add-link.pl', name => 'add link', fun => 'add_link', }, 
+            { href => 'add-page.pl', name => 'add page', fun => 'add_page', }, 
+            { href => 'add-pseudo-page.pl', name => 'add pseudo-page', fun => 'add_pseudo_page', }, 
+            { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', }, 
+            { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', }, 
+            { href => 'delete-pseudo-page.pl', name => 'delete pseudo-page', fun => 'delete_pseudo_page', }, 
+            { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
+        ];
 
         return $new_object;
     } ## --- end sub new
@@ -200,39 +214,7 @@ use DBI;
             # error
         }
 
-        say "        <table>";
-        say "            <tr>";
-        say "                <td>";
-        say "                    <a href=\"list-aliases.pl\" >list aliases</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-alias.pl\" >add alias</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-link.pl\" >add link</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-page.pl\" >add page</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-pseudo-page.pl\" >add pseudo-page</a>\n";
-        say "                </td>";
-        say "            </tr>";
-        say "            <tr>";
-        say "                <td>";
-        say "                    <a href=\"delete-aliases.pl\" >delete aliases</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-links.pl\" >delete links</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-pages.pl\" >delete pages</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-pseudo-page.pl\" >delete pseudo-page</a>\n";
-        say "                </td>";
-        say "            </tr>";
-        say "        </table>";
+        $self->links('main');
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
         say "            <table>";
@@ -306,44 +288,39 @@ use DBI;
         return 1;
     } ## --- end sub main
 
+    
+    sub links {
+        my ($self, $fun) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        my @pages = @$Pages{$ident};
+        say "        <table>";
+        say "            <tr>";
+        my $cnt = 0;
+        for my $page (@pages){
+            $cnt++;
+            my $href = $page->{href};
+            my $name = $page->{name};
+            next if $page->{fun} eq $fun;
+            say "                <td>";
+            say "                    <a href=\"index.pl\" >home page</a>\n";
+            say "                </td>";
+            if($cnt % 5 == 0){
+                say "            </tr>";
+                say "            <tr>";
+            }
+        }
+        say "            </tr>";
+        say "        </table>";
+        return ;
+    } ## --- end sub links
+
 
     sub list_aliases {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        say "        <table>";
-        say "            <tr>";
-        say "                <td>";
-        say "                    <a href=\"index.pl\" >home page</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-alias.pl\" >add alias</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-link.pl\" >add link</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-page.pl\" >add page</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"add-pseudo-page.pl\" >add pseudo-page</a>\n";
-        say "                </td>";
-        say "            </tr>";
-        say "            <tr>";
-        say "                <td>";
-        say "                    <a href=\"delete-aliases.pl\" >delete aliases</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-links.pl\" >delete links</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-pages.pl\" >delete pages</a>\n";
-        say "                </td>";
-        say "                <td>";
-        say "                    <a href=\"delete-pseudo-page.pl\" >delete pseudo-page</a>\n";
-        say "                </td>";
-        say "            </tr>";
-        say "        </table>";
+        $self->links('list_aliases');
         return 1;
     } ## --- end sub list_aliases
 
