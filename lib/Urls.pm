@@ -259,6 +259,7 @@ use DBI;
         say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
         my $cnt = 0;
         for my $bod (@body){
+            $cnt++;
             say "                <tr>";
             my $section = $bod->{section};
             my $name    = $bod->{name};
