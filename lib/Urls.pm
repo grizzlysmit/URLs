@@ -218,6 +218,11 @@ use DBI;
         $self->links('main');
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length    = 40 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        say "            <label for=\"page_length\">";
+        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\">";
+        say "            </label>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -268,7 +273,7 @@ use DBI;
             say "                    <td>$name</td>";
             say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
             say "                </tr>";
-            if($cnt % 20 == 0){
+            if($cnt % $page_length == 0){
                 say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
             }
         }
