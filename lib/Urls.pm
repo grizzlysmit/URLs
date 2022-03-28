@@ -299,10 +299,10 @@ use DBI;
         say "            <tr>";
         my $cnt = 0;
         for my $page (@pages){
-            $cnt++;
             my $href = $page->{href};
             my $name = $page->{name};
             next if $page->{fun} eq $fun;
+            $cnt++;
             say "                <td>";
             say "                    <a href=\"$href\" >$name</a>\n";
             say "                </td>";
