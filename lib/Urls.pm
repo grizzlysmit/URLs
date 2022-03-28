@@ -291,7 +291,7 @@ use DBI;
 
     
     sub links {
-        my ($self, $fun) = @_;
+        my ($self, $Fun) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my @pages = @{$PAGES{$ident}};
@@ -301,10 +301,12 @@ use DBI;
         for my $page (@pages){
             my $href = $page->{href};
             my $name = $page->{name};
-            next if $page->{fun} eq $fun;
+            my $fun  = $page->{fun};
+            next if $fun eq $Fun;
             $cnt++;
             say "                <td>";
-            say "                    <a href=\"$href\" >$name</a>\n";
+            #say "                    <a href=\"$href\" >$name</a>\n";
+            say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
             say "                </td>";
             if($cnt % 5 == 0){
                 say "            </tr>";
