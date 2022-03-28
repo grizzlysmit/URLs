@@ -67,7 +67,7 @@ say <<"END";
         <title>Grizzly&apos;s links page</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
         <style>
-            input[type="text"] {
+            input[type="submit"] {
                 width: 100%;
             }            
         </style>
