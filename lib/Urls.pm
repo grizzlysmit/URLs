@@ -256,6 +256,7 @@ use DBI;
         say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
         say "                    </td>";
         say "                </tr>";
+        say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
         for my $bod (@body){
             say "                <tr>";
             my $section = $bod->{section};
