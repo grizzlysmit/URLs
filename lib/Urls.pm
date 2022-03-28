@@ -105,6 +105,7 @@ use DBI;
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
         $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
         my $current_section = $req->param('section');
+        $current_section = 'all_sections' if !defined $current_section;
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
