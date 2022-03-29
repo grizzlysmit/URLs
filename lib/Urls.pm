@@ -119,12 +119,18 @@ use DBI;
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
-        tie %session, 'Apache::Session::Postgres', $id, {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
-        if(!$id){
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
             $self->set_cookie("SESSION_ID=$session{_session_id};");
         }
 
