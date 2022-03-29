@@ -120,6 +120,7 @@ use DBI;
 
         my $id = $self->get_id($req, $cfg, $rec);
         if($id){
+            $self->log('[', __LINE__, "] ", Data::Dumper->Dump([$id], [qw(id)]));
             tie %session, 'Apache::Session::Postgres', $id, {
                 Handle => $db,
                 TableName => 'sessions', 
