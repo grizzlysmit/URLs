@@ -663,6 +663,7 @@ use DBI;
             $cookie = $session_cookie;
         }
         $id = $cookie->value;
+        $self->log(Data::Dumper->Dump([$id], [qw(id)]));
  
         return $id;
     } ## --- end sub get_id
