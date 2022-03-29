@@ -115,7 +115,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -407,7 +407,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -436,7 +436,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -465,7 +465,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -494,7 +494,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -523,7 +523,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -552,7 +552,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -581,7 +581,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
@@ -613,7 +613,7 @@ use DBI;
 
         my $session;
 
-        tie %session 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
             Commit     => 1
         };
