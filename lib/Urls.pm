@@ -641,7 +641,7 @@ use DBI;
         my $j = Apache2::Cookie::Jar->new($rec);
         my $cookie;
         eval {
-            $cookie = $j->cookies("$$sessionid");         # get cookie from request headers
+            $cookie = $j->cookies("$$");         # get cookie from request headers
         };
         if($@){
             $cookie = '';
@@ -654,7 +654,7 @@ use DBI;
             $md5->add($$, time(), 'grizzly');
 
              my $session_cookie = Apache2::Cookie->new($rec,
-                      -name  => "$$.sessionid",
+                      -name  => "$$",
                       -value  => $md5->hexdigest,
                       #-path  => "/",
                       -expires => "+10d"
