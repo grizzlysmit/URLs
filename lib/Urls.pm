@@ -646,7 +646,7 @@ use DBI;
                       );          
             $cookie = $session_cookie;
         }
-        $id = $cookie->raw_value;
+        $id = $cookie->value;
  
         return $id;
     } ## --- end sub get_id
