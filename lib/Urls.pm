@@ -118,11 +118,15 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
+        my $id = $self->get_id($req, $cfg, $rec);
+        tie %session, 'Apache::Session::Postgres', $id, {
             Handle => $db,
             TableName => 'sessions', 
             Commit     => 1
         };
+        if(!$id){
+            $self->$self->set_cookie("SESSION_ID=$session{_session_id};");
+        }
 
         my $current_page    = $req->param('page');
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
@@ -643,7 +647,7 @@ use DBI;
         eval {
             my @names = $j->cookies();         # get all the cookies from request headers
             for my $name (@names){
-                if($name == "$$"){
+                if($name eq "$$"){
                     $cookie = $j->cookies("$$");         # get cookie from request headers
                 }
             }
@@ -653,25 +657,33 @@ use DBI;
         }
          
         my $id;
-        #$cookie =~ s/^session_id=(\w*)$/$1/;
-        if(!$cookie){
-            my $md5 = Digest::MD5->new;  
-            $md5->add($$, time(), 'grizzly');
-
-             my $session_cookie = Apache2::Cookie->new($rec,
-                      -name  => "$$",
-                      -value  => $md5->hexdigest,
-                      #-path  => "/",
-                      -expires => "+10d"
-                      );          
-            $session_cookie->bake($rec);
-            $cookie = $session_cookie;
+        if($cookie){
+            $id = $cookie->value;
+            $id =~ s/SESSION_ID=(\w*)/$1/;
+        }else{
+            $id = undef();
         }
-        $id = $cookie->value;
         $self->log(Data::Dumper->Dump([$id], [qw(id)]));
  
         return $id;
     } ## --- end sub get_id
+
+
+    sub set_cookie {
+        my ($self, $session_id, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        my $session_cookie = Apache2::Cookie->new($rec,
+                  -name  => "$$",
+                  -value  => $session_id,
+                  #-path  => "/",
+                  #-domain => "localhost", 
+                  -expires => "+10d"
+                  );          
+        $session_cookie->bake($rec);
+        return session_cookie;
+    } ## --- end sub set_cookie
 
 }
 
