@@ -1,0 +1,2 @@
+SELECT pp.name page_name, aul.alias_name, aul.section, aul.name, aul.link, pp.status FROM pseudo_pages pp JOIN alias_union_links aul ON aul.alias_name ~* pp.pattern
+ORDER BY page_name, aul.alias_name, aul.section, aul.name
