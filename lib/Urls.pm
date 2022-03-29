@@ -641,10 +641,15 @@ use DBI;
         my $j = Apache2::Cookie::Jar->new($rec);
         my $cookie;
         eval {
-            $cookie = $j->cookies("$$");         # get cookie from request headers
+            my @names = $j->cookies();         # get all the cookies from request headers
+            for my $name (@names){
+                if($name == "$$"){
+                    $cookie = $j->cookies("$$");         # get cookie from request headers
+                }
+            }
         };
         if($@){
-            $cookie = '';
+            $cookie = undef;
         }
          
         my $id;
