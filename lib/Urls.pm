@@ -21,7 +21,10 @@ use warnings;
 use v5.32.1;
 use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
                         weaken isvstring looks_like_number set_prototype);
+use Apache2::RequestRec;
 use Apache2::Request;
+use Digest::MD5;
+use Apache2::Cookie;
 use Data::Dumper;
 use FileHandle;
 use Apache::Session::Postgres;
@@ -115,7 +118,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -407,7 +410,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -436,7 +439,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -465,7 +468,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -494,7 +497,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -523,7 +526,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -552,7 +555,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -581,7 +584,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -610,7 +613,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', undef(), {
+        tie %session, 'Apache::Session::Postgres', get_id(), {
             Handle => $db,
             Commit     => 1
         };
@@ -620,6 +623,33 @@ use DBI;
 
         return 1;
     } ## --- end sub delete_aliases
+    
+
+    sub get_id {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        my $j = Apache2::Cookie::Jar->new($rec);
+        my $cookie = $j->cookies("$$.grizzly");         # get cookie from request headers
+         
+        my $id;
+        #$cookie =~ s/^session_id=(\w*)$/$1/;
+        if(!$cookie){
+            my $md5 = Digest::MD5->new;  
+            $md5->add($$, time(), 'grizzly');
+
+             my $session_cookie = Apache::Cookie->new($rec,
+                      -name  => "sessionid",
+                      -value  => $md5->hexdigest,
+                      -path  => "/",
+                      -expires => "+10d"
+                      );          
+            $cookie = $session_cookie;
+        }
+        $id = $cookie->raw_value;
+ 
+        return $id;
+    } ## --- end sub get_id
 
 }
 
