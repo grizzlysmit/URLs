@@ -639,7 +639,13 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my $j = Apache2::Cookie::Jar->new($rec);
-        my $cookie = $j->cookies("$$.sessionid");         # get cookie from request headers
+        my $cookie;
+        eval {
+            $cookie = $j->cookies("$$.sessionid");         # get cookie from request headers
+        };
+        if($@){
+            $cookie = '';
+        }
          
         my $id;
         #$cookie =~ s/^session_id=(\w*)$/$1/;
@@ -653,6 +659,7 @@ use DBI;
                       #-path  => "/",
                       -expires => "+10d"
                       );          
+            $session_cookie->bake($rec);
             $cookie = $session_cookie;
         }
         $id = $cookie->value;
