@@ -24,6 +24,7 @@ use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
 use Apache2::Request;
 use Data::Dumper;
 use FileHandle;
+use Apache::Session::Postgres;
 use Config::IniFiles;
 use Class::Std::Utils;
 use JSON;
@@ -64,6 +65,7 @@ use DBI;
             { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
         ];
 
+
         return $new_object;
     } ## --- end sub new
     
@@ -101,12 +103,7 @@ use DBI;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        my $current_page    = $req->param('page');
-        $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
-        $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
-        my $current_section = $req->param('section');
-        $current_section = 'all_sections' if !defined $current_section;
-        $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
+
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -114,7 +111,21 @@ use DBI;
         my $dbport          = $cfg->val('urls_db', 'dbport');
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
-        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        my $current_page    = $req->param('page');
+        $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
+        $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
+        my $current_section = $req->param('section');
+        $current_section = 'all_sections' if !defined $current_section;
+        $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         my $sql             = "SELECT * FROM pagelike pl\n";
         $sql               .= "ORDER BY pl.name, pl.full_name\n";
         my $query           = $db->prepare($sql);
@@ -219,7 +230,13 @@ use DBI;
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
         my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if $page_length;
         $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+        
+        untie %session;
+        $db->disconnect;
+
         say "            <label for=\"page_length\">Page Length:";
         say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "            </label>";
@@ -357,6 +374,7 @@ use DBI;
             $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
+        $db->disconnect;
         say "        <h1>Aliases</h1>";
         say "        <table>";
         say "            <tr><th>alias</th><th>target section</th></tr>";
@@ -377,6 +395,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub add_alias
 
@@ -386,6 +424,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_page');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub add_page
 
@@ -395,6 +453,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub add_link
 
@@ -404,6 +482,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub add_pseudo_page
 
@@ -413,6 +511,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub delete_links
 
@@ -422,6 +540,26 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub delete_pages
 
@@ -431,15 +569,58 @@ use DBI;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub delete_pseudo_page
 
 
     sub delete_aliases {
-        my ($self, $req, $cfg, $rec) = @_;
+        my ($self, $req, $cfg, $rec) = @_, undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $session;
+
+        tie %session 'Apache::Session::Postgres', undef(), {
+            Handle => $db,
+            Commit     => 1
+        };
+
+        untie %session;
+        $db->disconnect;
+
         return 1;
     } ## --- end sub delete_aliases
 
