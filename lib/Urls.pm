@@ -641,7 +641,7 @@ use DBI;
         my $j = Apache2::Cookie::Jar->new($rec);
         my $cookie;
         eval {
-            $cookie = $j->cookies("$$.sessionid");         # get cookie from request headers
+            $cookie = $j->cookies("$$sessionid");         # get cookie from request headers
         };
         if($@){
             $cookie = '';
