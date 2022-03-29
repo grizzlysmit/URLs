@@ -113,7 +113,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -405,7 +405,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -434,7 +434,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -463,7 +463,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -492,7 +492,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -521,7 +521,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -550,7 +550,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -579,7 +579,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
@@ -611,7 +611,7 @@ use DBI;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
-        my $session;
+        my %session;
 
         tie %session, 'Apache::Session::Postgres', undef(), {
             Handle => $db,
