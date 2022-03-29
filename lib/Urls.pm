@@ -641,7 +641,7 @@ use DBI;
              my $session_cookie = Apache2::Cookie->new($rec,
                       -name  => "$$.sessionid",
                       -value  => $md5->hexdigest,
-                      -path  => "/",
+                      #-path  => "/",
                       -expires => "+10d"
                       );          
             $cookie = $session_cookie;
