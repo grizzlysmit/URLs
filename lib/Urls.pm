@@ -131,7 +131,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id};");
         }
 
         my $current_page    = $req->param('page');
@@ -421,11 +421,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -451,11 +461,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'session', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -481,11 +501,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -511,11 +541,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -541,11 +581,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -571,11 +621,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -601,11 +661,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
@@ -631,11 +701,21 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
-            Handle => $db,
-            TableName => 'sessions', 
-            Commit     => 1
-        };
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
+        }
 
         untie %session;
         $db->disconnect;
