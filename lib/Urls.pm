@@ -734,8 +734,8 @@ use DBI;
         eval {
             my @names = $j->cookies();         # get all the cookies from request headers
             for my $name (@names){
-                if($name eq "$$"){
-                    $cookie = $j->cookies("$$");         # get cookie from request headers
+                if($name eq "grizzly"){
+                    $cookie = $j->cookies("grizzly");         # get cookie from request headers
                 }
             }
         };
@@ -762,7 +762,7 @@ use DBI;
         my $debug = $debug{$ident};
 
         my $session_cookie = Apache2::Cookie->new($rec,
-                  -name  => "$$",
+                  -name  => "grizzly",
                   -value  => $session_id,
                   #-path  => "/",
                   #-domain => "localhost", 
