@@ -131,7 +131,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id};");
+            $self->set_cookie("SESSION_ID=$session{_session_id};", $rec);
         }
 
         my $current_page    = $req->param('page');
