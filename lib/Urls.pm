@@ -120,7 +120,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -413,7 +413,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -473,7 +473,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -503,7 +503,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -533,7 +533,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -563,7 +563,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -593,7 +593,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
@@ -623,7 +623,7 @@ use DBI;
 
         tie %session, 'Apache::Session::Postgres', $self->get_id($req, $cfg, $rec), {
             Handle => $db,
-            TableName => 'session', 
+            TableName => 'sessions', 
             Commit     => 1
         };
 
