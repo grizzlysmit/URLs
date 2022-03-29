@@ -594,10 +594,7 @@ use DBI;
 
 
     sub delete_aliases {
-        my ($self, $req, $cfg, $rec) = @_, undef(), {
-            Handle => $db,
-            Commit     => 1
-        };
+        my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         $self->links('add_alias');
