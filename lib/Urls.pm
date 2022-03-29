@@ -682,7 +682,7 @@ use DBI;
                   -expires => "+10d"
                   );          
         $session_cookie->bake($rec);
-        return session_cookie;
+        return $session_cookie;
     } ## --- end sub set_cookie
 
 }
