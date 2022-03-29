@@ -118,7 +118,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -410,7 +410,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -439,7 +439,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -468,7 +468,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -497,7 +497,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -526,7 +526,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -555,7 +555,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -584,7 +584,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
@@ -613,7 +613,7 @@ use DBI;
 
         my %session;
 
-        tie %session, 'Apache::Session::Postgres', get_id(), {
+        tie %session, 'Apache::Session::Postgres', get_id($req, $cfg, $rec), {
             Handle => $db,
             Commit     => 1
         };
