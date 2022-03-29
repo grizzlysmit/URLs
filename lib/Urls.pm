@@ -125,7 +125,7 @@ use DBI;
             Commit     => 1
         };
         if(!$id){
-            $self->$self->set_cookie("SESSION_ID=$session{_session_id};");
+            $self->set_cookie("SESSION_ID=$session{_session_id};");
         }
 
         my $current_page    = $req->param('page');
