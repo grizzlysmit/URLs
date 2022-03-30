@@ -493,7 +493,7 @@ use DBI;
         say "                    <td>";
         say "                        <label for=\"alias\">Alias: </label>";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"alias\" id=\"alias\"/>";
         say "                    </td>";
         say "                </tr>";
@@ -501,7 +501,7 @@ use DBI;
         say "                    <td>";
         say "                        <label for=\"target\">Target: </label>";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"2\">";
         say "                        <select name=\"target\" id=\"target\">";
         for (@sections){
             my $section = $_->{section};
