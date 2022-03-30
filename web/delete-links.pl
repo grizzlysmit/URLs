@@ -66,20 +66,7 @@ say <<"END";
     <head>
         <title>Grizzly&apos;s links page</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-        <style>
-            input[type="submit"] {
-                width: 100%;
-            }            
-            input[type="text"] {
-                width: 100%;
-            }            
-            select {
-                width: 100%;
-            }
-            table, th, td {
-                border: 1px solid black;
-            }
-        </style>
+        <link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>
 END
