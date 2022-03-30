@@ -443,6 +443,35 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
+        $sql               .= "ORDER BY ls.section\n";
+        my $query           = $db->prepare($sql);
+        my $result          = $query->execute();
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @sections;
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        while($r){
+            push @sections, $r;
+            $r           = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        }
+        $query->finish();
+
+        say "        <form action=\"add-alias.pl\" method=\"post\">";
+        say "            <label for=\"alias\">Alias: </label>";
+        say "            <input type=\"text\" name=\"alias\" id=\"alias\"/><br/>";
+        say "            <label for=\"target\">Target: </label>";
+        say "            <select name=\"target\" id=\"target\">";
+        for (@sections){
+            my $section = $_->{section};
+            my $target  = $_->{id};
+            say "                <option value=\"$target\">$section</option>";
+        }
+        say "            </select><br/>";
+        say "            <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
+        say "        </form>";
+
         untie %session;
         $db->disconnect;
 
