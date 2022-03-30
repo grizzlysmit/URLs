@@ -623,7 +623,7 @@ use DBI;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <th>Link Section</th><th>Members</th>";
+        say "                        <th colspan=\"2\">Link Section</th><th>Members</th>";
         say "                    </td>";
         say "                </tr>";
         for (@sections){
