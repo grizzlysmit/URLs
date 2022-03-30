@@ -459,17 +459,35 @@ use DBI;
         $query->finish();
 
         say "        <form action=\"add-alias.pl\" method=\"post\">";
-        say "            <label for=\"alias\">Alias: </label>";
-        say "            <input type=\"text\" name=\"alias\" id=\"alias\"/><br/>";
-        say "            <label for=\"target\">Target: </label>";
-        say "            <select name=\"target\" id=\"target\">";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"alias\">Alias: </label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input type=\"text\" name=\"alias\" id=\"alias\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"target\">Target: </label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <select name=\"target\" id=\"target\">";
         for (@sections){
             my $section = $_->{section};
             my $target  = $_->{id};
-            say "                <option value=\"$target\">$section</option>";
+            say "                            <option value=\"$target\">$section</option>";
         }
-        say "            </select><br/>";
-        say "            <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
         say "        </form>";
 
         untie %session;
