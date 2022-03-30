@@ -132,7 +132,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         my $current_page    = $req->param('page');
@@ -435,7 +435,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -475,7 +475,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -515,7 +515,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -555,7 +555,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -595,7 +595,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -635,7 +635,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -675,7 +675,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -715,7 +715,7 @@ use DBI;
                 TableName => 'sessions', 
                 Commit     => 1
             };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $rec);
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
         untie %session;
@@ -757,15 +757,17 @@ use DBI;
 
 
     sub set_cookie {
-        my ($self, $session_id, $rec) = @_;
+        my ($self, $session_id, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
+        $self->log(Data::Dumper->Dump([$session_id], [qw(session_id)]));
+        my $domain = $cfg->val('general',  'domain');
 
         my $session_cookie = Apache2::Cookie->new($rec,
                   -name  => "grizzly",
                   -value  => $session_id,
                   #-path  => "/",
-                  #-domain => "localhost", 
+                  -domain => $domain, 
                   -expires => "+10d"
                   );          
         $session_cookie->bake($rec);
