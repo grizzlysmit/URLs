@@ -137,10 +137,15 @@ use DBI;
 
         my $current_page    = $req->param('page');
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
+        $current_page       = $session{current_page} if (!defined $current_page || $current_page =~ m/^\s*$/) && exists $session{current_page};
+        $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
         $current_page       = 'pseudo-page^all' if !defined $current_page || $current_page =~ m/^\s*$/;
         my $current_section = $req->param('section');
+        $current_section    = $session{current_section} if !defined $current_section && exists $session{current_section};
         $current_section = 'all_sections' if !defined $current_section;
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
+        $session{current_page}    = $current_page    if defined $current_page;
+        $session{current_section} = $current_section if defined $current_section;
         my $sql             = "SELECT * FROM pagelike pl\n";
         $sql               .= "ORDER BY pl.name, pl.full_name\n";
         my $query           = $db->prepare($sql);
@@ -245,7 +250,7 @@ use DBI;
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
         my $page_length = $req->param('page_length');
-        $page_length = $session{page_length} if !defined $page_length;
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
         $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
         $session{page_length} = $page_length;
         
