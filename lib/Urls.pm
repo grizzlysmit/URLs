@@ -445,11 +445,12 @@ use DBI;
         my $alias  = $req->param('alias');
         my $target = $req->param('target');
 
+        $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
         if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && valid_section($target, $db)){
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             my $result          = $query->execute($alias, $target);
-            $self->log(Data::Dumper->Dump([$query, $result], [qw(query result)]));
+            $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $sql  = "SELECT ls.section FROM links_sections ls\n";
                 $sql .= "WHERE ls.id = ?\n";
@@ -533,6 +534,8 @@ use DBI;
     sub valid_section {
         my ($self, $target, $db) = @_;
         my $ident           = ident $self;
+        $self->log("start valid_section");
+        $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
         my $debug = $debug{$ident};
         return 0 if $target !~ m/^\d+$/;
         my $sql             = "SELECT COUNT(*) n FROM links_sections ls\n";
@@ -543,6 +546,7 @@ use DBI;
         my $r               = $query->fetchrow_hashref();
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         my $n               = $r->{n};
+        $self->log("end valid_section");
         return $n;
     } ## --- end sub valid_section
 
