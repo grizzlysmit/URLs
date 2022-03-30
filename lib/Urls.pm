@@ -354,7 +354,11 @@ use DBI;
             $cnt++;
             say "                <td>";
             #say "                    <a href=\"$href\" >$name</a>\n";
-            say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
+            if($fun eq $Fun){
+                say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
+            }else{
+                say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
+            }
             say "                </td>";
             if($cnt % 5 == 0){
                 say "            </tr>";
