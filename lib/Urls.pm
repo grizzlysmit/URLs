@@ -450,7 +450,14 @@ use DBI;
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
-            my $result          = $query->execute($alias, $target);
+            my $result;
+            eval {
+                $result          = $query->execute($alias, $target);
+            };
+            if($@){
+                say "Error: $@";
+                return 0;
+            }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $sql  = "SELECT ls.section FROM links_sections ls\n";
