@@ -455,7 +455,7 @@ use DBI;
                 $sql .= "WHERE ls.id = ?\n";
                 $query           = $db->prepare($sql);
                 $result          = $query->execute($alias, $target);
-                $r               = $query->fetchrow_hashref();
+                my $r               = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
                 say "Alias  defined: $alias => $section";
