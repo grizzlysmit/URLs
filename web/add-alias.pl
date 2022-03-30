@@ -70,6 +70,9 @@ say <<"END";
             input[type="submit"] {
                 width: 100%;
             }            
+            input[type="text"] {
+                width: 100%;
+            }            
             select {
                 width: 100%;
             }
