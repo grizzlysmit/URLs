@@ -622,9 +622,7 @@ use DBI;
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
-        say "                    <td>";
-        say "                        <th colspan=\"2\">Link Section</th><th>Members</th>";
-        say "                    </td>";
+        say "                    <th colspan=\"2\">Link Section</th><th>Members</th>";
         say "                </tr>";
         for (@sections){
             my $links_section_id = $_->{id};
