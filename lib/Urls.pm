@@ -449,13 +449,14 @@ use DBI;
         if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
+            $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
             my $result          = $query->execute($alias, $target);
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $sql  = "SELECT ls.section FROM links_sections ls\n";
                 $sql .= "WHERE ls.id = ?\n";
                 $query           = $db->prepare($sql);
-                $result          = $query->execute($alias, $target);
+                $result          = $query->execute($target);
                 my $r               = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
