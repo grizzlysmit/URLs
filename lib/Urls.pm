@@ -442,6 +442,26 @@ use DBI;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+        my $alias  = $req->param('alias');
+        my $target = $req->param('target');
+
+        if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && valid_section($target, $db)){
+            my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
+            my $query           = $db->prepare($sql);
+            my $result          = $query->execute($alias, $target);
+            $self->log(Data::Dumper->Dump([$query, $result], [qw(query result)]));
+            if($result){
+                $sql  = "SELECT ls.section FROM links_sections ls\n";
+                $sql .= "WHERE ls.id = ?\n";
+                $query           = $db->prepare($sql);
+                $result          = $query->execute($alias, $target);
+                $r               = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+                my $section      = $r->{section};
+                say "Alias  defined: $alias => $section";
+            }
+            return 1;
+        }
 
         my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
         $sql               .= "ORDER BY ls.section\n";
@@ -484,7 +504,20 @@ use DBI;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
@@ -495,6 +528,23 @@ use DBI;
 
         return 1;
     } ## --- end sub add_alias
+
+
+    sub valid_section {
+        my ($self, $target, $db) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        return 0 if $target !~ m/^\d+$/;
+        my $sql             = "SELECT COUNT(*) n FROM links_sections ls\n";
+        $sql               .= "WHERE ls.id = ?\n";
+        my $query           = $db->prepare($sql);
+        my $result          = $query->execute($target);
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        my $n               = $r->{n};
+        return $n;
+    } ## --- end sub valid_section
 
 
     sub add_page {
