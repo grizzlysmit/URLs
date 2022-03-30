@@ -596,30 +596,48 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        my $sql             = "SELECT ls.section FROM links_sections ls\n";
+        $sql               .= "ORDER BY ls.section\n";
+        my $query           = $db->prepare($sql);
+        my $result          = $query->execute();
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @sections;
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        while($r){
+            push @sections, $r;
+            $r           = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        }
+        $query->finish();
+
         say "        <form action=\"add-page.pl\" method=\"post\">";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"alias\">Alias: </label>";
+        say "                        <label for=\"page\">Page: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"alias\" id=\"alias\"/>";
+        say "                        <input type=\"text\" name=\"page\" id=\"page\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"target\">Target: </label>";
+        say "                        <th>Link Section</th><th>Members</th>";
         say "                    </td>";
-        #say "                    <td colspan=\"2\">";
-        #say "                        <select name=\"target\" id=\"target\">";
-        #for (@sections){
-        #    my $section = $_->{section};
-        #    my $target  = $_->{id};
-        #    say "                            <option value=\"$target\">$section</option>";
-        #}
-        #say "                        </select>";
-        #say "                    </td>";
         say "                </tr>";
+        for (@sections){
+            my $links_section_id = $_->{id};
+            my $section          = $_->{section};
+            say "                <tr>";
+            say "                    <td colspan=\"2\">";
+            say "                        <label for=\"$section\">$section</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"checkbox\" name=\"members\" id=\"$section\" value=\"$links_section_id\" />";
+            say "                    </td>";
+            say "                </tr>";
+        }
         say "                <tr>";
         say "                    <td>";
         if($debug){
