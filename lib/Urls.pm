@@ -446,7 +446,7 @@ use DBI;
         my $target = $req->param('target');
 
         $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
-        if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && valid_section($target, $db)){
+        if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             my $result          = $query->execute($alias, $target);
