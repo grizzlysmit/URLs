@@ -904,7 +904,7 @@ use DBI;
                     $query           = $db->prepare($sql);
                     $result          = $query->execute($section_id, $name, $link);
                     if($result){
-                        say "        <h1>Section defined: $section</h1>";
+                        say "        <h1>link defined: $section $name $link</h1>";
                         $query->finish();
                         return 1;
                     }
