@@ -298,7 +298,7 @@ use DBI;
         say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
+        say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
         my $cnt = 0;
         for my $bod (@body){
             $cnt++;
@@ -311,7 +311,7 @@ use DBI;
             say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>page name</th><th>section</th><th>link</th></tr>";
+                say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
             }
         }
         say "                <tr>";
