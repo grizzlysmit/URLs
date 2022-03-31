@@ -135,6 +135,8 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
         my $current_page    = $req->param('page');
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
         $current_page       = $session{current_page} if (!defined $current_page || $current_page =~ m/^\s*$/) && exists $session{current_page};
@@ -253,6 +255,7 @@ use DBI;
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
         $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
         $session{page_length} = $page_length;
+        $session{debug} = $debug if defined $debug;
         
         untie %session;
         $db->disconnect;
@@ -616,6 +619,10 @@ use DBI;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
 
         my $page_length = $req->param('page_length');
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
