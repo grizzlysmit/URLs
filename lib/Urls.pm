@@ -463,9 +463,11 @@ use DBI;
         }
         my $alias  = $req->param('alias');
         my $target = $req->param('target');
+        my $set_page_length = $req->param('set_page_length');
 
         $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
-        if(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
+        if(defined $set_page_length){
+        }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
@@ -506,8 +508,21 @@ use DBI;
         }
         $query->finish();
 
+        untie %session;
+        $db->disconnect;
+
         say "        <form action=\"add-alias.pl\" method=\"post\">";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"alias\">Alias: </label>";
@@ -550,9 +565,6 @@ use DBI;
         say "                </tr>";
         say "            </table>";
         say "        </form>";
-
-        untie %session;
-        $db->disconnect;
 
         return 1;
     } ## --- end sub add_alias
@@ -838,8 +850,131 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
+        my $section  = $req->param('section');
+        my $name     = $req->param('name');
+        my $link     = $req->param('link');
+        my $set_page_length = $req->param('set_page_length');
+
+        $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
+        if(defined $set_page_length){
+        }elsif(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && $link =~ m!^https?://(?(?:\w|-)+\@.+)(?:\w|-)+(?:\.(?:\w|-)+)+.*$!){
+            my $sql  = "'INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING';\n";
+            my $query           = $db->prepare($sql);
+            $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
+            my $result;
+            eval {
+                $result          = $query->execute($section);
+            };
+            if($@){
+                say "        <h1>Error: $@</h1>";
+                return 0;
+            }
+            $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+            if($result){
+                $sql  = "SELECT ls.id FROM links_sections ls\n";
+                $sql .= "WHERE ls.section = ?\n";
+                $query           = $db->prepare($sql);
+                $result          = $query->execute($section);
+                if($result){
+                    say "        <h1>Section defined: $section</h1>";
+                    my $r            = $query->fetchrow_hashref();
+                    $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+                    my $section_id   = $r->{id};
+                    $sql  = 'INSERT INTO links(section_id, name, link) VALUES (?, ?, ?) ON CONFLICT (section_id, name) DO NOTHING';
+                    $query           = $db->prepare($sql);
+                    $result          = $query->execute($section_id);
+                    if($result){
+                        say "        <h1>Section defined: $section</h1>";
+                        $query->finish();
+                        return 1;
+                    }
+                    $query->finish();
+                    return 0;
+                }else{
+                    $query->finish();
+                    return 0;
+                }
+            }
+            $query->finish();
+            return 0;
+        }
+
+
         untie %session;
         $db->disconnect;
+
+        say "        <form action=\"add-alias.pl\" method=\"post\">";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"section\">Section: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"section\" id=\"section\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"name\">Name: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"link\">link </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"link\" id=\"link\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
 
         return 1;
     } ## --- end sub add_link
