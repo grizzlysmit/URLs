@@ -945,7 +945,7 @@ use DBI;
         say "                        <label for=\"link\">link </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"link\" id=\"link\" placeholder=\"page name\" pattern=\"^https?://.+\$\"/>";
+        say "                        <input type=\"text\" name=\"link\" id=\"link\" placeholder=\"https://example.com/\" pattern=\"^https?://.+\$\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
