@@ -474,7 +474,7 @@ use DBI;
                 $result          = $query->execute($alias, $target);
             };
             if($@){
-                say "Error: $@";
+                say "        <h1>Error: $@</h1>";
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
