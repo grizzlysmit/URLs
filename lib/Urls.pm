@@ -486,7 +486,7 @@ use DBI;
                 my $r               = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
-                say "Alias  defined: $alias => $section";
+                say "        <h1>Alias  defined: $alias => $section</h1>";
             }
             return 1;
         }
