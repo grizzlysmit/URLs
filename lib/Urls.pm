@@ -744,7 +744,7 @@ use DBI;
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "                        </label>";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"2\">";
         say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
         say "                    </td>";
         say "                </tr>";
