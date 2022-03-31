@@ -919,26 +919,12 @@ use DBI;
             $query->finish();
             return 0;
         }
-        my $page_length = $req->param('page_length');
-        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
-        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
-        $session{page_length} = $page_length;
 
         untie %session;
         $db->disconnect;
 
         say "        <form action=\"add-alias.pl\" method=\"post\">";
         say "            <table>";
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"page_length\">Page Length:";
-        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "                        </label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
-        say "                    </td>";
-        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"section\">Section: </label>";
