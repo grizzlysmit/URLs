@@ -633,6 +633,7 @@ use DBI;
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             $query->finish();
             if($result){
+                say "            <h1>Page $page added.</h1>";
                 $sql  =  "SELECT p.id FROM pages p\n";
                 $sql .=  "WHERE p.name = ?\n";
                 $query           = $db->prepare($sql);
@@ -644,12 +645,28 @@ use DBI;
                 $sql .= "VALUES(?, ?)\n";
                 my @MEMBERS = split m/,/, $members;
                 $query           = $db->prepare($sql);
+                my (@good, @bad, @skipped);
                 for my $member (@MEMBERS){
-                    next unless $self->valid_section($member, $db);
+                    if($self->valid_section($member, $db)){
+                        push @skipped, $member;
+                        next;
+                    }
                     $result      = $query->execute($page_id, $member);
+                    if($result){
+                        push @good, $member;
+                    }else{
+                        push @bad,  $member;
+                    }
                 }
                 $query->finish();
-                say "            <h1>Page $page added.</h1>";
+                for my $g (@good){
+                }
+                my $g = scalar @good;
+                my $b = scalar @bad;
+                my $s = scalar @skipped;
+                say "            <h1>$g link sections added</h1>";
+                say "            <h1>$b link sections failed to add</h1>";
+                say "            <h1>$s link sections bad link sections skipped</h1>";
                 return 1;
             }else{
                 say "            <h1>Error: Page insertion failed</h1>";
