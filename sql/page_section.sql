@@ -1,0 +1,1 @@
+SELECT * FROM page_section
