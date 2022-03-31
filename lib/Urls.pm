@@ -675,7 +675,7 @@ use DBI;
                 $sql  = "INSERT INTO page_section(pages_id, links_section_id)\n";
                 $sql .= "VALUES(?, ?)\n";
                 my @MEMBERS = split m/,/, $members;
-                $self->log(Data::Dumper->Dump([$members, $MEMBERS], [qw(members MEMBERS)]));
+                $self->log(Data::Dumper->Dump([$members, \@MEMBERS], [qw(members @MEMBERS)]));
                 $query           = $db->prepare($sql);
                 my (@good, @bad, @skipped);
                 for my $member (@MEMBERS){
