@@ -902,7 +902,7 @@ use DBI;
                     my $section_id   = $r->{id};
                     $sql  = 'INSERT INTO links(section_id, name, link) VALUES (?, ?, ?) ON CONFLICT (section_id, name) DO NOTHING';
                     $query           = $db->prepare($sql);
-                    $result          = $query->execute($section_id);
+                    $result          = $query->execute($section_id, $name, $link);
                     if($result){
                         say "        <h1>Section defined: $section</h1>";
                         $query->finish();
