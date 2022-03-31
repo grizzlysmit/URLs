@@ -33,6 +33,7 @@ use Class::Std::Utils;
 use JSON;
 use JSON::XS;
 use File::Basename;
+use Data::Validate::URI qw(is_uri);
 use DBI;
 
 {
@@ -874,11 +875,9 @@ use DBI;
         my $section  = $req->param('section');
         my $name     = $req->param('name');
         my $link     = $req->param('link');
-        my $set_page_length = $req->param('set_page_length');
 
         $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
-        if(defined $set_page_length){
-        }elsif(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && $link =~ m!^https?://(?:(?:\w|-)+\@.+)(?:\w|-)+(?:\.(?:\w|-)+)+.*$!){
+        if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && is_uri($link)){
             my $sql  = "'INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING';\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
