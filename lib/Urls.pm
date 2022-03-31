@@ -655,7 +655,14 @@ use DBI;
         my $set_page_length = $req->param('set_page_length');
         my $page            = $req->param('page');
         my $full_name       = $req->param('full_name');
-        my $members         = $req->param('members');
+        my @params          = $req->param;
+        my @members;
+        for (@params){
+            if(m/^members\[(\d+)\]$/){
+                push @members, $req->param($_);
+            }
+        }
+        $self->log(Data::Dumper->Dump([\@params, \@members], [qw(@params @members)]));
         if($set_page_length){
         }elsif(defined $page && defined $members && $page =~ m/^(?:\w|\.|\+|-)+$/ && $members =~ m/^\d+(?:,\d+)*$/){
             my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name\n";
@@ -674,11 +681,10 @@ use DBI;
                 $query->finish();
                 $sql  = "INSERT INTO page_section(pages_id, links_section_id)\n";
                 $sql .= "VALUES(?, ?) ON CONFLICT (pages_id, links_section_id) DO NOTHING\n";
-                my @MEMBERS = split m/,/, $members;
-                $self->log(Data::Dumper->Dump([$members, \@MEMBERS], [qw(members @MEMBERS)]));
+                $self->log(Data::Dumper->Dump([\@members], [qw(@members)]));
                 $query           = $db->prepare($sql);
                 my (@good, @bad, @skipped);
-                for my $member (@MEMBERS){
+                for my $member (@members){
                     if(!$self->valid_section($member, $db)){
                         push @skipped, $member;
                         next;
