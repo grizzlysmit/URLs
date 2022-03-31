@@ -563,6 +563,26 @@ use DBI;
     } ## --- end sub valid_section
 
 
+    sub valid_page {
+        my ($self, $target, $db) = @_;
+        my $ident           = ident $self;
+        $self->log("start valid_page");
+        $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
+        my $debug = $debug{$ident};
+        return 0 if $target !~ m/^\d+$/;
+        my $sql             = "SELECT COUNT(*) n FROM pages p\n";
+        $sql               .= "WHERE p.id = ?\n";
+        my $query           = $db->prepare($sql);
+        my $result          = $query->execute($target);
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        my $n               = $r->{n};
+        $self->log("end valid_page");
+        return $n;
+    } ## --- end sub valid_page
+
+
     sub add_page {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
@@ -596,6 +616,48 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+
+        my $set_page_length = $req->param('set_page_length');
+        my $page            = $req->param('page');
+        my $full_name       = $req->param('full_name');
+        my $members         = $req->param('members');
+        if($set_page_length){
+        }elsif(defined $page && defined $members && $page =~ m/^(?:\w|\.|\+|-)+$/ && $members =~ m/^\d+(?:,\d+)*$/){
+            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?)\n";
+            my $query           = $db->prepare($sql);
+            my $result          = $query->execute($page, $full_name);
+            $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+            $query->finish();
+            if($result){
+                $sql  =  "SELECT p.id FROM pages p\n";
+                $sql .=  "WHERE p.name = ?\n";
+                $query           = $db->prepare($sql);
+                $result          = $query->execute($page);
+                my $r            = $query->fetchrow_hashref();
+                my $page_id      = $r->{id};
+                $query->finish();
+                $sql  = "INSERT INTO page_section(pages_id, links_section_id)\n";
+                $sql .= "VALUES(?, ?)\n";
+                my @MEMBERS = split m/,/, $members;
+                $query           = $db->prepare($sql);
+                for my $member (@MEMBERS){
+                    next unless $self->valid_section($member, $db);
+                    $result      = $query->execute($page_id, $member);
+                }
+                $query->finish();
+                say "            <h1>Page $page added.</h1>";
+                return 1;
+            }else{
+                say "            <h1>Error: Page insertion failed</h1>";
+                return 0;
+            }
+        }
+        
+
         my $sql             = "SELECT ls.section FROM links_sections ls\n";
         $sql               .= "ORDER BY ls.section\n";
         my $query           = $db->prepare($sql);
@@ -617,14 +679,29 @@ use DBI;
         say "                    <td>";
         say "                        <label for=\"page\">Page: </label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"page\" id=\"page\"/>";
+        say "                    <td>";
+        say "                        <input type=\"text\" name=\"page\" id=\"page\" placeholder=\"page name\" pattern=\"^(?:\\w|\\+|\\.|-)+\$\"/>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"^(?:\\w|\\+|\\.|-|\\s)+\$\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
         say "                    <th colspan=\"2\">Link Section</th><th>Members</th>";
         say "                </tr>";
+        my $cnt = 0;
         for (@sections){
+            $cnt++;
             my $links_section_id = $_->{id};
             my $section          = $_->{section};
             say "                <tr>";
@@ -635,6 +712,11 @@ use DBI;
             say "                        <input type=\"checkbox\" name=\"members\" id=\"$section\" value=\"$links_section_id\" />";
             say "                    </td>";
             say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr>";
+                say "                    <th colspan=\"2\">Link Section</th><th>Members</th>";
+                say "                </tr>";
+            }
         }
         say "                <tr>";
         say "                    <td>";
