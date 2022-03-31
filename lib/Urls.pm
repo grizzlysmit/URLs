@@ -261,7 +261,7 @@ use DBI;
         say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "            </label>";
         say "            <table>";
-        say "                <tr><th>page</th><th>section</th><th>link</th></tr>";
+        say "                <tr><th>page</th><th>section</th><th>&nbsp;</th></tr>";
         say "                <tr>";
         say "                    <td>";
         say "                        <select name=\"page\">";
