@@ -923,7 +923,7 @@ use DBI;
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"add-alias.pl\" method=\"post\">";
+        say "        <form action=\"add-link.pl\" method=\"post\">";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
