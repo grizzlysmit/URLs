@@ -627,7 +627,7 @@ use DBI;
         my $members         = $req->param('members');
         if($set_page_length){
         }elsif(defined $page && defined $members && $page =~ m/^(?:\w|\.|\+|-)+$/ && $members =~ m/^\d+(?:,\d+)*$/){
-            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT DO UPDATE\n";
+            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name\n";
             my $query           = $db->prepare($sql);
             my $result          = $query->execute($page, $full_name);
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
