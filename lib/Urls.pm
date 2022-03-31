@@ -627,7 +627,7 @@ use DBI;
         my $members         = $req->param('members');
         if($set_page_length){
         }elsif(defined $page && defined $members && $page =~ m/^(?:\w|\.|\+|-)+$/ && $members =~ m/^\d+(?:,\d+)*$/){
-            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT DO NOTHING\n";
+            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT DO UPDATE\n";
             my $query           = $db->prepare($sql);
             my $result          = $query->execute($page, $full_name);
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
@@ -647,7 +647,7 @@ use DBI;
                 $query           = $db->prepare($sql);
                 my (@good, @bad, @skipped);
                 for my $member (@MEMBERS){
-                    if($self->valid_section($member, $db)){
+                    if(!$self->valid_section($member, $db)){
                         push @skipped, $member;
                         next;
                     }
@@ -665,8 +665,6 @@ use DBI;
                     }
                 }
                 $query->finish();
-                for my $g (@good){
-                }
                 my $g = scalar @good;
                 my $b = scalar @bad;
                 my $s = scalar @skipped;
