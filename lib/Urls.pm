@@ -878,7 +878,7 @@ use DBI;
 
         $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
         if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && is_uri($link)){
-            my $sql  = "'INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING';\n";
+            my $sql  = "INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING;\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
             my $result;
