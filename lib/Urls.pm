@@ -675,7 +675,7 @@ use DBI;
         }
         
 
-        my $sql             = "SELECT ls.section FROM links_sections ls\n";
+        my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
         $sql               .= "ORDER BY ls.section\n";
         my $query           = $db->prepare($sql);
         my $result          = $query->execute();
