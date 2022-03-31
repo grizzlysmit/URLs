@@ -873,7 +873,7 @@ use DBI;
 
         $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
         if(defined $set_page_length){
-        }elsif(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && $link =~ m!^https?://(?(?:\w|-)+\@.+)(?:\w|-)+(?:\.(?:\w|-)+)+.*$!){
+        }elsif(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && $link =~ m!^https?://(?:(?:\w|-)+\@.+)(?:\w|-)+(?:\.(?:\w|-)+)+.*$!){
             my $sql  = "'INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING';\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
