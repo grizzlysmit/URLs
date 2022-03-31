@@ -673,7 +673,7 @@ use DBI;
                 my $page_id      = $r->{id};
                 $query->finish();
                 $sql  = "INSERT INTO page_section(pages_id, links_section_id)\n";
-                $sql .= "VALUES(?, ?)\n";
+                $sql .= "VALUES(?, ?) ON CONFLICT (pages_id, links_section_id) DO NOTHING\n";
                 my @MEMBERS = split m/,/, $members;
                 $self->log(Data::Dumper->Dump([$members, \@MEMBERS], [qw(members @MEMBERS)]));
                 $query           = $db->prepare($sql);
@@ -762,7 +762,7 @@ use DBI;
             say "                        <label for=\"$section\">$section</label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input type=\"checkbox\" name=\"members\" id=\"$section\" value=\"$links_section_id\" />";
+            say "                        <input type=\"checkbox\" name=\"members[$cnt]\" id=\"$section\" value=\"$links_section_id\" />";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
