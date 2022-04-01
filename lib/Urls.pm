@@ -1032,7 +1032,7 @@ use DBI;
         my $pattern    = $req->param('pattern');
 
         $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern], [qw(name full_name status pattern)]));
-        if(defined $name && defined $status && defined $pattern && $name =~ m/^(?:\w|-|\.|\@)+$/ && $status =~ m/^(?invalid|unassigned|assigned|both)$/ && $pattern =~ m/^[;\'\"]+$/){
+        if(defined $name && defined $status && defined $pattern && $name =~ m/^(?:\w|-|\.|\@)+$/ && $status =~ m/^(?:invalid|unassigned|assigned|both)$/ && $pattern =~ m/^[;\'\"]+$/){
             my $sql  = "INSERT INTO pseudo_pages(name, full_name, status, pattern) VALUES(?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name, status = EXCLUDED.status, pattern = EXCLUDED.pattern;\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
@@ -1097,7 +1097,7 @@ use DBI;
         say "                        <label for=\"pattern\">Pattern </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"[^;\\'\\\"]+\"/>";
+        say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"[^;\\'\\\"]+\" title=\";\'\\\" not allowed to prevent abuse\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
