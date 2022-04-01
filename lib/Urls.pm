@@ -1035,7 +1035,7 @@ use DBI;
         if(defined $name && defined $status && defined $pattern && $name =~ m/^(?:\w|-|\.|\@)+$/ && $status =~ m/^(?:invalid|unassigned|assigned|both)$/ && $pattern =~ m/^[;\'\"]+$/){
             my $sql  = "INSERT INTO pseudo_pages(name, full_name, status, pattern) VALUES(?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name, status = EXCLUDED.status, pattern = EXCLUDED.pattern;\n";
             my $query           = $db->prepare($sql);
-            $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
+            $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern, $sql], [qw(name full_name status pattern sql)]));
             my $result;
             eval {
                 $result         = $query->execute($name, $full_name, $status, $pattern);
