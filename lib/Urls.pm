@@ -95,10 +95,13 @@ use DBI;
 
     sub in_a_page {
         my ($self, $section, $db) = @_;
+        $self->log(Data::Dumper->Dump([$section, $db], [qw(section db)]));
         my $query  = $db->prepare('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?');
         my $result = $query->execute($section);
         my $r      = $query->fetchrow_hashref();
         my $n      = $r->{n};
+        $query->finish();
+        $self->log(Data::Dumper->Dump([$query, $result, $r, $sql], [qw(query result r sql)]));
         return $n;
     }
 
@@ -217,6 +220,7 @@ use DBI;
                 $self->log(Data::Dumper->Dump([$current_page, $current_section, $query, $result, $sql, $pp], [qw(current_page current_section query result sql pp)]));
             }
             $r      = $query->fetchrow_hashref();
+            my @_body;
             while($r){
                 my $page_name = $r->{page_name};
                 my $full_name = $r->{full_name};
@@ -224,13 +228,22 @@ use DBI;
                 my $name      = $r->{name};
                 my $link      = $r->{link};
                 my $status    = $r->{status};
+                push @_body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, $status, };
+                $r  = $query->fetchrow_hashref();
+            }
+            $query->finish();
+            for my $row (@_body){
+                my $page_name = $row->{page_name};
+                my $full_name = $row->{full_name};
+                my $section   = $row->{section};
+                my $name      = $row->{name};
+                my $link      = $row->{link};
+                my $status    = $row->{status};
                 next if $status eq 'invalid';
                 next if $status eq 'unassigned' && $self->in_a_page($section, $db);
                 next if $status eq 'assigned'   && !$self->in_a_page($section, $db);
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
-                $r  = $query->fetchrow_hashref();
             }
-            $query->finish();
         }elsif($current_page =~ m/^page\^(.*)$/){
             my $pp = $1;
             if($current_section =~ m/^links\^(.*)$/){
