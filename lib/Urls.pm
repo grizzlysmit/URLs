@@ -229,7 +229,7 @@ use DBI;
                 my $name      = $r->{name};
                 my $link      = $r->{link};
                 my $status    = $r->{status};
-                push @_body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, $status, };
+                push @_body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, status => $status, };
                 $r  = $query->fetchrow_hashref();
             }
             $query->finish();
