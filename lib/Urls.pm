@@ -887,6 +887,7 @@ use DBI;
             };
             if($@){
                 say "        <h1>Error: $@</h1>";
+                $query->finish();
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
@@ -908,13 +909,16 @@ use DBI;
                         $query->finish();
                         return 1;
                     }
+                    say "        <h1>Section insert failed: $section</h1>";
                     $query->finish();
                     return 0;
                 }else{
+                    say "        <h1>Section insert failed: $section</h1>";
                     $query->finish();
                     return 0;
                 }
             }
+            say "        <h1>Section insert failed: $section</h1>";
             $query->finish();
             return 0;
         }
@@ -929,7 +933,7 @@ use DBI;
         say "                        <label for=\"section\">Section: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"section\" id=\"section\" placeholder=\"section\" pattern=\"^(?:\\w|\\+|\\.|-)+\$\"/>";
+        say "                        <input type=\"text\" name=\"section\" id=\"section\" placeholder=\"section\" pattern=\"(?:\\w|\\+|\\.|-)+\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -937,7 +941,7 @@ use DBI;
         say "                        <label for=\"name\">Name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"^(?:\\w|\\+|\\.|-)+\$\"/>";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"(?:\\w|\\+|\\.|-)+\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -945,7 +949,7 @@ use DBI;
         say "                        <label for=\"link\">link </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"link\" id=\"link\" placeholder=\"https://example.com/\" pattern=\"^https?://.+\$\"/>";
+        say "                        <input type=\"url\" name=\"link\" id=\"link\" placeholder=\"https://example.com/\" pattern=\"https?://.+\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -1022,6 +1026,38 @@ use DBI;
             $self->debug_init($debug, $log);
         }
 
+        my $name       = $req->param('name');
+        my $full_name  = $req->param('full_name');
+        my $status     = $req->param('status');
+        my $pattern    = $req->param('pattern');
+
+        $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern], [qw(name full_name status pattern)]));
+        if(defined $name && defined $status && defined $pattern && $name =~ m/^(?:\w|-|\.|\@)+$/ && $status =~ m/^(?invalid|unassigned|assigned|both)$/ && $pattern =~ m/^[;\'\"]+$/){
+            my $sql  = "INSERT INTO pseudo_pages(name, full_name, status, pattern) VALUES(?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name, status = EXCLUDED.status, pattern = EXCLUDED.pattern;\n";
+            my $query           = $db->prepare($sql);
+            $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
+            my $result;
+            eval {
+                $result         = $query->execute($name, $full_name, $status, $pattern);
+            };
+            if($@){
+                say "        <h1>Error: $@</h1>";
+                say "        <h1>Pseudo page insert failed: ($name, $full_name, $status, $pattern)</h1>";
+                $query->finish();
+                return 0;
+            }
+            $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+            if($result){
+                say "        <h1>Pseudo page defined: ($name, $full_name, $status, $pattern)</h1>";
+                $query->finish();
+                return 1;
+            }else{
+                say "        <h1>Pseudo page insert failed: ($name, $full_name, $status, $pattern)</h1>";
+                $query->finish();
+                return 0;
+            }
+        }
+
         untie %session;
         $db->disconnect;
 
@@ -1032,7 +1068,7 @@ use DBI;
         say "                        <label for=\"name\">Name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"^(?:\\w|\\+|\\.|-)+\$\"/>";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"(?:\\w|\\+|\\.|-)+\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -1040,7 +1076,7 @@ use DBI;
         say "                        <label for=\"full_name\">Full name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"^\\w(?:\\w|\\+|\\.|-|\\s)*\$\"/>";
+        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"\\w(?:\\w|\\+|\\.|-|\\s)*\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -1061,7 +1097,7 @@ use DBI;
         say "                        <label for=\"pattern\">Pattern </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"^[^;\\'\\\"]+\$\"/>";
+        say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"[^;\\'\\\"]+\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
