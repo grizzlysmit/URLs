@@ -1024,7 +1024,7 @@ use DBI;
         say "                        <label for=\"full_name\">Full name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"^\w(?:\\w|\\+|\\.|-|\\s)*\$\"/>";
+        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"^\\w(?:\\w|\\+|\\.|-|\\s)*\$\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
