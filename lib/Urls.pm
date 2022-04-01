@@ -1009,6 +1009,63 @@ use DBI;
         untie %session;
         $db->disconnect;
 
+        say "        <form action=\"add-link.pl\" method=\"post\">";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"name\">Name: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"^(?:\\w|\\+|\\.|-)+\$\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"full_name\">Full name: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"^\w(?:\\w|\\+|\\.|-|\\s)*\$\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <select name=\"status\">";
+        say "                            <option>invalid</option>";
+        say "                            <option selected>unassigned</option>";
+        say "                            <option>assigned</option>";
+        say "                            <option>both</option>";
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"pattern\">pattern </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"^[^;\\'\\\"]+\$\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
         return 1;
     } ## --- end sub add_pseudo_page
 
