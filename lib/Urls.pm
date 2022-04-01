@@ -96,7 +96,8 @@ use DBI;
     sub in_a_page {
         my ($self, $section, $db) = @_;
         $self->log(Data::Dumper->Dump([$section, $db], [qw(section db)]));
-        my $query  = $db->prepare('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?');
+        my $sql = 'SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?';
+        my $query  = $db->prepare($sql);
         my $result = $query->execute($section);
         my $r      = $query->fetchrow_hashref();
         my $n      = $r->{n};
