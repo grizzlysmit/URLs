@@ -1262,7 +1262,7 @@ use DBI;
         $db->disconnect;
 
         say "        <form action=\"add-pseudo-page.pl\" method=\"post\">";
-        say "            <h1>Add Pseudo Page</h1>";
+        say "            <h1>Delete Link</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
