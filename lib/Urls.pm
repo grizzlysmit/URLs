@@ -1251,6 +1251,7 @@ use DBI;
                     my $sql  = "SELECT  l.section_id, FROM links l\n";
                     $sql    .= "WHERE l.id = ?;\n";
                     my $query           = $db->prepare($sql);
+                    $self->log(Data::Dumper->Dump([$link_id, $query, $sql], [qw(link_id query sql)]));
                     my $result;
                     eval {
                         $result         = $query->execute($link_id);
