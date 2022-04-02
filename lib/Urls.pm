@@ -1222,7 +1222,7 @@ use DBI;
         }
         $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
 
-        if($delete_set && join(',', $delete_set) =~ m/^\d+(?:,\d+)*$/){
+        if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
             if($delete eq 'Delete Link'){
                 for my $link_id (@delete_set){
                     my $sql  = "DELETE FROM links WHERE id = ?;\n";
