@@ -1248,7 +1248,7 @@ use DBI;
             }elsif($delete eq 'Delete Section'){
                 my %sections_to_delete;
                 for my $link_id (@delete_set){
-                    my $sql  = "SELECT  l.section_id, FROM links l\n";
+                    my $sql  = "SELECT  l.section_id FROM links l\n";
                     $sql    .= "WHERE l.id = ?;\n";
                     my $query           = $db->prepare($sql);
                     $self->log(Data::Dumper->Dump([$link_id, $query, $sql], [qw(link_id query sql)]));
