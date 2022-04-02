@@ -1268,7 +1268,7 @@ use DBI;
         say "                    <td>";
         say "                        <label for=\"name_link\">Name | Link: </label>";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"2\">";
         say "                        <select name=\"link_id\" id=\"name_link\">";
         for my $row (@links){
             my $link_id = $row->{id};
