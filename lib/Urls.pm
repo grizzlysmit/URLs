@@ -1292,7 +1292,7 @@ use DBI;
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($link_id);
+                        $result         = $query->execute($section_id);
                     };
                     if($@){
                         say "        <h1>Error: Delete links_sections failed: $@</h1>";
