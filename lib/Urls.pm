@@ -1195,6 +1195,22 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         my $link_id = $req->param('link_id');
 
         if(defined $link_id && $link_id =~ m/^\d+$/){
@@ -1258,7 +1274,7 @@ use DBI;
             my $link_id = $row->{id};
             my $name    = $row->{name};
             my $link    = $row->{link};
-            say "                            <option value=\"$link_id\">$name |$link</option>";
+            say "                            <option value=\"$link_id\">$name => $link</option>";
         }
         say "                        </select>";
         say "                    </td>";
