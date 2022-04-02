@@ -1216,7 +1216,7 @@ use DBI;
         my @params          = $req->param;
         my @delete_set;
         for (@params){
-            if(m/^delete_set\[(\d+)\]$/){
+            if(m/^delete_set\[\d+\]$/){
                 push @delete_set, $req->param($_);
             }
         }
@@ -1249,7 +1249,7 @@ use DBI;
                 my %sections_to_delete;
                 for my $link_id (@delete_set){
                     my $sql  = "SELECT  l.section_id, FROM links l\n";
-                    $sql    .= "WHERE l, id = ?;\n";
+                    $sql    .= "WHERE l.id = ?;\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
@@ -1257,6 +1257,8 @@ use DBI;
                     };
                     if($@){
                         say "        <h1>Error: failed to get section_id: $@</h1>";
+                        $query->finish();
+                        next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
                     if($result){
