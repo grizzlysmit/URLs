@@ -1223,6 +1223,9 @@ use DBI;
         $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
 
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
+            say "        <form action=\"delete-links.pl\" method=\"post\">";
+            say "            <table>";
+            say "                <tr><th>Message</th></tr>";
             if($delete eq 'Delete Link'){
                 for my $link_id (@delete_set){
                     my $sql  = "DELETE FROM links WHERE id = ?;\n";
@@ -1232,17 +1235,17 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "        <h1>Error: Delete links failed: $@</h1>";
+                        say "                <tr><td>Error: Delete links failed: $@</td></tr>";
                         $query->finish();
                         next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
                     if($result){
-                        say "        <h1>Delete Succeded.</h1>";
+                        say "                <tr><td>Delete Succeded.</td></tr>";
                         $query->finish();
                         next;
                     }
-                    say "        <h1>Error: Delete links failed.</h1>";
+                    say "                <tr><td>Error: Delete links failed.</td></tr>";
                     $query->finish();
                 }
             }elsif($delete eq 'Delete Section'){
@@ -1257,7 +1260,7 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "        <h1>Error: failed to get section_id: $@</h1>";
+                        say "                <tr><td>Error: failed to get section_id: $@</td></tr>";
                         $query->finish();
                         next;
                     }
@@ -1267,7 +1270,7 @@ use DBI;
                         my $section_id = $r->{section_id};
                         $sections_to_delete{$section_id}++;
                     }else{
-                        say "        <h1>Error: failed to get section_id: $@</h1>";
+                        say "                <tr><td>Error: failed to get section_id</td></tr>";
                     }
                     $query->finish();
                     $sql  = "DELETE FROM links WHERE id = ?;\n";
@@ -1276,17 +1279,17 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "        <h1>Error: Delete links failed: $@</h1>";
+                        say "                <tr><td>Error: Delete links failed: $@</td></tr>";
                         $query->finish();
                         next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
                     if($result){
-                        say "        <h1>Delete Succeded.</h1>";
+                        say "                <tr><td>Delete Succeded.</td></tr>";
                         $query->finish();
                         next;
                     }
-                    say "        <h1>Error: Delete links failed.</h1>";
+                    say "                <tr><td>Error: Delete links failed.</td></tr>";
                     $query->finish();
                 }
                 for my $section_id (keys %sections_to_delete){
@@ -1298,7 +1301,7 @@ use DBI;
                         $result         = $query->execute($section_id);
                     };
                     if($@){
-                        say "        <h1>Error: Delete links_sections failed: $@</h1>";
+                        say "                <tr><td>Error: Delete links_sections failed: $@</td></tr>";
                         $query->finish();
                         next;
                     }
@@ -1306,7 +1309,10 @@ use DBI;
                         my $r           = $query->fetchrow_hashref();
                         my $n = $r->{n};
                         $query->finish();
-                        next if $n;
+                        if($n){
+                            say "                <tr><td>Cannot delete links_sections section not empty.</td></tr>";
+                            next;
+                        }
                         $sql  = "DELETE FROM links_sections\n";
                         $sql .= "WHERE id = ?\n";
                         $query           = $db->prepare($sql);
@@ -1314,21 +1320,24 @@ use DBI;
                             $result         = $query->execute($section_id);
                         };
                         if($@){
-                            say "        <h1>Error: Delete links_sections failed: $@</h1>";
+                            say "                <tr><td>Error: Delete links_sections failed: $@</td></tr>";
                             $query->finish();
                             next;
                         }
                         if($result){
-                            say "        <h1>Delete links_sections succeeded!</h1>";
+                            say "                <tr><td>Delete links_sections succeeded!</td></tr>";
                             $query->finish();
                             next;
                         }
-                        say "        <h1>Error: Delete links_sections failed</h1>";
+                        say "                <tr><td>Error: Delete links_sections failed</td></tr>";
                         $query->finish();
                     }
                     $query->finish();
                 }
             }
+            say "                <tr><td><input type=\"submit\" value=\"delete some more linnks\"/></td></tr>";
+            say "            </table>";
+            say "        </form>";
             return 0;
         }
 
