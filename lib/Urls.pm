@@ -1211,32 +1211,120 @@ use DBI;
             $self->debug_init($debug, $log);
         }
 
-        my $link_id = $req->param('link_id');
+        my $delete  = $req->param('delete');
 
-        if(defined $link_id && $link_id =~ m/^\d+$/){
-            my $sql  = "DELETE FROM links WHERE id = ?;\n";
-            my $query           = $db->prepare($sql);
-            my $result;
-            eval {
-                $result         = $query->execute($link_id);
-            };
-            if($@){
-                say "        <h1>Error: Delete links failed: $@</h1>";
-                $query->finish();
-                return 0;
+        my @params          = $req->param;
+        my @delete_set;
+        for (@params){
+            if(m/^delete_set\[(\d+)\]$/){
+                push @delete_set, $req->param($_);
             }
-            $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
-            if($result){
-                say "        <h1>Delete Succeded.</h1>";
-                $query->finish();
-                return 1;
+        }
+        $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
+
+        if($delete_set && join(',', $delete_set) =~ m/^\d+(?:,\d+)*$/){
+            if($delete eq 'Delete Link'){
+                for my $link_id (@delete_set){
+                    my $sql  = "DELETE FROM links WHERE id = ?;\n";
+                    my $query           = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result         = $query->execute($link_id);
+                    };
+                    if($@){
+                        say "        <h1>Error: Delete links failed: $@</h1>";
+                        $query->finish();
+                        next;
+                    }
+                    $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
+                    if($result){
+                        say "        <h1>Delete Succeded.</h1>";
+                        $query->finish();
+                        next;
+                    }
+                    say "        <h1>Error: Delete links failed.</h1>";
+                    $query->finish();
+                }
+            }elsif($delete eq 'Delete Section'){
+                my %sections_to_delete;
+                for my $link_id (@delete_set){
+                    my $sql  = "SELECT  l.section_id, FROM links l\n";
+                    my $sql  = "WHERE l, id = ?;\n";
+                    my $query           = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result         = $query->execute($link_id);
+                    };
+                    if($@){
+                        say "        <h1>Error: failed to get section_id: $@</h1>";
+                    }
+                    $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
+                    if($result){
+                        my $r           = $query->fetchrow_hashref();
+                        my $section_id = $r->{section_id};
+                        $sections_to_delete{$section_id}++;
+                    }else{
+                        say "        <h1>Error: failed to get section_id: $@</h1>";
+                    }
+                    $query->finish();
+                    $sql  = "DELETE FROM links WHERE id = ?;\n";
+                    $query           = $db->prepare($sql);
+                    eval {
+                        $result         = $query->execute($link_id);
+                    };
+                    if($@){
+                        say "        <h1>Error: Delete links failed: $@</h1>";
+                        $query->finish();
+                        next;
+                    }
+                    $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
+                    if($result){
+                        say "        <h1>Delete Succeded.</h1>";
+                        $query->finish();
+                        next;
+                    }
+                    say "        <h1>Error: Delete links failed.</h1>";
+                    $query->finish();
+                }
+                for my $section_id (keys %sections_to_delete){
+                    $sql  = "SELECT COUNT(*) n FROM links l\n";
+                    $sql .= "WHERE l.section_id = ?;\n";
+                    $query           = $db->prepare($sql);
+                    eval {
+                        $result         = $query->execute($link_id);
+                    };
+                    if($@){
+                        say "        <h1>Error: Delete links_sections failed: $@</h1>";
+                        $query->finish();
+                        next;
+                    }
+                    if($result){
+                        $sql  = "DELETE FROM links_sections\n";
+                        $sql .= "WHERE id = ?\n";
+                        $query           = $db->prepare($sql);
+                        eval {
+                            $result         = $query->execute($section_id);
+                        };
+                        if($@){
+                            say "        <h1>Error: Delete links_sections failed: $@</h1>";
+                            $query->finish();
+                            next;
+                        }
+                        if($result){
+                            say "        <h1>Delete links_sections succeeded!</h1>";
+                            $query->finish();
+                            next;
+                        }
+                        say "        <h1>Error: Delete links_sections failed</h1>";
+                        $query->finish();
+                    }
+                }
             }
-            say "        <h1>Error: Delete links failed.</h1>";
             $query->finish();
             return 0;
         }
 
-        my $sql  = "SELECT  l.id, l.name, l.link FROM links l\n";
+        my $sql  = "SELECT  l.id, l.section_id, (SELECT ls.section FROM links_sections ls WHERE ls.id = l.section_id) section, l.name, l.link FROM links l\n";
         $sql    .= "ORDER BY l.name\n";
         my $query           = $db->prepare($sql);
         my $result;
@@ -1257,28 +1345,49 @@ use DBI;
         }
         $query->finish();
         
-
+        say "        <form action=\"delete-links.pl\" method=\"post\">";
+        say "            <h1>Delete Link</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+        $session{debug} = $debug if defined $debug;
+        
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"add-pseudo-page.pl\" method=\"post\">";
-        say "            <h1>Delete Link</h1>";
+        say "            <label for=\"page_length\">Page Length:";
+        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "            </label>";
         say "            <table>";
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"name_link\">Name | Link: </label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <select name=\"link_id\" id=\"name_link\">";
+        say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+        my $cnt = 0;
         for my $row (@links){
-            my $link_id = $row->{id};
-            my $name    = $row->{name};
-            my $link    = $row->{link};
-            say "                            <option value=\"$link_id\">$name => $link</option>";
+            $cnt++;
+            my $link_id    = $row->{id};
+            my $section_id = $row->{section_id};
+            my $section    = $row->{section};
+            my $name       = $row->{name};
+            my $link       = $row->{link};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"$link_id\">$section</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"$link_id\">$name</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"$link_id\">$link</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$link_id\" value=\"$link_id\"/>";
+            say "                    </td>";
+            say "                </tr>";
+            if(
+            if($cnt % $page_length == 0){
+                say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+            }
         }
-        say "                        </select>";
-        say "                    </td>";
-        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
@@ -1294,7 +1403,10 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Section\">";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Link\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
