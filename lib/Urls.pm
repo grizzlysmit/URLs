@@ -790,7 +790,7 @@ use DBI;
         say "                        <label for=\"page\">Page: </label>";
         say "                    </td>";
         say "                    <td>";
-        say "                        <input type=\"text\" name=\"page\" id=\"page\" placeholder=\"page_name\" pattern=\"[a-zA -Z0-9\\x28\\x2E_-]+\" title=\"Only a-z, A-Z, 0-9, ., - and _ allowed\"/>";
+        say "                        <input type=\"text\" name=\"page\" id=\"page\" placeholder=\"page_name\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"Only a-z, A-Z, 0-9, ., - and _ allowed\"/>";
         say "                    </td>";
         say "                    <td>";
         say "                        <input type=\"text\" name=\"full_name\" id=\"full_name\" placeholder=\"full name\" pattern=\"[a-zA-Z0-9\\x28\\x2E\\x20_-]+\" title=\"Only a-z, A-Z, 0-9, ., -, _ and spaces allowed\"/>";
