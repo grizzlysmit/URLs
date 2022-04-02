@@ -551,6 +551,7 @@ use DBI;
         $db->disconnect;
 
         say "        <form action=\"add-alias.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -784,6 +785,7 @@ use DBI;
         $query->finish();
 
         say "        <form action=\"add-page.pl\" method=\"post\">";
+        say "            <h1>Add Page</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -960,6 +962,7 @@ use DBI;
         $db->disconnect;
 
         say "        <form action=\"add-link.pl\" method=\"post\">";
+        say "            <h1>Add Link</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -1095,6 +1098,7 @@ use DBI;
         $db->disconnect;
 
         say "        <form action=\"add-pseudo-page.pl\" method=\"post\">";
+        say "            <h1>Add Pseudo Page</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -1191,8 +1195,94 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        my $link_id = $req->param('link_id');
+
+        if(defined $link_id && $link_id =~ m/^\d+$/){
+            my $sql  = "DELETE FROM links WHERE id = ?;\n";
+            my $query           = $db->prepare($sql);
+            my $result;
+            eval {
+                $result         = $query->execute($link_id);
+            };
+            if($@){
+                say "        <h1>Error: Delete links failed: $@</h1>";
+                $query->finish();
+                return 0;
+            }
+            $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
+            if($result){
+                say "        <h1>Delete Succeded.</h1>";
+                $query->finish();
+                return 1;
+            }
+            say "        <h1>Error: Delete links failed.</h1>";
+            $query->finish();
+            return 0;
+        }
+
+        my $sql  = "SELECT  l.id, l.name, l.link FROM links l\n";
+        $sql    .= "ORDER BY l.name\n";
+        my $query           = $db->prepare($sql);
+        my $result;
+        eval {
+            $result         = $query->execute();
+        };
+        if($@){
+            say "        <h1>Error: $@</h1>";
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @links;
+        $r           = $query->fetchrow_hashref();
+        while($r){
+            push @links, $r;
+            $r       = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        
+
         untie %session;
         $db->disconnect;
+
+        say "        <form action=\"add-pseudo-page.pl\" method=\"post\">";
+        say "            <h1>Add Pseudo Page</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"name_link\">Name | Link: </label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <select name=\"link_id\" id=\"name_link\">";
+        for my $row (@links){
+            my $link_id = $row->{id};
+            my $name    = $row->{name};
+            my $link    = $row->{link};
+            say "                            <option value=\"$link_id\">$name |$link</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
 
         return 1;
     } ## --- end sub delete_links
