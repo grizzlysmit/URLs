@@ -1384,7 +1384,6 @@ use DBI;
             say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$link_id\" value=\"$link_id\"/>";
             say "                    </td>";
             say "                </tr>";
-            if(
             if($cnt % $page_length == 0){
                 say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
             }
