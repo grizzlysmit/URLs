@@ -1249,7 +1249,7 @@ use DBI;
                 my %sections_to_delete;
                 for my $link_id (@delete_set){
                     my $sql  = "SELECT  l.section_id, FROM links l\n";
-                    my $sql  = "WHERE l, id = ?;\n";
+                    $sql    .= "WHERE l, id = ?;\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
