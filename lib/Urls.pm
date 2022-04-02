@@ -478,6 +478,23 @@ use DBI;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         my $alias  = $req->param('alias');
         my $target = $req->param('target');
         my $set_page_length = $req->param('set_page_length');
