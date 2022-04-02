@@ -1329,7 +1329,7 @@ use DBI;
         }
 
         my $sql  = "SELECT  l.id, l.section_id, (SELECT ls.section FROM links_sections ls WHERE ls.id = l.section_id) section, l.name, l.link FROM links l\n";
-        $sql    .= "ORDER BY l.name\n";
+        $sql    .= "ORDER BY section, l.name\n";
         my $query           = $db->prepare($sql);
         my $result;
         eval {
