@@ -1289,7 +1289,8 @@ use DBI;
                 for my $section_id (keys %sections_to_delete){
                     my $sql  = "SELECT COUNT(*) n FROM links l\n";
                     $sql    .= "WHERE l.section_id = ?;\n";
-                    $query           = $db->prepare($sql);
+                    my $query           = $db->prepare($sql);
+                    my $result;
                     eval {
                         $result         = $query->execute($link_id);
                     };
@@ -1318,9 +1319,9 @@ use DBI;
                         say "        <h1>Error: Delete links_sections failed</h1>";
                         $query->finish();
                     }
+                    $query->finish();
                 }
             }
-            $query->finish();
             return 0;
         }
 
