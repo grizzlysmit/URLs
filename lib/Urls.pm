@@ -1287,8 +1287,8 @@ use DBI;
                     $query->finish();
                 }
                 for my $section_id (keys %sections_to_delete){
-                    $sql  = "SELECT COUNT(*) n FROM links l\n";
-                    $sql .= "WHERE l.section_id = ?;\n";
+                    my $sql  = "SELECT COUNT(*) n FROM links l\n";
+                    $sql    .= "WHERE l.section_id = ?;\n";
                     $query           = $db->prepare($sql);
                     eval {
                         $result         = $query->execute($link_id);
