@@ -1234,7 +1234,7 @@ use DBI;
         }
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @links;
-        $r           = $query->fetchrow_hashref();
+        my $r           = $query->fetchrow_hashref();
         while($r){
             push @links, $r;
             $r       = $query->fetchrow_hashref();
