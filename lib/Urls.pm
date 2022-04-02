@@ -1335,7 +1335,7 @@ use DBI;
                     $query->finish();
                 }
             }
-            say "                <tr><td><input type=\"submit\" value=\"delete some more linnks\"/></td></tr>";
+            say "                <tr><td><input type=\"submit\" value=\"Delete some more links\"/></td></tr>";
             say "            </table>";
             say "        </form>";
             return 0;
