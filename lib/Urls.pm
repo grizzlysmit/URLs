@@ -1303,6 +1303,10 @@ use DBI;
                         next;
                     }
                     if($result){
+                        my $r           = $query->fetchrow_hashref();
+                        my $n = $r->{n};
+                        $query->finish();
+                        next if $n;
                         $sql  = "DELETE FROM links_sections\n";
                         $sql .= "WHERE id = ?\n";
                         $query           = $db->prepare($sql);
