@@ -1077,18 +1077,17 @@ use DBI;
                 $result         = $query->execute($name, $full_name, $status, $pattern);
             };
             if($@){
-                say "        <h1>Error: $@</h1>";
-                say "        <h1>Pseudo page insert failed: ($name, $full_name, $status, $pattern)</h1>";
+                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Error: $@:\n\nPseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
-                say "        <h1>Pseudo page defined: ($name, $full_name, $status, $pattern)</h1>";
+                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 1;
             }else{
-                say "        <h1>Pseudo page insert failed: ($name, $full_name, $status, $pattern)</h1>";
+                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
@@ -1349,7 +1348,7 @@ use DBI;
             $result         = $query->execute();
         };
         if($@){
-            say "        <h1>Error: $@</h1>";
+            $self->message($req, $cfg, $rec, 'delete_links', "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1432,6 +1431,92 @@ use DBI;
     } ## --- end sub delete_links
 
 
+    sub message {
+        my ($self, $req, $cfg, $rec, $fun, $msg, $button_msg) = @_;
+        my $ident           = ident $self;
+
+        $fun =~ tr/_/-/;
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
+        untie %session;
+        $db->disconnect;
+
+        my $debug = $debug{$ident};
+        say "        <form action=\"$fun.pl\" method=\"post\">";
+        say "            <table>";
+        if($button_msg){
+            say "                <tr><th>Message</th></tr>";
+        }else{
+            say "                <tr><th>Error: Message</th></tr>";
+        }
+        say "                <tr>";
+        say "                    <td>";
+        say "                        $fun";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        if($button_msg){
+            say "                    <td>";
+            say "                        <input name=\"delete\" type=\"submit\" value=\"$button_msg\">";
+            say "                    </td>";
+        }else{
+            say "                    <td>";
+            say "                        <input name=\"submit\" type=\"submit\" value=\"Try Again\">";
+            say "                    </td>";
+        }
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+    } ## --- end sub message
+
+
     sub delete_pages {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
@@ -1463,6 +1548,22 @@ use DBI;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
         }
 
         untie %session;
@@ -1505,6 +1606,22 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         untie %session;
         $db->disconnect;
 
@@ -1543,6 +1660,22 @@ use DBI;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
         }
 
         untie %session;
