@@ -1434,6 +1434,7 @@ use DBI;
     sub message {
         my ($self, $req, $cfg, $rec, $db, $fun, $msg, $button_msg) = @_;
         my $ident           = ident $self;
+        my $debug = $debug{$ident};
 
         $fun =~ tr/_/-/;
 
