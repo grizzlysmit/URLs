@@ -1078,17 +1078,17 @@ use DBI;
             };
             if($@){
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
-                $self->message($debug, $session, $db, 'add_pseudo_page', undef, @msgs);
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
                 $query->finish();
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
-                $self->message($debug, $session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 1;
             }else{
-                $self->message($debug, $session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
@@ -1334,7 +1334,7 @@ use DBI;
                     $query->finish();
                 }
             }
-            $self->message($debug, $session, $db, 'Delete some more linkss', 'Do An Other', @msgs);
+            $self->message($debug, \%session, $db, 'Delete some more linkss', 'Do An Other', @msgs);
             return 0;
         }
 
@@ -1346,7 +1346,7 @@ use DBI;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($debug, $session, $db, 'delete_links', undef, "Error: $@");
+            $self->message($debug, \%session, $db, 'delete_links', undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1430,9 +1430,10 @@ use DBI;
 
 
     sub message {
-        my ($self, $debug, $session, $db, $fun, $button_msg, @msgs) = @_;
+        my ($self, $debug, $_session, $db, $fun, $button_msg, @msgs) = @_;
         my $ident           = ident $self;
 
+        my %session = %{$_session};
         $fun = 'index' if $fun eq 'main';
 
         $fun =~ tr/_/-/;
