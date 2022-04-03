@@ -1077,17 +1077,17 @@ use DBI;
                 $result         = $query->execute($name, $full_name, $status, $pattern);
             };
             if($@){
-                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Error: $@:\n\nPseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Error: $@:\n\nPseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
-                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 1;
             }else{
-                $self->message($req, $cfg, $rec, 'add_pseudo_page', "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
@@ -1348,7 +1348,7 @@ use DBI;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($req, $cfg, $rec, 'delete_links', "Error: $@");
+            $self->message($req, $cfg, $rec, $db, 'delete_links', "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1432,7 +1432,7 @@ use DBI;
 
 
     sub message {
-        my ($self, $req, $cfg, $rec, $fun, $msg, $button_msg) = @_;
+        my ($self, $req, $cfg, $rec, $db, $fun, $msg, $button_msg) = @_;
         my $ident           = ident $self;
 
         $fun =~ tr/_/-/;
