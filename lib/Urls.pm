@@ -1077,17 +1077,18 @@ use DBI;
                 $result         = $query->execute($name, $full_name, $status, $pattern);
             };
             if($@){
-                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Error: $@:\n\nPseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, $session, $db, 'add_pseudo_page', undef, @msgs);
                 $query->finish();
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
-                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, $session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 1;
             }else{
-                $self->message($req, $cfg, $rec, $db, 'add_pseudo_page', "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, $session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 return 0;
             }
@@ -1222,9 +1223,7 @@ use DBI;
         $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
 
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
-            say "        <form action=\"delete-links.pl\" method=\"post\">";
-            say "            <table>";
-            say "                <tr><th>Message</th></tr>";
+            my @msgs;
             if($delete eq 'Delete Link'){
                 for my $link_id (@delete_set){
                     my $sql  = "DELETE FROM links WHERE id = ?;\n";
@@ -1234,17 +1233,18 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "                <tr><td>Error: Delete links failed: $@</td></tr>";
+                        say "                <tr><td></td></tr>";
+                        push @msgs,  "Error: Delete links failed: $@";
                         $query->finish();
                         next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
                     if($result){
-                        say "                <tr><td>Delete Succeded.</td></tr>";
+                        push @msgs,  "Delete Succeded.";
                         $query->finish();
                         next;
                     }
-                    say "                <tr><td>Error: Delete links failed.</td></tr>";
+                    push @msgs,  "Error: Delete links failed.";
                     $query->finish();
                 }
             }elsif($delete eq 'Delete Section'){
@@ -1259,7 +1259,7 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "                <tr><td>Error: failed to get section_id: $@</td></tr>";
+                        push @msgs,  "Error: failed to get section_id: $@";
                         $query->finish();
                         next;
                     }
@@ -1269,7 +1269,7 @@ use DBI;
                         my $section_id = $r->{section_id};
                         $sections_to_delete{$section_id}++;
                     }else{
-                        say "                <tr><td>Error: failed to get section_id</td></tr>";
+                        push @msgs,  "Error: failed to get section_id";
                     }
                     $query->finish();
                     $sql  = "DELETE FROM links WHERE id = ?;\n";
@@ -1278,17 +1278,17 @@ use DBI;
                         $result         = $query->execute($link_id);
                     };
                     if($@){
-                        say "                <tr><td>Error: Delete links failed: $@</td></tr>";
+                        push @msgs,  "Error: Delete links failed: $@";
                         $query->finish();
                         next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
                     if($result){
-                        say "                <tr><td>Delete Succeded.</td></tr>";
+                        push @msgs,  "Delete Succeded.";
                         $query->finish();
                         next;
                     }
-                    say "                <tr><td>Error: Delete links failed.</td></tr>";
+                    push @msgs,  "Error: Delete links failed.";
                     $query->finish();
                 }
                 for my $section_id (keys %sections_to_delete){
@@ -1300,7 +1300,7 @@ use DBI;
                         $result         = $query->execute($section_id);
                     };
                     if($@){
-                        say "                <tr><td>Error: Delete links_sections failed: $@</td></tr>";
+                        push @msgs,  "Error: Delete links_sections failed: $@";
                         $query->finish();
                         next;
                     }
@@ -1309,7 +1309,7 @@ use DBI;
                         my $n = $r->{n};
                         $query->finish();
                         if($n){
-                            say "                <tr><td>Cannot delete links_sections section not empty.</td></tr>";
+                            push @msgs,  "Cannot delete links_sections section not empty.";
                             next;
                         }
                         $sql  = "DELETE FROM links_sections\n";
@@ -1319,24 +1319,22 @@ use DBI;
                             $result         = $query->execute($section_id);
                         };
                         if($@){
-                            say "                <tr><td>Error: Delete links_sections failed: $@</td></tr>";
+                            push @msgs,  "Error: Delete links_sections failed: $@";
                             $query->finish();
                             next;
                         }
                         if($result){
-                            say "                <tr><td>Delete links_sections succeeded!</td></tr>";
+                            push @msgs,  "Delete links_sections succeeded!";
                             $query->finish();
                             next;
                         }
-                        say "                <tr><td>Error: Delete links_sections failed</td></tr>";
+                        push @msgs,  "Error: Delete links_sections failed";
                         $query->finish();
                     }
                     $query->finish();
                 }
             }
-            say "                <tr><td><input type=\"submit\" value=\"Delete some more links\"/></td></tr>";
-            say "            </table>";
-            say "        </form>";
+            $self->message($debug, $session, $db, 'Delete some more linkss', 'Do An Other', @msgs);
             return 0;
         }
 
@@ -1348,7 +1346,7 @@ use DBI;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($req, $cfg, $rec, $db, 'delete_links', "Error: $@");
+            $self->message($debug, $session, $db, 'delete_links', undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1432,50 +1430,17 @@ use DBI;
 
 
     sub message {
-        my ($self, $req, $cfg, $rec, $db, $fun, $msg, $button_msg) = @_;
+        my ($self, $debug, $session, $db, $fun, $button_msg, @msgs) = @_;
         my $ident           = ident $self;
-        my $debug = $debug{$ident};
+
+        $fun = 'index' if $fun eq 'main';
 
         $fun =~ tr/_/-/;
 
-        my %session;
-
-        my $id = $self->get_id($req, $cfg, $rec);
-        if($id){
-            tie %session, 'Apache::Session::Postgres', $id, {
-                Handle => $db,
-                TableName => 'sessions', 
-                Commit     => 1
-            };
-        }else{
-            tie %session, 'Apache::Session::Postgres', undef(), {
-                Handle => $db,
-                TableName => 'sessions', 
-                Commit     => 1
-            };
-            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
-        }
-
-        $debug    = $session{debug} if !defined $debug && exists $session{debug};
-        $debug{$ident} = $debug;
-        $session{debug} = $debug if defined $debug;
-        if(!defined $logfiles{$ident}){
-            my $log;
-            my $logpath = $logpaths{$ident};
-            if($debug){
-                if(open($log, '>>', "$logpath/debug.log")){
-                    $log->autoflush(1);
-                }else{
-                    die "could not open $logpath/debug.log $!";
-                }
-            }
-            $self->debug_init($debug, $log);
-        }
 
         untie %session;
         $db->disconnect;
 
-        my $debug = $debug{$ident};
         say "        <form action=\"$fun.pl\" method=\"post\">";
         say "            <table>";
         if($button_msg){
@@ -1483,11 +1448,13 @@ use DBI;
         }else{
             say "                <tr><th>Error: Message</th></tr>";
         }
-        say "                <tr>";
-        say "                    <td>";
-        say "                        $fun";
-        say "                    </td>";
-        say "                </tr>";
+        for my $msg (@msgs){
+            say "                <tr>";
+            say "                    <td>";
+            say "                        $msg";
+            say "                    </td>";
+            say "                </tr>";
+        }
         say "                <tr>";
         say "                    <td>";
         if($debug){
