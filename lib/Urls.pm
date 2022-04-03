@@ -1078,18 +1078,18 @@ use DBI;
             };
             if($@){
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
                 $query->finish();
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 $query->finish();
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 return 1;
             }else{
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 return 0;
             }
         }
@@ -1334,7 +1334,7 @@ use DBI;
                     $query->finish();
                 }
             }
-            $self->message($debug, \%session, $db, 'Delete some more linkss', 'Do An Other', @msgs);
+            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more linkss', @msgs);
             return 0;
         }
 
