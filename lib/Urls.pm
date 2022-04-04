@@ -526,6 +526,13 @@ use DBI;
                 my $section      = $r->{section};
                 push @msgs, "Alias  defined: $alias => $section";
             }else{
+                $sql  = "SELECT ls.section FROM links_sections ls\n";
+                $sql .= "WHERE ls.id = ?\n";
+                $query           = $db->prepare($sql);
+                $result          = $query->execute($target);
+                my $r            = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+                my $section      = $r->{section};
                 push @msgs, "Error: failed to define Alias: $alias => $section";
                 $return = 0;
             }
