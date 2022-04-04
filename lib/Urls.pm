@@ -957,6 +957,8 @@ use DBI;
 
         $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
         if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && is_uri($link)){
+            my @msgs;
+            my $return = 1;
             my $sql  = "INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING;\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
@@ -965,9 +967,9 @@ use DBI;
                 $result          = $query->execute($section);
             };
             if($@){
-                say "        <h1>Error: $@</h1>";
+                push @msgs, "Error: $@";
                 $query->finish();
-                return 0;
+                $return = 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
@@ -976,7 +978,7 @@ use DBI;
                 $query           = $db->prepare($sql);
                 $result          = $query->execute($section);
                 if($result){
-                    say "        <h1>Section defined: $section</h1>";
+                    push @msgs, "Section defined: $section";
                     my $r            = $query->fetchrow_hashref();
                     $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                     my $section_id   = $r->{id};
@@ -984,22 +986,25 @@ use DBI;
                     $query           = $db->prepare($sql);
                     $result          = $query->execute($section_id, $name, $link);
                     if($result){
-                        say "        <h1>link defined: $section $name $link</h1>";
+                        push @msgs, "link defined: $section $name $link";
                         $query->finish();
-                        return 1;
+                    }else{
+                        push @msgs, "Section insert failed: $section";
+                        $query->finish();
+                        $return = 0;
                     }
-                    say "        <h1>Section insert failed: $section</h1>";
-                    $query->finish();
-                    return 0;
                 }else{
-                    say "        <h1>Section insert failed: $section</h1>";
+                    push @msgs, "Section insert failed: $section";
                     $query->finish();
-                    return 0;
+                    $return = 0;
                 }
+            }else{
+                push @msgs, "Section insert failed: $section";
+                $query->finish();
+                $return = 0;
             }
-            say "        <h1>Section insert failed: $section</h1>";
-            $query->finish();
-            return 0;
+            $self->message($debug, \%session, $db, 'add_link', 'Add Another Link', @msgs);
+            return $return;
         }
 
         untie %session;
