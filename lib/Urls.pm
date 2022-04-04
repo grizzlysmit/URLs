@@ -1586,7 +1586,7 @@ use DBI;
                             next;
                         }
                         if($return){
-                            push @msgs,  "Delete Pages failed: $result";
+                            push @msgs,  "Delete Pages Succeeded: $result";
                         }else{
                             $return = 0;
                             push @msgs,  "Error: Delete Pages failed";
