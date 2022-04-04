@@ -804,6 +804,7 @@ use DBI;
                 my $b = scalar @bad;
                 my $s = scalar @skipped;
                 push @msgs, "$g link sections added", "$b link sections failed to add", "$s link sections bad link sections skipped";
+            }else{
                 push @msgs, "Error: Page insertion failed";
                 $return = 0;
             }
