@@ -1509,7 +1509,7 @@ use DBI;
         $query->finish();
         
         say "        <form action=\"delete-links.pl\" method=\"post\">";
-        say "            <h1>Delete Link</h1>";
+        say "            <h1>Delete Links</h1>";
         my $page_length = $req->param('page_length');
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
         $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
