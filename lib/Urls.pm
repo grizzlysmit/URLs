@@ -1542,8 +1542,132 @@ use DBI;
             $self->debug_init($debug, $log);
         }
 
+        my $delete  = $req->param('delete');
+
+        my @params          = $req->param;
+        my @delete_set;
+        for (@params){
+            if(m/^delete_set\[\d+\]$/){
+                push @delete_set, $req->param($_);
+            }
+        }
+        $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
+
+        if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
+            my @msgs;
+            my $return = 1;
+            if($delete eq 'Delete Pages'){
+                for my $page_id (@delete_set){
+                    my $sql  = "DELETE FROM pages WHERE id = ?;\n";
+                    my $query           = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result         = $query->execute($page_id);
+                    };
+                    if($@){
+                        say "                <tr><td></td></tr>";
+                        push @msgs,  "Error: Delete Pages failed: $@";
+                        $query->finish();
+                        next;
+                    }
+                    if($result){
+                        push @msgs,  "Delete Pages Success";
+                        $sql  = "DELETE FROM page_section WHERE pages_id = ?;\n";
+                        my $query           = $db->prepare($sql);
+                        my $result;
+                        eval {
+                            $result         = $query->execute($page_id);
+                        };
+                        if($@){
+                            say "                <tr><td></td></tr>";
+                            push @msgs,  "Error: Delete Pages failed: $@";
+                            $query->finish();
+                            next;
+                        }
+                    }
+                }
+            }
+            return $return;
+        }
+
+        my $sql  = "SELECT p.id, p.name, p.full_name FROM pages p\n";
+        $sql    .= "ORDER BY p.name, p.full_name\n";
+        my $query           = $db->prepare($sql);
+        my $result;
+        eval {
+            $result         = $query->execute();
+        };
+        if($@){
+            $self->message($debug, \%session, $db, 'delete_pages', undef, "Error: $@");
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @pages;
+        my $r           = $query->fetchrow_hashref();
+        while($r){
+            push @pages, $r;
+            $r       = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        
+        say "        <form action=\"delete-pages.pl\" method=\"post\">";
+        say "            <h1>Delete Pages</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+        $session{debug} = $debug if defined $debug;
+
         untie %session;
         $db->disconnect;
+
+        say "            <label for=\"page_length\">Page Length:";
+        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "            </label>";
+        say "            <table>";
+        say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+        my $cnt = 0;
+        for my $row (@pages){
+            $cnt++;
+            my $page_id    = $row->{id};
+            my $name       = $row->{name};
+            my $full_name  = $row->{full_name};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"$page_id\">$name</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"$page_id\">$full_name</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$page_id\" value=\"$page_id\"/>";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+            }
+        }
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Pages\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
 
         return 1;
     } ## --- end sub delete_pages
