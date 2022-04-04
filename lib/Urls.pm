@@ -1777,7 +1777,7 @@ use DBI;
         say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "            </label>";
         say "            <table>";
-        say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+        say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
         my $cnt = 0;
         for my $row (@pages){
             $cnt++;
@@ -1796,7 +1796,7 @@ use DBI;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
+                say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
             }
         }
         say "                <tr>";
