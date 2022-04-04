@@ -1007,6 +1007,21 @@ use DBI;
             return $return;
         }
 
+        my $sql    = "SELECT lsl.section, lsl.name, lsl.link FROM links_sections_join_links lsl\n";
+        $sql      .= "ORDER BY lsl.section, lsl.name;\n";
+        my $query  = $db->prepare($sql);
+        my $result = $query->execute();
+        my $r      = $query->fetchrow_hashref();
+        my @body;
+        while($r){
+            my $section   = $r->{section};
+            my $name      = $r->{name};
+            my $link      = $r->{link};
+            push @body, { section => $section, name => $name, link => $link, };
+            $r  = $query->fetchrow_hashref();
+        }
+        $query->finish();
+
         untie %session;
         $db->disconnect;
 
@@ -1055,6 +1070,28 @@ use DBI;
         say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
         say "                    </td>";
         say "                </tr>";
+        say "            </table>";
+        #say "        </form>";
+
+        #say "        <form action=\"add-link.pl\" method=\"post\">";
+        say "            <h2>Existing Links</h2>";
+        say "            <table>";
+        say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
+        my $cnt = 0;
+        for my $bod (@body){
+            $cnt++;
+            say "                <tr>";
+            my $section = $bod->{section};
+            my $name    = $bod->{name};
+            my $link    = $bod->{link};
+            say "                    <td>$section</td>";
+            say "                    <td>$name</td>";
+            say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
+            }
+        }
         say "            </table>";
         say "        </form>";
 
