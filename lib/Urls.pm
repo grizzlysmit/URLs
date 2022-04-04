@@ -1567,26 +1567,35 @@ use DBI;
                     if($@){
                         say "                <tr><td></td></tr>";
                         push @msgs,  "Error: Delete Pages failed: $@";
+                        $return = 0;
                         $query->finish();
                         next;
                     }
                     if($result){
                         push @msgs,  "Delete Pages Success";
                         $sql  = "DELETE FROM page_section WHERE pages_id = ?;\n";
-                        my $query           = $db->prepare($sql);
-                        my $result;
+                        $query           = $db->prepare($sql);
                         eval {
                             $result         = $query->execute($page_id);
                         };
                         if($@){
                             say "                <tr><td></td></tr>";
                             push @msgs,  "Error: Delete Pages failed: $@";
+                            $return = 0;
                             $query->finish();
                             next;
                         }
+                        if($return){
+                            push @msgs,  "Delete page_section failed: $result";
+                        }else{
+                            $return = 0;
+                            push @msgs,  "Error: Delete page_section failed";
+                        }
+                        $query->finish();
                     }
                 }
             }
+            $self->message($debug, \%session, $db, 'delete_pages', 'Delete some more pages', @msgs);
             return $return;
         }
 
