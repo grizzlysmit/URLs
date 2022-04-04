@@ -1558,7 +1558,7 @@ use DBI;
             my $return = 1;
             if($delete eq 'Delete Pages'){
                 for my $page_id (@delete_set){
-                    my $sql  = "DELETE FROM pages WHERE id = ?;\n";
+                    my $sql  = "DELETE FROM page_section WHERE pages_id = ?;\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
@@ -1566,14 +1566,14 @@ use DBI;
                     };
                     if($@){
                         say "                <tr><td></td></tr>";
-                        push @msgs,  "Error: Delete Pages failed: $@";
+                        push @msgs,  "Error: Delete page_section failed: $@";
                         $return = 0;
                         $query->finish();
                         next;
                     }
                     if($result){
-                        push @msgs,  "Delete Pages Success";
-                        $sql  = "DELETE FROM page_section WHERE pages_id = ?;\n";
+                        push @msgs,  "Delete page_section Success";
+                        $sql  = "DELETE FROM pages WHERE id = ?;\n";
                         $query           = $db->prepare($sql);
                         eval {
                             $result         = $query->execute($page_id);
@@ -1586,10 +1586,10 @@ use DBI;
                             next;
                         }
                         if($return){
-                            push @msgs,  "Delete page_section failed: $result";
+                            push @msgs,  "Delete Pages failed: $result";
                         }else{
                             $return = 0;
-                            push @msgs,  "Error: Delete page_section failed";
+                            push @msgs,  "Error: Delete Pages failed";
                         }
                         $query->finish();
                     }
