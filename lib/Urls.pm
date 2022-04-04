@@ -1176,7 +1176,7 @@ use DBI;
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 return 1;
             }else{
                 $query->finish();
