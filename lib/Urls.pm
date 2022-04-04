@@ -560,6 +560,21 @@ use DBI;
         $session{page_length} = $page_length;
         $session{debug} = $debug if defined $debug;
 
+        $sql  = "SELECT a.name, a.section FROM aliases a\n";
+        $sql    .= "ORDER BY a.name\n";
+        $query           = $db->prepare($sql);
+        $result          = $query->execute();
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @aliases;
+        my $r               = $query->fetchrow_hashref();
+        $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        while($r){
+            push @aliases, $r;
+            $r           = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
+        }
+        $query->finish();
+
         untie %session;
         $db->disconnect;
 
@@ -618,6 +633,18 @@ use DBI;
         say "                </tr>";
         say "            </table>";
         say "        </form>";
+
+        say "        <h1>Current Aliases</h1>";
+        say "        <table>";
+        say "            <tr><th>alias</th><th>target section</th></tr>";
+        for my $alias (@aliases){
+            my $name    = $alias->{name};
+            my $section = $alias->{section};
+            say "            <tr>";
+            say "                    <td>$name</td><td>$section</td>";
+            say "            </tr>";
+        }
+        say "        </table>";
 
         return 1;
     } ## --- end sub add_alias
