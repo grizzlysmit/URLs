@@ -1445,13 +1445,13 @@ use DBI;
         say "        <form action=\"$fun.pl\" method=\"post\">";
         say "            <table>";
         if($button_msg){
-            say "                <tr><th>Message</th></tr>";
+            say "                <tr><th colspan=\"3\">Message</th></tr>";
         }else{
-            say "                <tr><th>Error: Message</th></tr>";
+            say "                <tr><th colspan=\"3\">Error: Message</th></tr>";
         }
         for my $msg (@msgs){
             say "                <tr>";
-            say "                    <td>";
+            say "                    <td colspan=\"3\">";
             say "                        $msg";
             say "                    </td>";
             say "                </tr>";
