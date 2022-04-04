@@ -1191,7 +1191,7 @@ use DBI;
         $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern, $sql], [qw(name full_name status pattern sql)]));
         my $result;
         eval {
-            $result         = $query->execute($name, $full_name, $status, $pattern);
+            $result         = $query->execute();
         };
         if($@){
             my @msgs = ("Error: $@", "Pseudo page list failed");
