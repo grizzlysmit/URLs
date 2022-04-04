@@ -502,6 +502,7 @@ use DBI;
         $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
         if(defined $set_page_length){
         }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
+            my @msgs;
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
@@ -510,7 +511,7 @@ use DBI;
                 $result          = $query->execute($alias, $target);
             };
             if($@){
-                say "        <h1>Error: $@</h1>";
+                push @msgs, "Error: $@";
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
@@ -522,8 +523,9 @@ use DBI;
                 my $r               = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
-                say "        <h1>Alias  defined: $alias => $section</h1>";
+                push @msgs, "Alias  defined: $alias => $section";
             }
+            $self->message($debug, \%session, $db, 'add_alias', 'Add an other Alias', @msgs);
             return 1;
         }
 
@@ -717,17 +719,20 @@ use DBI;
         $self->log(Data::Dumper->Dump([\@params, \@members], [qw(@params @members)]));
         if($set_page_length){
         }elsif(defined $page && @members && $page =~ m/^(?:\w|\.|\+|-)+$/ && join(',', @members) =~ m/^\d+(?:,\d+)*$/){
+            my @msgs;
+            my $return = 1;
             my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name\n";
             my $query           = $db->prepare($sql);
             my $result          = $query->execute($page, $full_name);
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             $query->finish();
             if($result){
-                say "            <h1>Page $page added.</h1>";
+                push @msgs, "Page $page added.";
                 $sql  =  "SELECT p.id FROM pages p\n";
                 $sql .=  "WHERE p.name = ?\n";
                 $query           = $db->prepare($sql);
                 $result          = $query->execute($page);
+                $return = 0 if !$result;
                 my $r            = $query->fetchrow_hashref();
                 my $page_id      = $r->{id};
                 $query->finish();
@@ -746,26 +751,28 @@ use DBI;
                     };
                     if($@){
                         push @bad, $member;
-                        say "            <h1>Error: $@</h1>";
+                        push @msgs, "Error: $@";
+                        $return = 0;
                     }
                     if($result){
                         push @good, $member;
                     }else{
                         push @bad,  $member;
+                        $return = 0;
                     }
                 }
                 $query->finish();
                 my $g = scalar @good;
                 my $b = scalar @bad;
                 my $s = scalar @skipped;
-                say "            <h1>$g link sections added</h1>";
-                say "            <h1>$b link sections failed to add</h1>";
-                say "            <h1>$s link sections bad link sections skipped</h1>";
-                return 1;
+                push @msgs, "$g link sections added", "$b link sections failed to add", "$s link sections bad link sections skipped";
+                $self->message($debug, \%session, $db, 'add_page', 'Add an other Alias', @msgs);
             }else{
-                say "            <h1>Error: Page insertion failed</h1>";
-                return 0;
+                push @msgs, "Error: Page insertion failed";
+                $return = 0;
             }
+            $self->message($debug, \%session, $db, 'add_page', 'Add an other Page', @msgs);
+            return $return;
         }
         
 
