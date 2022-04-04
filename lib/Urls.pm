@@ -1707,7 +1707,6 @@ use DBI;
                         $result         = $query->execute($page_id);
                     };
                     if($@){
-                        say "                <tr><td></td></tr>";
                         push @msgs,  "Error: Delete page_section failed: $@";
                         $return = 0;
                         $query->finish();
@@ -1721,7 +1720,6 @@ use DBI;
                             $result         = $query->execute($page_id);
                         };
                         if($@){
-                            say "                <tr><td></td></tr>";
                             push @msgs,  "Error: Delete Pages failed: $@";
                             $return = 0;
                             $query->finish();
@@ -1896,7 +1894,6 @@ use DBI;
                         $result         = $query->execute($page_id);
                     };
                     if($@){
-                        say "                <tr><td></td></tr>";
                         push @msgs,  "Error: Delete from pseudo_pages failed: $@";
                         $return = 0;
                         $query->finish();
@@ -2039,6 +2036,76 @@ use DBI;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        my $delete  = $req->param('delete');
+
+        my @params          = $req->param;
+        my @delete_set;
+        for (@params){
+            if(m/^delete_set\[\d+\]$/){
+                push @delete_set, $req->param($_);
+            }
+        }
+        $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
+
+        if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
+            my @msgs;
+            my $return = 1;
+            if($delete eq 'Delete Aliases'){
+                for my $page_id (@delete_set){
+                    my $sql  = "DELETE FROM alias WHERE id = ?;\n";
+                    my $query           = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result         = $query->execute($page_id);
+                    };
+                    if($@){
+                        push @msgs,  "Error: Delete Aliases failed: $@";
+                        $return = 0;
+                        $query->finish();
+                        next;
+                    }
+                    if($result){
+                        push @msgs,  "Delete Aliases Succeeded:";
+                        $query->finish();
+                    }else{
+                        push @msgs,  "Delete Aliases Failed";
+                        $query->finish();
+                    }
+                }
+            }
+            $self->message($debug, \%session, $db, 'delete_aliases', 'Delete some more Aliases', @msgs);
+            return $return;
+        }
+
+        my $sql  = "SELECT a.id, a.name, a.section FROM aliases a\n";
+        $sql    .= "ORDER BY a.name, a.section\n";
+        my $query           = $db->prepare($sql);
+        my $result;
+        eval {
+            $result         = $query->execute();
+        };
+        if($@){
+            $self->message($debug, \%session, $db, 'delete_aliases', undef, "Error: $@", "Cannnot Read aliases");
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @aliases;
+        my $r           = $query->fetchrow_hashref();
+        while($r){
+            push @aliases, $r;
+            $r       = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        
+        say "        <form action=\"delete-aliases.pl\" method=\"post\">";
+        say "            <h1>Delete Pages</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+        $session{debug} = $debug if defined $debug;
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -2057,6 +2124,53 @@ use DBI;
 
         untie %session;
         $db->disconnect;
+
+        say "            <label for=\"page_length\">Page Length:";
+        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "            </label>";
+        say "            <table>";
+        say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
+        my $cnt = 0;
+        for my $row (@aliases){
+            $cnt++;
+            my $alias_id   = $row->{id};
+            my $name       = $row->{name};
+            my $section    = $row->{section};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"$alias_id\">$name</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"$alias_id\">$section</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$alias_id\" value=\"$alias_id\"/>";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
+            }
+        }
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Aliases\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
 
         return 1;
     } ## --- end sub delete_aliases
