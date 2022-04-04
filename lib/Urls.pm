@@ -566,7 +566,7 @@ use DBI;
         $result          = $query->execute();
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @aliases;
-        my $r               = $query->fetchrow_hashref();
+        $r               = $query->fetchrow_hashref();
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         while($r){
             push @aliases, $r;
