@@ -1224,6 +1224,7 @@ use DBI;
 
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
             my @msgs;
+            my $return = 1;
             if($delete eq 'Delete Link'){
                 for my $link_id (@delete_set){
                     my $sql  = "DELETE FROM links WHERE id = ?;\n";
@@ -1245,6 +1246,7 @@ use DBI;
                         next;
                     }
                     push @msgs,  "Error: Delete links failed.";
+                    $return = 0;
                     $query->finish();
                 }
             }elsif($delete eq 'Delete Section'){
@@ -1260,6 +1262,7 @@ use DBI;
                     };
                     if($@){
                         push @msgs,  "Error: failed to get section_id: $@";
+                        $return = 0;
                         $query->finish();
                         next;
                     }
@@ -1269,6 +1272,7 @@ use DBI;
                         my $section_id = $r->{section_id};
                         $sections_to_delete{$section_id}++;
                     }else{
+                        $return = 0;
                         push @msgs,  "Error: failed to get section_id";
                     }
                     $query->finish();
@@ -1280,6 +1284,7 @@ use DBI;
                     if($@){
                         push @msgs,  "Error: Delete links failed: $@";
                         $query->finish();
+                        $return = 0;
                         next;
                     }
                     $self->log(Data::Dumper->Dump([$link_id, $query, $result, $sql], [qw(link_id query result sql)]));
@@ -1320,6 +1325,7 @@ use DBI;
                         };
                         if($@){
                             push @msgs,  "Error: Delete links_sections failed: $@";
+                            $return = 0;
                             $query->finish();
                             next;
                         }
@@ -1329,13 +1335,14 @@ use DBI;
                             next;
                         }
                         push @msgs,  "Error: Delete links_sections failed";
+                        $return = 0;
                         $query->finish();
                     }
                     $query->finish();
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more linkss', @msgs);
-            return 0;
+            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more links', @msgs);
+            return $return;
         }
 
         my $sql  = "SELECT  l.id, l.section_id, (SELECT ls.section FROM links_sections ls WHERE ls.id = l.section_id) section, l.name, l.link FROM links l\n";
