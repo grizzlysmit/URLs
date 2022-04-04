@@ -66,7 +66,7 @@ use DBI;
             { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
             { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', }, 
             { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', }, 
-            { href => 'delete-pseudo-page.pl', name => 'delete pseudo-page', fun => 'delete_pseudo_page', }, 
+            { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', }, 
         ];
 
 
