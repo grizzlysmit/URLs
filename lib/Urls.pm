@@ -1184,6 +1184,34 @@ use DBI;
                 return 0;
             }
         }
+        
+        my $sql  = "SELECT pp.name, pp.full_name, pp.pattern, pp.status FROM pseudo_pages pp\n";
+        $sql    .= "ORDER BY pp.name, pp.full_name\n";
+        my $query           = $db->prepare($sql);
+        $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern, $sql], [qw(name full_name status pattern sql)]));
+        my $result;
+        eval {
+            $result         = $query->execute($name, $full_name, $status, $pattern);
+        };
+        if($@){
+            my @msgs = ("Error: $@", "Pseudo page list failed");
+            $query->finish();
+            $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
+            return 0;
+        }
+        my @pseudo_pages;
+        my $r = $query->fetchrow_hashref();
+        if($result){
+            while($r){
+                push @pseudo_pages, $r;
+                $r = $query->fetchrow_hashref();
+            }
+        }else{
+            $query->finish();
+            $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page list failed");
+            return 0;
+        }
+        $query->finish();
 
         untie %session;
         $db->disconnect;
@@ -1246,6 +1274,29 @@ use DBI;
         say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
         say "                    </td>";
         say "                </tr>";
+        say "            </table>";
+        say "            <h1>Existing Pseudo-Pages</h1>";
+        say "            <table>";
+        for my $pp (@pseudo_pages){
+            my $name      = $pp->{name};
+            my $full_name = $pp->{full_name};
+            my $pattern   = $pp->{pattern};
+            my $status    = $pp->{status};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        $name";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $full_name";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $pattern";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $status";
+            say "                    </td>";
+            say "                </tr>";
+        }
         say "            </table>";
         say "        </form>";
 
