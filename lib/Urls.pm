@@ -503,6 +503,7 @@ use DBI;
         if(defined $set_page_length){
         }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
             my @msgs;
+            my $return = 1;
             my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
@@ -512,7 +513,7 @@ use DBI;
             };
             if($@){
                 push @msgs, "Error: $@";
-                return 0;
+                $return  = 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
@@ -520,13 +521,16 @@ use DBI;
                 $sql .= "WHERE ls.id = ?\n";
                 $query           = $db->prepare($sql);
                 $result          = $query->execute($target);
-                my $r               = $query->fetchrow_hashref();
+                my $r            = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
                 push @msgs, "Alias  defined: $alias => $section";
+            }else{
+                push @msgs, "Error: failed to define Alias: $alias => $section";
+                $return = 0;
             }
             $self->message($debug, \%session, $db, 'add_alias', 'Add an other Alias', @msgs);
-            return 1;
+            return $return;
         }
 
         my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
