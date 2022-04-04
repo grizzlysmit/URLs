@@ -540,11 +540,6 @@ use DBI;
             return $return;
         }
 
-        my $page_length = $req->param('page_length');
-        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
-        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
-        $session{page_length} = $page_length;
-
         my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
         $sql               .= "ORDER BY ls.section\n";
         my $query           = $db->prepare($sql);
