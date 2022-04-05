@@ -2397,7 +2397,7 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Aliases\">";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete links_sections\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
