@@ -303,9 +303,9 @@ use DBI;
             my $name      = $page->{name};
             my $full_name = $page->{full_name};
             if($current_page eq "$type^$name"){
-                say "                            <option value=\"$type^$name\" selected>$full_name</option>";
+                say "                            <option value=\"$type^$name\" selected>$name => $full_name</option>";
             }else{
-                say "                            <option value=\"$type^$name\">$full_name</option>";
+                say "                            <option value=\"$type^$name\">$name => $full_name</option>";
             }
         }
         say "                        </select>";
