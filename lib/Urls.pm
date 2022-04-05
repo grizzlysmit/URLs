@@ -398,7 +398,7 @@ use Crypt::URandom;
                 say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
             }
             say "                </td>";
-            if($cnt % 6 == 0){
+            if($cnt % 7 == 0){
                 say "            </tr>";
                 say "            <tr>";
             }
