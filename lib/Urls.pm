@@ -2285,7 +2285,7 @@ use DBI;
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
             my @msgs;
             my $return = 1;
-            if($delete eq 'Delete Aliases'){
+            if($delete eq 'Delete links_sections'){
                 for my $links_section_id (@delete_set){
                     my $sql  = "DELETE FROM links_sections WHERE id = ?;\n";
                     my $query           = $db->prepare($sql);
