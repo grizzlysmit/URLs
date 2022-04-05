@@ -2406,7 +2406,7 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete links_sections\">";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Orphans\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
