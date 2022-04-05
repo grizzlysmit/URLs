@@ -71,7 +71,7 @@ say <<"END";
     <body>
 END
 
-$urls->delete_orphaned_aliases($req, $cfg, $r);
+$urls->user($req, $cfg, $r);
 
 
 say <<"DONE";

@@ -68,7 +68,7 @@ use DBI;
             { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', }, 
             { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', }, 
             { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', }, 
-            { href => 'delete-orphaned-aliases.pl', name => "delete orphaned aliases", fun => 'delete_orphaned_aliases', }, 
+            { href => 'user.pl', name => "user", fun => 'user', }, 
         ];
 
 
@@ -2228,13 +2228,13 @@ use DBI;
     } ## --- end sub set_cookie
 
 
-    sub delete_orphaned_aliases {
+    sub user {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_orphaned_aliases');
+        $self->links('user');
         return ;
-    } ## --- end sub delete_orphaned_aliases
+    } ## --- end sub user
 
 
     sub delete_orphaned_links_sections {
