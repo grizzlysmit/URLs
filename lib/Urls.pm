@@ -2364,24 +2364,33 @@ use DBI;
         say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "            </label>";
         say "            <table>";
-        say "                <tr><th colspan=\"2\">Name</th><th>Select</th></tr>";
-        my $cnt = 0;
-        for my $row (@links_sections){
-            $cnt++;
-            my $links_section_id = $row->{id};
-            my $section          = $row->{section};
+        if(@links_sections){
+            say "                <tr><th colspan=\"2\">Name</th><th>Select</th></tr>";
+            my $cnt = 0;
+            for my $row (@links_sections){
+                $cnt++;
+                my $links_section_id = $row->{id};
+                my $section          = $row->{section};
+                say "                <tr>";
+                say "                    <td colspan=\"2\">";
+                say "                        <label for=\"$links_section_id\">$section</label>";
+                say "                    </td>";
+                say "                    <td>";
+                say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$links_section_id\" value=\"$links_section_id\"/>";
+                say "                    </td>";
+                say "                </tr>";
+                if($cnt % $page_length == 0){
+                    say "                <tr><th colspan=\"2\">Name</th><th>Select</th></tr>";
+                }
+            }
+        }else{
+            say "                <tr><th colspan=\"3\">Message</th></tr>";
             say "                <tr>";
-            say "                    <td colspan=\"2\">";
-            say "                        <label for=\"$links_section_id\">$section</label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$links_section_id\" value=\"$links_section_id\"/>";
+            say "                    <td colspan=\"3\">";
+            say "                        No Orphans Found!!!";
             say "                    </td>";
             say "                </tr>";
-            if($cnt % $page_length == 0){
-                say "                <tr><th colspan=\"2\">Name</th><th>Select</th></tr>";
-            }
-        }
+    }
         say "                <tr>";
         say "                    <td>";
         if($debug){
