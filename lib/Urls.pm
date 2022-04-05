@@ -63,7 +63,7 @@ use DBI;
             { href => 'add-page.pl', name => 'add page', fun => 'add_page', }, 
             { href => 'add-pseudo-page.pl', name => 'add pseudo-page', fun => 'add_pseudo_page', }, 
             { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', }, 
-            { href => 'delete-orphaned-aliases.pl', name => "list orphaned aliases", fun => 'delete_orphaned_aliases', }, 
+            { href => 'delete-orphaned-aliases.pl', name => "delete orphaned aliases", fun => 'delete_orphaned_aliases', }, 
             { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
             { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', }, 
             { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', }, 
