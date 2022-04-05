@@ -2371,7 +2371,7 @@ use DBI;
             my $links_section_id = $row->{id};
             my $section          = $row->{section};
             say "                <tr>";
-            say "                    <td>";
+            say "                    <td colspan=\"2\">";
             say "                        <label for=\"$links_section_id\">$section</label>";
             say "                    </td>";
             say "                    <td>";
