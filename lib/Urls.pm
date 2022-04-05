@@ -630,7 +630,7 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Delete\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
