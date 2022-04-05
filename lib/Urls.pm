@@ -74,6 +74,7 @@ use Crypt::URandom;
             { href => 'user.pl', name => "login", fun => 'user', visability => 'loggedout', }, 
             { href => 'user.pl', name => "logout", fun => 'user', visability => 'loggedin', }, 
             { href => 'user.pl', name => "Admin", fun => 'user', visability => 'loggedin,admin', }, 
+            { href => 'user.pl', name => "Register", fun => 'user', visability => 'loggedout', }, 
         ];
 
         return $new_object;
@@ -385,9 +386,10 @@ use Crypt::URandom;
         say "            <tr>";
         my $cnt = 0;
         for my $page (@pages){
-            my $href = $page->{href};
-            my $name = $page->{name};
-            my $fun  = $page->{fun};
+            my $href       = $page->{href};
+            my $name       = $page->{name};
+            my $fun        = $page->{fun};
+            my $visability = $page->{visability};
             #next if $fun eq $Fun;
             $cnt++;
             say "                <td>";
