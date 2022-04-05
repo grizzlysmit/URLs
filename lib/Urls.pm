@@ -630,7 +630,7 @@ use DBI;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Delete\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
@@ -2241,8 +2241,169 @@ use DBI;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
+
         $self->links('delete_orphaned_links_sections');
-        return ;
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+        my @params          = $req->param;
+        my @delete_set;
+        for (@params){
+            if(m/^delete_set\[\d+\]$/){
+                push @delete_set, $req->param($_);
+            }
+        }
+        $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
+
+        if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
+            my @msgs;
+            my $return = 1;
+            if($delete eq 'Delete Aliases'){
+                for my $links_section_id (@delete_set){
+                    my $sql  = "DELETE FROM links_sections WHERE id = ?;\n";
+                    my $query           = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result         = $query->execute($links_section_id);
+                    };
+                    if($@){
+                        push @msgs,  "Error: Delete links_sections failed: $@";
+                        $return = 0;
+                        $query->finish();
+                        next;
+                    }
+                    if($result){
+                        push @msgs,  "Delete links_sections Succeeded:";
+                        $query->finish();
+                    }else{
+                        push @msgs,  "Delete links_sections Failed";
+                        $query->finish();
+                    }
+                }
+            }
+            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', @msgs);
+            return $return;
+        }
+
+        my $sql  = "SELECT ls.id, ls.section FROM links_sections ls\n";
+        $sql    .= "WHERE (SELECT COUNT(*) n FROM links l WHERE l.section_id = ls.id) = 0\n";
+        $sql    .= "ORDER BY ls.section\n";
+        my $query       = $db->prepare($sql);
+        my $result;
+        eval {
+            $result     = $query->execute();
+        };
+        if($@){
+            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', undef, "Error: $@", "Cannnot Read links_sections");
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @links_sections;
+        my $r           = $query->fetchrow_hashref();
+        while($r){
+            push @links_sections, $r;
+            $r          = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        
+        say "        <form action=\"delete-orphaned-links-sections.pl\" method=\"post\">";
+        say "            <h1>Delete Orphaned links_sections</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+        $session{debug} = $debug if defined $debug;
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+        untie %session;
+        $db->disconnect;
+
+        say "            <label for=\"page_length\">Page Length:";
+        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "            </label>";
+        say "            <table>";
+        say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
+        my $cnt = 0;
+        for my $row (@links_sections){
+            $cnt++;
+            my $links_section_id = $row->{id};
+            my $section          = $row->{section};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"$links_section_id\">$section</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$links_section_id\" value=\"$links_section_id\"/>";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
+            }
+        }
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Aliases\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
     } ## --- end sub delete_orphaned_links_sections
 
 }
