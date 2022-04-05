@@ -35,6 +35,8 @@ use JSON::XS;
 use File::Basename;
 use Data::Validate::URI qw(is_uri);
 use DBI;
+use Crypt::PBKDF2;
+use Crypt::URandom;
 
 {
     my %logpaths;
@@ -57,20 +59,22 @@ use DBI;
         $logpaths{$ident} = $logpath;
 
         $PAGES{$ident} = [
-            { href => 'index.pl', name => 'home page', fun => 'main', }, 
-            { href => 'add-alias.pl', name => 'add alias', fun => 'add_alias', }, 
-            { href => 'add-link.pl', name => 'add link', fun => 'add_link', }, 
-            { href => 'add-page.pl', name => 'add page', fun => 'add_page', }, 
-            { href => 'add-pseudo-page.pl', name => 'add pseudo-page', fun => 'add_pseudo_page', }, 
-            { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', }, 
-            { href => 'delete-orphaned-links-sections.pl', name => "delete orphaned links_sections", fun => 'delete_orphaned_links_sections', }, 
+            { href => 'index.pl', name => 'home page', fun => 'main', visability => 'loggedin', }, 
+            { href => 'add-alias.pl', name => 'add alias', fun => 'add_alias', visability => 'loggedin', }, 
+            { href => 'add-link.pl', name => 'add link', fun => 'add_link', visability => 'loggedin', }, 
+            { href => 'add-page.pl', name => 'add page', fun => 'add_page', visability => 'loggedin', }, 
+            { href => 'add-pseudo-page.pl', name => 'add pseudo-page', fun => 'add_pseudo_page', visability => 'loggedin', }, 
+            { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', visability => 'loggedin', }, 
+            { href => 'user.pl', name => "profile", fun => 'user', visability => 'loggedin', }, 
+            { href => 'delete-orphaned-links-sections.pl', name => "delete orphaned links_sections", fun => 'delete_orphaned_links_sections', visability => 'loggedin', }, 
             { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
-            { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', }, 
-            { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', }, 
-            { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', }, 
-            { href => 'user.pl', name => "user", fun => 'user', }, 
+            { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', visability => 'loggedin', }, 
+            { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', visability => 'loggedin', }, 
+            { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', visability => 'loggedin', }, 
+            { href => 'user.pl', name => "login", fun => 'user', visability => 'loggedout', }, 
+            { href => 'user.pl', name => "logout", fun => 'user', visability => 'loggedin', }, 
+            { href => 'user.pl', name => "Admin", fun => 'user', visability => 'loggedin,admin', }, 
         ];
-
 
         return $new_object;
     } ## --- end sub new
@@ -2414,6 +2418,39 @@ use DBI;
 
         return 1;
     } ## --- end sub delete_orphaned_links_sections
+
+
+    sub generate {
+        my ($self, $password) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+        my $pbkdf2 = Crypt::PBKDF2->new(
+            hash_class => 'HMACSHA2',
+            hash_args => {sha_size => 512}, 
+            iterations => 2_048,
+            output_len => 64,
+            salt_len => 16,
+            length_limit => 100, 
+        );
+                
+        return $pbkdf2->generate($password);
+    } ## --- end sub generate
+
+
+    sub validate {
+        my ($self, $password, $hash) = @_;
+        my $ident           = ident $self;
+        my $debug = (
+            hash_class => 'HMACSHA2',
+            hash_args => {sha_size => 512}, 
+            iterations => 2_048,
+            output_len => 64,
+            salt_len => 16,
+            length_limit => 100, 
+        );
+                
+        return $pbkdf2->validate($password);
+    } ## --- end sub validate
 
 }
 
