@@ -2440,7 +2440,8 @@ use Crypt::URandom;
     sub validate {
         my ($self, $password, $hash) = @_;
         my $ident           = ident $self;
-        my $debug = (
+        my $debug = $debug{$ident};
+        my $pbkdf2 = Crypt::PBKDF2->new(
             hash_class => 'HMACSHA2',
             hash_args => {sha_size => 512}, 
             iterations => 2_048,
