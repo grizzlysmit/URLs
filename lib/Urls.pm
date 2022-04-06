@@ -2511,16 +2511,6 @@ use Crypt::URandom;
         say "                    <td>";
         say "                        <label for=\"target\">Target: </label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <select name=\"target\" id=\"target\">";
-        for (@sections){
-            my $section = $_->{section};
-            my $target  = $_->{id};
-            say "                            <option value=\"$target\">$section</option>";
-        }
-        say "                        </select>";
-        say "                    </td>";
-        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
