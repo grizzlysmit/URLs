@@ -2463,6 +2463,95 @@ use Crypt::URandom;
 
         $self->links('login');
 
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"login.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"alias\">Alias: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"target\">Target: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <select name=\"target\" id=\"target\">";
+        for (@sections){
+            my $section = $_->{section};
+            my $target  = $_->{id};
+            say "                            <option value=\"$target\">$section</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
         return 1;
     } ## --- end sub login
 
@@ -2474,7 +2563,96 @@ use Crypt::URandom;
 
         $self->links('logout');
 
-        return ;
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"logout.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"alias\">Alias: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"target\">Target: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <select name=\"target\" id=\"target\">";
+        for (@sections){
+            my $section = $_->{section};
+            my $target  = $_->{id};
+            say "                            <option value=\"$target\">$section</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
     } ## --- end sub logout
 
 
@@ -2485,7 +2663,80 @@ use Crypt::URandom;
 
         $self->links('register');
 
-        return ;
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"register.pl\" method=\"post\">";
+        say "            <h1>Register New Account</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"username\">Username</label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"[a-zA-Z0-9_]+\" title=\"only a-z, A-Z, 0-9 and _  allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"username\">Username</label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"[a-zA-Z0-9_]+\" title=\"only a-z, A-Z, 0-9 and _  allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
     } ## --- end sub register
 
 
@@ -2496,7 +2747,96 @@ use Crypt::URandom;
 
         $self->links('profile');
 
-        return ;
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"profile.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"alias\">Alias: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"target\">Target: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <select name=\"target\" id=\"target\">";
+        for (@sections){
+            my $section = $_->{section};
+            my $target  = $_->{id};
+            say "                            <option value=\"$target\">$section</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
     } ## --- end sub profile
 
 
@@ -2508,7 +2848,96 @@ use Crypt::URandom;
 
         $self->links('admin');
 
-        return ;
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $delete  = $req->param('delete');
+
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"admin.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"set_page_length\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"alias\">Alias: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"target\">Target: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <select name=\"target\" id=\"target\">";
+        for (@sections){
+            my $section = $_->{section};
+            my $target  = $_->{id};
+            say "                            <option value=\"$target\">$section</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
     } ## --- end sub admin
 
 }
