@@ -2455,6 +2455,62 @@ use Crypt::URandom;
         return $pbkdf2->validate($password);
     } ## --- end sub validate
 
+
+    sub login {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        $self->links('login');
+
+        return 1;
+    } ## --- end sub login
+
+
+    sub logout {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        $self->links('logout');
+
+        return ;
+    } ## --- end sub logout
+
+
+    sub register {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        $self->links('register');
+
+        return ;
+    } ## --- end sub register
+
+
+    sub profile {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        $self->links('profile');
+
+        return ;
+    } ## --- end sub profile
+
+
+
+    sub admin {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        $self->links('admin');
+
+        return ;
+    } ## --- end sub admin
+
 }
 
 1;

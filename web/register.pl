@@ -71,7 +71,7 @@ say <<"END";
     <body>
 END
 
-$urls->user($req, $cfg, $r);
+$urls->register($req, $cfg, $r);
 
 
 say <<"DONE";
