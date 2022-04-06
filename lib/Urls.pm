@@ -65,16 +65,16 @@ use Crypt::URandom;
             { href => 'add-page.pl', name => 'add page', fun => 'add_page', visability => 'loggedin', }, 
             { href => 'add-pseudo-page.pl', name => 'add pseudo-page', fun => 'add_pseudo_page', visability => 'loggedin', }, 
             { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', visability => 'loggedin', }, 
-            { href => 'user.pl', name => "profile", fun => 'user', visability => 'loggedin', }, 
+            { href => 'profile.pl', name => "profile", fun => 'profile', visability => 'loggedin', }, 
             { href => 'delete-orphaned-links-sections.pl', name => "delete orphaned links_sections", fun => 'delete_orphaned_links_sections', visability => 'loggedin', }, 
             { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
             { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', visability => 'loggedin', }, 
             { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', visability => 'loggedin', }, 
             { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', visability => 'loggedin', }, 
-            { href => 'user.pl', name => "login", fun => 'user', visability => 'loggedout', }, 
-            { href => 'user.pl', name => "logout", fun => 'user', visability => 'loggedin', }, 
-            { href => 'user.pl', name => "Admin", fun => 'user', visability => 'loggedin,admin', }, 
-            { href => 'user.pl', name => "Register", fun => 'user', visability => 'loggedout', }, 
+            { href => 'login.pl', name => "login", fun => 'login', visability => 'loggedout', }, 
+            { href => 'logout.pl', name => "logout", fun => 'logout', visability => 'loggedin', }, 
+            { href => 'admin.pl', name => "Admin", fun => 'admin', visability => 'loggedin,admin', }, 
+            { href => 'register.pl', name => "Register", fun => 'register', visability => 'loggedout', }, 
         ];
 
         return $new_object;
