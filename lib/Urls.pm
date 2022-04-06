@@ -2723,7 +2723,7 @@ use Crypt::URandom;
         say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" required/>";
         say "                    </td>";
         say "                </tr>";
-        $title   = 'only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)';
+        $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
         $pattern = '[a-z0-9.+-_]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+';
         say "                <tr>";
         say "                    <td>";
