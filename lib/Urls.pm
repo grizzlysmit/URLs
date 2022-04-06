@@ -2651,8 +2651,12 @@ use Crypt::URandom;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
-        my $delete  = $req->param('delete');
+        my $username  = $req->param('username');
+        my $email     = $req->param('email');
+        my $password  = $req->param('password');
+        my $repeat    = $req->param('repeat');
 
+        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat], [qw(username email password repeat)]));
 
         untie %session;
         $db->disconnect;
