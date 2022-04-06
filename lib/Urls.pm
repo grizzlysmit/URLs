@@ -2363,6 +2363,7 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
         untie %session;
         $db->disconnect;
 
@@ -2490,6 +2491,22 @@ use Crypt::URandom;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         my $delete  = $req->param('delete');
 
 
@@ -2568,6 +2585,22 @@ use Crypt::URandom;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
         }
 
         my $delete  = $req->param('delete');
@@ -2649,6 +2682,22 @@ use Crypt::URandom;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
         }
 
         my $username  = $req->param('username');
@@ -2755,6 +2804,22 @@ use Crypt::URandom;
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
 
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         my $delete  = $req->param('delete');
 
 
@@ -2835,6 +2900,22 @@ use Crypt::URandom;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
         }
 
         my $delete  = $req->param('delete');
