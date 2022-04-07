@@ -2707,6 +2707,8 @@ use Crypt::URandom;
         my $mobile    = $req->param('mobile');
         my $phone     = $req->param('phone');
 
+        if(defined $username && defined $email && defined && $password
+
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone], [qw(username email password repeat mobile phone)]));
 
         untie %session;
@@ -2722,7 +2724,7 @@ use Crypt::URandom;
         say "                        <label for=\"username\">Username</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
@@ -2761,7 +2763,7 @@ use Crypt::URandom;
         say "                        <label for=\"mobile\">mobile</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" />";
         say "                    </td>";
         say "                </tr>";
         $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
@@ -2772,7 +2774,7 @@ use Crypt::URandom;
         say "                        <label for=\"phone\">land line</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" />";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
