@@ -2707,7 +2707,14 @@ use Crypt::URandom;
         my $mobile    = $req->param('mobile');
         my $phone     = $req->param('phone');
 
-        if(defined $username && defined $email && defined && $password
+        if(defined $username && defined $email && defined && $password && $repeat
+            && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
+            && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
+            && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)){
+            my @msg;
+            my $return = 1;
+            return $return;
+        }
 
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone], [qw(username email password repeat mobile phone)]));
 
@@ -2728,7 +2735,7 @@ use Crypt::URandom;
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
-        $pattern = '[a-z0-9.+-_]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+';
+        $pattern = '[a-z0-9.+%_-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+';
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"email\">email</label>";
@@ -2756,7 +2763,7 @@ use Crypt::URandom;
         say "                    </td>";
         say "                </tr>";
         $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
-        $pattern = '(?:\+\d+|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
+        $pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
         my $placeholder = '+61438-567-876|0438 567 876|0438567876';
         say "                <tr>";
         say "                    <td>";
@@ -2767,7 +2774,7 @@ use Crypt::URandom;
         say "                    </td>";
         say "                </tr>";
         $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
-        $pattern = '(?:\+\d+|0|\(0\d\)[ -]?|0\d[ -]?))?\d{3}[ -]?\d{3}[ -]?\d{3}';
+        $pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
         $placeholder = '+612-9567-2876|(02) 9567 2876|0295672876';
         say "                <tr>";
         say "                    <td>";
