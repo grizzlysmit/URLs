@@ -17,6 +17,9 @@ select {
 table, th, td {
     border: 1px solid black;
 }
+table {
+    text-align: center;
+}
 body {
     text-align: center;
 }
