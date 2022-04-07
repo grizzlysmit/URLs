@@ -2849,6 +2849,7 @@ use Crypt::URandom;
         say "                        <input type=\"text\" name=\"country\" id=\"country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" required/>";
         say "                    </td>";
         say "                </tr>";
+        say "                <div>";
         say "                <tr>";
         say "                    <th colspan=\"3\">";
         say "                        Postal Address";
@@ -2914,6 +2915,7 @@ use Crypt::URandom;
         say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" required/>";
         say "                    </td>";
         say "                </tr>";
+        say "                </div>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
