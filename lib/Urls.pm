@@ -2712,6 +2712,7 @@ use Crypt::URandom;
         my $postcode           = $req->param('postcode');
         my $region             = $req->param('region');
         my $country            = $req->param('country');
+        my $togglep            = $req->param('togglep');
         my $postal_unit        = $req->param('postal_unit');
         my $postal_street      = $req->param('postal_street');
         my $postal_city_suberb = $req->param('postal_city_suberb');
@@ -2722,14 +2723,17 @@ use Crypt::URandom;
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone,
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
                     $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
-                    $postal_country], [qw(username email password repeat mobile phone unit
+                    $postal_country, $togglep], [qw(username email password repeat mobile phone unit
                     street city_suberb postcode region country postal_unit postal
-                    street postal_city_suberb postal_postcode postal_region postal_country)]));
+                    street postal_city_suberb postal_postcode postal_region postal_country togglep)]));
 
         if(defined $username && defined $email && defined && $password && $repeat
+            && defined $street && defined $city_suberb && defined $postcode && defined $country
+            && defined $postal_street && defined $postal_city_suberb && defined $postal_postcode && defined $postal_country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
             && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
-            && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)){
+            && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
+            && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/){
             my @msg;
             my $return = 1;
             return $return;
@@ -2889,7 +2893,7 @@ use Crypt::URandom;
         say "                        <label for=\"togglep\" id=\"lbl\">Same as Residential address</label>";
         say "                    </td>";
         say "                    <td>";
-        say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
+        say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" name=\"togglep\" checked/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
