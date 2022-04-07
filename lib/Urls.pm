@@ -2712,7 +2712,7 @@ use Crypt::URandom;
         my $postcode           = $req->param('postcode');
         my $region             = $req->param('region');
         my $country            = $req->param('country');
-        my $togglep            = $req->param('togglep');
+        my $postal_same        = $req->param('postal_same');
         my $postal_unit        = $req->param('postal_unit');
         my $postal_street      = $req->param('postal_street');
         my $postal_city_suberb = $req->param('postal_city_suberb');
@@ -2723,9 +2723,9 @@ use Crypt::URandom;
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone,
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
                     $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
-                    $postal_country, $togglep], [qw(username email password repeat mobile phone unit
+                    $postal_country, $postal_same], [qw(username email password repeat mobile phone unit
                     street city_suberb postcode region country postal_unit postal
-                    street postal_city_suberb postal_postcode postal_region postal_country togglep)]));
+                    street postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
 
         if(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $city_suberb && defined $postcode && defined $country
