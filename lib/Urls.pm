@@ -2724,8 +2724,8 @@ use Crypt::URandom;
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
                     $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
                     $postal_country, $postal_same], [qw(username email password repeat mobile phone unit
-                    street city_suberb postcode region country postal_unit postal
-                    street postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
+                    street city_suberb postcode region country postal_unit postal_street
+                    postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
 
         if(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $city_suberb && defined $postcode && defined $country
