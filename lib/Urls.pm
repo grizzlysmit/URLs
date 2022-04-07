@@ -2700,12 +2700,31 @@ use Crypt::URandom;
             $self->debug_init($debug, $log);
         }
 
-        my $username  = $req->param('username');
-        my $email     = $req->param('email');
-        my $password  = $req->param('password');
-        my $repeat    = $req->param('repeat');
-        my $mobile    = $req->param('mobile');
-        my $phone     = $req->param('phone');
+        my $username           = $req->param('username');
+        my $email              = $req->param('email');
+        my $password           = $req->param('password');
+        my $repeat             = $req->param('repeat');
+        my $mobile             = $req->param('mobile');
+        my $phone              = $req->param('phone');
+        my $unit               = $req->param('unit');
+        my $street             = $req->param('street');
+        my $city_suberb        = $req->param('city_suberb');
+        my $postcode           = $req->param('postcode');
+        my $region             = $req->param('region');
+        my $country            = $req->param('country');
+        my $postal_unit        = $req->param('postal_unit');
+        my $postal_street      = $req->param('postal_street');
+        my $postal_city_suberb = $req->param('postal_city_suberb');
+        my $postal_postcode    = $req->param('postal_postcode');
+        my $postal_region      = $req->param('postal_region');
+        my $postal_country     = $req->param('postal_country');
+
+        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone,
+                    $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
+                    $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
+                    $postal_country], [qw(username email password repeat mobile phone unit
+                    street city_suberb postcode region country postal_unit postal
+                    street postal_city_suberb postal_postcode postal_region postal_country)]));
 
         if(defined $username && defined $email && defined && $password && $repeat
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
@@ -2715,8 +2734,6 @@ use Crypt::URandom;
             my $return = 1;
             return $return;
         }
-
-        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone], [qw(username email password repeat mobile phone)]));
 
         untie %session;
         $db->disconnect;
