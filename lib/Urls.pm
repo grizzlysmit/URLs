@@ -2912,7 +2912,7 @@ use Crypt::URandom;
         say "                        <label for=\"postal_country\">Country</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" hidden required/>";
         say "                    </td>";
         say "                </tr>";
         say "                </div>";
