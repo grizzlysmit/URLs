@@ -2857,7 +2857,7 @@ use Crypt::URandom;
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
         $pattern = "[^;'\\x22]+";
         say "                <div hidden>";
-        say "                <tr>";
+        say "                <tr hidden>";
         say "                    <td>";
         say "                        <label for=\"postal_unit\" hidden>unit</label>";
         say "                    </td>";
