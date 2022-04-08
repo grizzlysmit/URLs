@@ -24,6 +24,6 @@ table {
 body {
     text-align: center;
 }
-.page_length {
+#page_length {
     margin-right: auto;
 }
