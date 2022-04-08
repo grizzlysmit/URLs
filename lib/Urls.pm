@@ -295,10 +295,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr><th>page</th><th>section</th><th>&nbsp;</th></tr>";
         say "                <tr>";
         say "                    <td>";
@@ -1527,10 +1531,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
         my $cnt = 0;
         for my $row (@links){
@@ -1779,10 +1787,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
         my $cnt = 0;
         for my $row (@pages){
@@ -1952,10 +1964,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr><th>Name</th><th>Full Name</th><th>Pattern</th><th>Status</th><th>Select</th></tr>";
         my $cnt = 0;
         for my $pp (@pseudo_pages){
@@ -2133,10 +2149,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
         my $cnt = 0;
         for my $row (@aliases){
@@ -2367,10 +2387,14 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "            <label for=\"page_length\">Page Length:";
-        say "                <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
-        say "            </label>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"3\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                </tr>";
         if(@links_sections){
             say "                <tr><th colspan=\"2\">Name</th><th>Select</th></tr>";
             my $cnt = 0;
