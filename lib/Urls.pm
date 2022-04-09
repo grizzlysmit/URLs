@@ -1595,7 +1595,7 @@ use Crypt::URandom;
 
 
     sub message {
-        my ($self, $debug, $_session, $db, $fun, $button_msg, @msgs) = @_;
+        my ($self, $debug, $_session, $db, $fun, $button_msg, @msgs, $dont_do_form) = @_;
         my $ident           = ident $self;
 
         my %session = %{$_session};
@@ -1607,46 +1607,63 @@ use Crypt::URandom;
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"$fun.pl\" method=\"post\">";
-        say "            <table>";
-        if($button_msg){
-            say "                <tr><th colspan=\"3\">Message</th></tr>";
+        if($dont_do_form){
+            say "        <table>";
+            if($button_msg){
+                say "            <tr><th colspan=\"3\">Message</th></tr>";
+            }else{
+                say "            <tr><th colspan=\"3\">Error: Message</th></tr>";
+            }
+            for my $msg (@msgs){
+                say "            <tr>";
+                say "                <td colspan=\"3\">";
+                say "                    $msg";
+                say "                </td>";
+                say "            </tr>";
+            }
+            say "        </table>";
         }else{
-            say "                <tr><th colspan=\"3\">Error: Message</th></tr>";
-        }
-        for my $msg (@msgs){
+            say "        <form action=\"$fun.pl\" method=\"post\">";
+            say "            <table>";
+            if($button_msg){
+                say "                <tr><th colspan=\"3\">Message</th></tr>";
+            }else{
+                say "                <tr><th colspan=\"3\">Error: Message</th></tr>";
+            }
+            for my $msg (@msgs){
+                say "                <tr>";
+                say "                    <td colspan=\"3\">";
+                say "                        $msg";
+                say "                    </td>";
+                say "                </tr>";
+            }
             say "                <tr>";
-            say "                    <td colspan=\"3\">";
-            say "                        $msg";
+            say "                    <td>";
+            if($debug){
+                say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+                say "                    </td>";
+                say "                    <td>";
+                say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            }else{
+                say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+                say "                    </td>";
+                say "                    <td>";
+                say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            }
             say "                    </td>";
+            if($button_msg){
+                say "                    <td>";
+                say "                        <input name=\"delete\" type=\"submit\" value=\"$button_msg\">";
+                say "                    </td>";
+            }else{
+                say "                    <td>";
+                say "                        <input name=\"submit\" type=\"submit\" value=\"Try Again\">";
+                say "                    </td>";
+            }
             say "                </tr>";
+            say "            </table>";
+            say "        </form>";
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
-        }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
-        }
-        say "                    </td>";
-        if($button_msg){
-            say "                    <td>";
-            say "                        <input name=\"delete\" type=\"submit\" value=\"$button_msg\">";
-            say "                    </td>";
-        }else{
-            say "                    <td>";
-            say "                        <input name=\"submit\" type=\"submit\" value=\"Try Again\">";
-            say "                    </td>";
-        }
-        say "                </tr>";
-        say "            </table>";
-        say "        </form>";
 
     } ## --- end sub message
 
@@ -2724,6 +2741,7 @@ use Crypt::URandom;
             $self->debug_init($debug, $log);
         }
 
+        my $submit             = $req->param('submit');
         my $username           = $req->param('username');
         my $email              = $req->param('email');
         my $password           = $req->param('password');
@@ -2751,17 +2769,68 @@ use Crypt::URandom;
                     street city_suberb postcode region country postal_unit postal_street
                     postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
 
-        if(defined $username && defined $email && defined && $password && $repeat
-            && defined $street && defined $city_suberb && defined $postcode && defined $country
-            && defined $postal_street && defined $postal_city_suberb && defined $postal_postcode && defined $postal_country
+        my $cond = defined $postal_street && defined $postal_city_suberb && defined $postal_country
+                    && (!$poatal_unit || $poatal_unit =~ m/^[^;\'\"]+$/) && $poatal_street =~ m/^[^;\'\"]+$/
+                    && (!$postal_unit || $postal_unit =~ m/^[^;\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
+                    && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
+                    && (!$postal_region || $postal_region =~ m/^[^;'\\x22]+$/) && $postal_country =~ m/^[^;'\\x22]+$/;
+
+        if($password && $repeat
+            && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
+                    || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
+            my @msgs = ('password and/or repeat password did not match require ments 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
+            $self->message($debug, \%session, $db, 'register', undef, @msgs, 1);
+        }elsif(($password || $repeat) && $password ne $repeat){
+            my @msgs = ('password and repeat password did not match!');
+            $self->message($debug, \%session, $db, 'register', undef, @msgs, 1);
+        }elsif(defined $username && defined $email && defined && $password && $repeat
+            && defined $street && defined $city_suberb && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
             && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
-            && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/){
+            && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
+            && $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
+            && (!$region || $region =~ m/^[^;'\\x22]+$/) && $country =~ m/^[^;'\\x22]+$/
+            && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
+            && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ && ($postal_same?1:$cond)){
             my @msg;
             my $return = 1;
-            return $return;
+            if($submit eq 'Register'){
+                my $sql    = "\n";
+                my $sql   .= "\n";
+                my $query  = $db->prepare($sql);
+                my $result;
+                eval {
+                    $result = $query->execute();
+                };
+                if($@){
+                    push @msgs, "";
+                    $return = 0;
+                }
+                $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), @msgs, !$return);
+                return $return if $return;
+            }
         }
+
+        $username           = '' unless defined $username;
+        $email              = '' unless defined $email;
+        $password           = '' unless defined $password;
+        $repeat             = '' unless defined $repeat;
+        $mobile             = '' unless defined $mobile;
+        $phone              = '' unless defined $phone;
+        $unit               = '' unless defined $unit;
+        $street             = '' unless defined $street;
+        $city_suberb        = '' unless defined $city_suberb;
+        $postcode           = '' unless defined $postcode;
+        $region             = '' unless defined $region;
+        $country            = '' unless defined $country;
+        $postal_same        = '' unless defined $postal_same;
+        $postal_unit        = '' unless defined $postal_unit;
+        $postal_street      = '' unless defined $postal_street;
+        $postal_city_suberb = '' unless defined $postal_city_suberb;
+        $postal_postcode    = '' unless defined $postal_postcode;
+        $postal_region      = '' unless defined $postal_region;
+        $postal_country     = '' unless defined $postal_country;
 
         untie %session;
         $db->disconnect;
@@ -2776,7 +2845,7 @@ use Crypt::URandom;
         say "                        <label for=\"username\">Username</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" autofocus required/>";
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
@@ -2786,7 +2855,7 @@ use Crypt::URandom;
         say "                        <label for=\"email\">email</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
@@ -2796,7 +2865,7 @@ use Crypt::URandom;
         say "                        <label for=\"password\">password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" required/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -2804,7 +2873,7 @@ use Crypt::URandom;
         say "                        <label for=\"repeat\">Repeat Password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\"  required/>";
+        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"repeat\"  required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
@@ -2815,7 +2884,7 @@ use Crypt::URandom;
         say "                        <label for=\"mobile\">mobile</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
@@ -2826,7 +2895,7 @@ use Crypt::URandom;
         say "                        <label for=\"phone\">land line</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$phone\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -2841,7 +2910,7 @@ use Crypt::URandom;
         say "                        <label for=\"unit\">unit</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"unit\" id=\"unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"text\" name=\"unit\" id=\"unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$unit\" />";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2851,7 +2920,7 @@ use Crypt::URandom;
         say "                        <label for=\"street\">street</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"street\" id=\"street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"street\" id=\"street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$street\" required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2861,17 +2930,17 @@ use Crypt::URandom;
         say "                        <label for=\"city_suberb\">City/Suberb</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"city_suberb\" id=\"city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"city_suberb\" id=\"city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$city_suberb\" required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
-        $pattern = "[^;'\\x22]+";
+        $pattern = "[A-Z0-9 -]+";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"postcode\">postcode</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postcode\" id=\"postcode\" placeholder=\"postcode\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"postcode\" id=\"postcode\" placeholder=\"postcode\" pattern=\"$pattern\" title=\"$title\" value=\"$postcode\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2881,7 +2950,7 @@ use Crypt::URandom;
         say "                        <label for=\"region\">Region/State/Province</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"region\" id=\"region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"text\" name=\"region\" id=\"region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$region\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2891,7 +2960,7 @@ use Crypt::URandom;
         say "                        <label for=\"country\">Country</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"country\" id=\"country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" required/>";
+        say "                        <input type=\"text\" name=\"country\" id=\"country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" value=\"$country\" required/>";
         say "                    </td>";
         say "                </tr>";
         say "                <script>";
@@ -2925,13 +2994,12 @@ use Crypt::URandom;
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
         $pattern = "[^;'\\x22]+";
-        #say "                <div>";
         say "                <tr hidden class=\"postal\">";
         say "                    <td>";
         say "                        <label for=\"postal_unit\" >unit</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_unit\" id=\"postal_unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"text\" name=\"postal_unit\" id=\"postal_unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_unit\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2941,7 +3009,7 @@ use Crypt::URandom;
         say "                        <label for=\"postal_street\">street</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_street\" id=\"postal_street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" class=\"require\"/>";
+        say "                        <input type=\"text\" name=\"postal_street\" id=\"postal_street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$poatal_street\" class=\"require\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2951,17 +3019,17 @@ use Crypt::URandom;
         say "                        <label for=\"postal_city_suberb\">City/Suberb</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_city_suberb\" id=\"postal_city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" class=\"require\"/>";
+        say "                        <input type=\"text\" name=\"postal_city_suberb\" id=\"postal_city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_city_suberb\" class=\"require\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
-        $pattern = "[^;'\\x22]+";
+        $pattern = "[A-Z0-9 -]+";
         say "                <tr hidden class=\"postal\">";
         say "                    <td>";
         say "                        <label for=\"postal_postcode\">postcode</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_postcode\" id=\"postal_postcode\" placeholder=\"postcode\" pattern=\"$pattern\" title=\"$title\" class=\"require\"/>";
+        say "                        <input type=\"text\" name=\"postal_postcode\" id=\"postal_postcode\" placeholder=\"postcode\" pattern=\"$pattern\" value=\"$postal_postcode\" title=\"$title\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2971,7 +3039,7 @@ use Crypt::URandom;
         say "                        <label for=\"postal_region\">Region/State/Province</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_region\" id=\"postal_region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" />";
+        say "                        <input type=\"text\" name=\"postal_region\" id=\"postal_region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_region\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -2981,10 +3049,9 @@ use Crypt::URandom;
         say "                        <label for=\"postal_country\">Country</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" class=\"require\"/>";
+        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" class=\"require\" value=\"$postal_country\"/>";
         say "                    </td>";
         say "                </tr>";
-        #say "                </div>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
