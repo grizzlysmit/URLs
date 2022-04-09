@@ -548,7 +548,7 @@ use Crypt::URandom;
                 push @msgs, "Error: failed to define Alias: $alias => $section";
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_alias', 'Add an other Alias', @msgs);
+            $self->message($debug, \%session, $db, 'add_alias', 'Add an other Alias', undef, undef, @msgs);
             return $return;
         }
 
@@ -820,7 +820,7 @@ use Crypt::URandom;
                 push @msgs, "Error: Page insertion failed";
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_page', 'Add an other Page', @msgs);
+            $self->message($debug, \%session, $db, 'add_page', 'Add an other Page', undef, @msgs);
             return $return;
         }
         
@@ -1015,7 +1015,7 @@ use Crypt::URandom;
                 $query->finish();
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_link', 'Add Another Link', @msgs);
+            $self->message($debug, \%session, $db, 'add_link', 'Add Another Link', undef, @msgs);
             return $return;
         }
 
@@ -1182,17 +1182,17 @@ use Crypt::URandom;
             if($@){
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, @msgs);
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
                 return 1;
             }else{
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 return 0;
             }
         }
@@ -1495,7 +1495,7 @@ use Crypt::URandom;
                     $query->finish();
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more links', @msgs);
+            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more links', undef, @msgs);
             return $return;
         }
 
@@ -1507,7 +1507,7 @@ use Crypt::URandom;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_links', undef, "Error: $@");
+            $self->message($debug, \%session, $db, 'delete_links', undef, undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1595,7 +1595,7 @@ use Crypt::URandom;
 
 
     sub message {
-        my ($self, $debug, $_session, $db, $fun, $button_msg, @msgs, $dont_do_form) = @_;
+        my ($self, $debug, $_session, $db, $fun, $button_msg, $dont_do_form, @msgs) = @_;
         my $ident           = ident $self;
 
         my %session = %{$_session};
@@ -1768,7 +1768,7 @@ use Crypt::URandom;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_pages', 'Delete some more pages', @msgs);
+            $self->message($debug, \%session, $db, 'delete_pages', 'Delete some more pages', undef, @msgs);
             return $return;
         }
 
@@ -1780,7 +1780,7 @@ use Crypt::URandom;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_pages', undef, "Error: $@");
+            $self->message($debug, \%session, $db, 'delete_pages', undef, undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1945,7 +1945,7 @@ use Crypt::URandom;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_pseudo_page', 'Delete some more pseudo_pages', @msgs);
+            $self->message($debug, \%session, $db, 'delete_pseudo_page', 'Delete some more pseudo_pages', undef, @msgs);
             return $return;
         }
 
@@ -1957,7 +1957,7 @@ use Crypt::URandom;
             $result         = $query->execute();
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_pseudo_page', undef, "Error: $@", "Cannot read from pseudo_pages");
+            $self->message($debug, \%session, $db, 'delete_pseudo_page', undef, undef, "Error: $@", "Cannot read from pseudo_pages");
             $query->finish();
             return 0;
         }
@@ -2114,7 +2114,7 @@ use Crypt::URandom;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_aliases', 'Delete some more Aliases', @msgs);
+            $self->message($debug, \%session, $db, 'delete_aliases', 'Delete some more Aliases', undef, @msgs);
             return $return;
         }
 
@@ -2351,7 +2351,7 @@ use Crypt::URandom;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', @msgs);
+            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', undef, @msgs);
             return $return;
         }
 
@@ -2364,7 +2364,7 @@ use Crypt::URandom;
             $result     = $query->execute();
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', undef, "Error: $@", "Cannnot Read links_sections");
+            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', undef, undef, "Error: $@", "Cannnot Read links_sections");
             $query->finish();
             return 0;
         }
@@ -2778,10 +2778,10 @@ use Crypt::URandom;
             && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
                     || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
             my @msgs = ('password and/or repeat password did not match require ments 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
-            $self->message($debug, \%session, $db, 'register', undef, @msgs, 1);
+            $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
         }elsif(($password || $repeat) && $password ne $repeat){
             my @msgs = ('password and repeat password did not match!');
-            $self->message($debug, \%session, $db, 'register', undef, @msgs, 1);
+            $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
         }elsif(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $city_suberb && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
@@ -2806,7 +2806,7 @@ use Crypt::URandom;
                     push @msgs, "";
                     $return = 0;
                 }
-                $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), @msgs, !$return);
+                $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
                 return $return if $return;
             }
         }
