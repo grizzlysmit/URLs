@@ -2987,8 +2987,13 @@ use Crypt::URandom;
         say "                        <label for=\"togglep\" id=\"lbl\">Same as Residential address</label>";
         say "                    </td>";
         say "                    <td>";
-        say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
-        say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
+        if($postal_same){
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
+        }else{
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"0\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" />";
+        }
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
