@@ -2987,7 +2987,7 @@ use Crypt::URandom;
         say "                        <label for=\"togglep\" id=\"lbl\">Same as Residential address</label>";
         say "                    </td>";
         say "                    <td>";
-        if($postal_same){
+        if(!$postal_same){
             say "                <script>";
             say "                    var chbx = document.getElementById(\"togglep\");";
             say "                    chbx.checked = false";
