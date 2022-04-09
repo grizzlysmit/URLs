@@ -2793,11 +2793,11 @@ use Crypt::URandom;
             && (!$region || $region =~ m/^[^;'\\x22]+$/) && $country =~ m/^[^;'\\x22]+$/
             && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
             && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ && ($postal_same?1:$cond)){
-            my @msg;
+            my @msgs;
             my $return = 1;
             if($submit eq 'Register'){
                 my $sql    = "\n";
-                my $sql   .= "\n";
+                $sql      .= "\n";
                 my $query  = $db->prepare($sql);
                 my $result;
                 eval {
