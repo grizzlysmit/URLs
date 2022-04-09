@@ -2770,7 +2770,6 @@ use Crypt::URandom;
                     postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
 
         my $cond = defined $postal_street && defined $postal_city_suberb && defined $postal_country
-                    && (!$poatal_unit || $poatal_unit =~ m/^[^;\'\"]+$/) && $poatal_street =~ m/^[^;\'\"]+$/
                     && (!$postal_unit || $postal_unit =~ m/^[^;\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
                     && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
                     && (!$postal_region || $postal_region =~ m/^[^;'\\x22]+$/) && $postal_country =~ m/^[^;'\\x22]+$/;
