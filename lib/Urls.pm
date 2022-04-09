@@ -2988,12 +2988,17 @@ use Crypt::URandom;
         say "                    </td>";
         say "                    <td>";
         if($postal_same){
-            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
-            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
-        }else{
-            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"0\"/>";
-            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" />";
+            say "                <script>";
+            say "                    var chbx = document.getElementById(\"togglep\");";
+            say "                    chbx.checked = false";
+            #say "                    ";
+            #say "                    ";
+            #say "                    ";
+            #say "                    ";
+            say "                </script>";
         }
+        say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
+        say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
