@@ -2869,6 +2869,8 @@ use Crypt::URandom;
                         push @msgs, "Insert into _group failed: $@";
                         $return = 0;
                     }
+                    $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $line], [qw(return sql query result line)]));
                     $query->finish();
                     if($result){
                         push @msgs, "Succeded in inserting primary group";
