@@ -2854,7 +2854,7 @@ use Crypt::URandom;
                     }
                     $query->finish();
                     if($result){
-                        push @msg, "Succeded in inserting primary group";
+                        push @msgs, "Succeded in inserting primary group";
                         $sql       = "SELECT g.id FROM _group g\n";
                         $sql      .= "WHERE g.name = ?\n";
                         $query  = $db->prepare($sql);
@@ -2873,7 +2873,7 @@ use Crypt::URandom;
                             push @msgs, @msgs_res_address;
                             my $postal_address_id = $residential_address_id;
                             if(!$postal_same){
-                                ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $poastal_street, $poastal_city_suberb, $poastal_postcode, $poastal_region, $poastal_country, $residential_address_id, $db);
+                                ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
                             }
