@@ -2771,7 +2771,7 @@ use Crypt::URandom;
         my $loggedin_username  = $session{loggedin_username};
         my $isadmin;
         if($loggedin && $loggedin_id && $loggedin_username){
-            my $msgs;
+            my @msgs;
             my $return = 1;
             my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
             $sql    .= "WHERE p.id = ?\n";
