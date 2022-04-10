@@ -2811,7 +2811,8 @@ use Crypt::URandom;
                     postal_city_suberb postal_postcode postal_region postal_country postal_same loggedin
                     loggedin_id loggedin_username isadmin admin)]));
 
-        my $cond = defined $postal_street && defined $postal_city_suberb && defined $postal_country
+        my $cond = defined $postal_street && defined $postal_country
+                    && (!$postal_city_suberb || $postal_city_suberb =~ m/^[^;\'\"]+$/)
                     && (!$postal_unit || $postal_unit =~ m/^[^;\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
                     && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
                     && (!$postal_region || $postal_region =~ m/^[^;\'\"]+$/) && $postal_country =~ m/^[^;\'\"]+$/;
@@ -2829,9 +2830,10 @@ use Crypt::URandom;
             my @msgs = ('password and repeat password did not match!');
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
         }elsif(defined $username && defined $email && defined && $password && $repeat
-            && defined $street && defined $city_suberb && defined $country
+            && defined $street && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
-            && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
+            && (!$city_suberb || $city_suberb =~ m/^[^;\'\"]+$/) 
+            && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
             && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
             && $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
