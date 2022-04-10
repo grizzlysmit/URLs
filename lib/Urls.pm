@@ -2840,7 +2840,7 @@ use Crypt::URandom;
             my @msgs;
             my $return = 1;
             if($submit eq 'Register'){
-                $hashed = $self->generate_hash($password);
+                my $hashed = $self->generate_hash($password);
                 if($self->validate($hashed, $password)){
                     my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
