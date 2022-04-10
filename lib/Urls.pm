@@ -2854,9 +2854,11 @@ use Crypt::URandom;
             my $return = 1;
             if($submit eq 'Register'){
                 my $hashed_password = $self->generate_hash($password);
-                $self->log(Data::Dumper->Dump([$password, $hashed_password], [qw(password hashed_password)]));
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
                 if($self->validate($hashed_password, $password)){
-                    $self->log(Data::Dumper->Dump([$password, $hashed_password], [qw(password hashed_password)]));
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
                     my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
