@@ -2840,8 +2840,8 @@ use Crypt::URandom;
             my @msgs;
             my $return = 1;
             if($submit eq 'Register'){
-                my $hashed = $self->generate_hash($password);
-                if($self->validate($hashed, $password)){
+                my $hashed_password = $self->generate_hash($password);
+                if($self->validate($hashed_password, $password)){
                     my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
@@ -2924,7 +2924,7 @@ use Crypt::URandom;
                     }
                 }else{
                     $return = 0;
-                    push @msgs, "Error: could not validate hashed password.", "hashed == \`$hashed'";
+                    push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                 }
                 $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
                 return $return if $return;
