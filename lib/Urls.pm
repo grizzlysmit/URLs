@@ -2831,7 +2831,7 @@ use Crypt::URandom;
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
         }elsif(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $country
-            && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
+            #&& $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
             #&& (!$city_suberb || $city_suberb =~ m/^[^;\'\"]+$/) 
             #&& (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             #&& (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
