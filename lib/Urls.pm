@@ -2829,7 +2829,7 @@ use Crypt::URandom;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and repeat password did not match!');
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
-        }elsif(defined $username && defined $email && defined && $password && $repeat
+        }elsif(1 ||(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $country
             #&& $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
             #&& (!$city_suberb || $city_suberb =~ m/^[^;\'\"]+$/) 
@@ -2841,7 +2841,7 @@ use Crypt::URandom;
             #&& $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
             #&& $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
             #&& ($postal_same?1:$cond)
-                  ){
+        )){
             $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
             $given = '' unless defined $given;
             $family = '' unless defined $family;
