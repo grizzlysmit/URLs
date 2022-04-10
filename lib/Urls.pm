@@ -2474,7 +2474,7 @@ use Crypt::URandom;
             iterations => 2_048,
             output_len => 64,
             salt_len => 16,
-            length_limit => 100, 
+            length_limit => 144, 
         );
                 
         return $pbkdf2->generate($password);
@@ -2491,8 +2491,9 @@ use Crypt::URandom;
             iterations => 2_048,
             output_len => 64,
             salt_len => 16,
-            length_limit => 100, 
+            length_limit => 144,
         );
+        # {X-PBKDF2}HMACSHA2+512:AAAIAA:qtOZmwbsxBbP/sfUMwz2Kg==:25GQkZE/+11PpHQ6EZKHre68P7yocSelwc7m/GgZhALXcVUbnBRXTAm0Wd+H8sVtjvwCf7klz5SC/GlznXrFLA==
                 
         return $pbkdf2->validate($hashed_password, $password);
     } ## --- end sub validate
