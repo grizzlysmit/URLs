@@ -3601,7 +3601,7 @@ use Crypt::URandom;
     sub create_passwd {
         my ($self, $username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db) = @_;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$phone, $line], [qw(phone line)]));
+        $self->log(Data::Dumper->Dump([$username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $line], [qw(username hashed_password primary_email_id passwd_details_id primary_group_id admin line)]));
         my ($passwd_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO passwd(username, _password, email_id, passwd_details_id, primary_group_id, _admin)VALUES(?, ?, ?, ?, ?, ?)  RETURNING id;\n";
