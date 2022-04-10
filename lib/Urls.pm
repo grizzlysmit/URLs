@@ -2464,7 +2464,7 @@ use Crypt::URandom;
     } ## --- end sub delete_orphaned_links_sections
 
 
-    sub generate {
+    sub generate_hash {
         my ($self, $password) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
@@ -2478,11 +2478,11 @@ use Crypt::URandom;
         );
                 
         return $pbkdf2->generate($password);
-    } ## --- end sub generate
+    } ## --- end sub generate_hash
 
 
     sub validate {
-        my ($self, $password, $hash) = @_;
+        my ($self, $password, $hashed_password) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my $pbkdf2 = Crypt::PBKDF2->new(
@@ -2494,7 +2494,7 @@ use Crypt::URandom;
             length_limit => 100, 
         );
                 
-        return $pbkdf2->validate($password);
+        return $pbkdf2->validate($hashed_password, $password);
     } ## --- end sub validate
 
 
@@ -2761,18 +2761,60 @@ use Crypt::URandom;
         my $postal_postcode    = $req->param('postal_postcode');
         my $postal_region      = $req->param('postal_region');
         my $postal_country     = $req->param('postal_country');
+        my $given              = $req->param('given');
+        my $family             = $req->param('family');
+        my $display_name       = $req->param('display_name');
+        my $admin              = $req->param('admin');
 
-        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $mobile, $phone,
+        my $loggedin           = $session{loggedin};
+        my $loggedin_id        = $session{loggedin_id};
+        my $loggedin_username  = $session{loggedin_username};
+        my $isadmin;
+        if($loggedin && $loggedin_id && $loggedin_username){
+            my $msgs;
+            my $return = 1;
+            my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
+            $sql    .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($loggedin_id);
+            };
+            if($@){
+                push @msgs, "Insert into _group failed: $@";
+                $return = 0;
+            }
+            $query->finish();
+            if($return){
+                my $r      = $query->fetchrow_hashref();
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "could not find your record somethinnng is wrong with your loginn";
+            }
+            $self->message($debug, \%session, $db, ($return?'start again':'register'), ($return ? 'register' : undef), !$return, @msgs);
+            return 0 unless $return;
+        }
+
+        $admin = 0 unless $isadmin; # admins can only be made by admins. #
+
+        return 0 if $loggedin && !$isadmin; # Only admins and nnew users should be usinng this page. #
+
+        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
                     $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
-                    $postal_country, $postal_same], [qw(username email password repeat mobile phone unit
-                    street city_suberb postcode region country postal_unit postal_street
-                    postal_city_suberb postal_postcode postal_region postal_country postal_same)]));
+                    $postal_country, $postal_same, $loggedin, $loggedin_id, $loggedin_username, $isadmin, $admin],
+                    [qw(username email password repeat given family display_name
+                    mobile phone unit street city_suberb postcode region country postal_unit postal_street
+                    postal_city_suberb postal_postcode postal_region postal_country postal_same loggedin
+                    loggedin_id loggedin_username isadmin admin)]));
 
         my $cond = defined $postal_street && defined $postal_city_suberb && defined $postal_country
                     && (!$postal_unit || $postal_unit =~ m/^[^;\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
                     && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
-                    && (!$postal_region || $postal_region =~ m/^[^;'\\x22]+$/) && $postal_country =~ m/^[^;'\\x22]+$/;
+                    && (!$postal_region || $postal_region =~ m/^[^;\'\"]+$/) && $postal_country =~ m/^[^;\'\"]+$/;
 
         if($password && $repeat
             && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
@@ -2789,22 +2831,100 @@ use Crypt::URandom;
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
             && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
             && $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
-            && (!$region || $region =~ m/^[^;'\\x22]+$/) && $country =~ m/^[^;'\\x22]+$/
+            && (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
             && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
             && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ && ($postal_same?1:$cond)){
+            $given = '' unless defined $given;
+            $family = '' unless defined $family;
+            $display_name = "$given $family" unless $display_name;
             my @msgs;
             my $return = 1;
             if($submit eq 'Register'){
-                my $sql    = "\n";
-                $sql      .= "\n";
-                my $query  = $db->prepare($sql);
-                my $result;
-                eval {
-                    $result = $query->execute();
-                };
-                if($@){
-                    push @msgs, "";
+                $hashed = $self->generate_hash($password);
+                if($self->validate($hashed, $password)){
+                    my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
+                    my $query  = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result = $query->execute($username);
+                    };
+                    if($@){
+                        push @msgs, "Insert into _group failed: $@";
+                        $return = 0;
+                    }
+                    $query->finish();
+                    if($result){
+                        push @msg, "Succeded in inserting primary group";
+                        $sql       = "SELECT g.id FROM _group g\n";
+                        $sql      .= "WHERE g.name = ?\n";
+                        $query  = $db->prepare($sql);
+                        eval {
+                            $result = $query->execute($username);
+                        };
+                        if($@){
+                            push @msgs, "Error: could not find the new _group please contact your webmaster";
+                            $return = 0;
+                        }
+                        if($result){
+                            my $r      = $query->fetchrow_hashref();
+                            my $primary_group_id = $r->{id};
+                            my ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($unit, $street, $city_suberb, $postcode, $region, $country, $db);
+                            $return = $return_res unless $return_res;
+                            push @msgs, @msgs_res_address;
+                            my $postal_address_id = $residential_address_id;
+                            if(!$postal_same){
+                                ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $poastal_street, $poastal_city_suberb, $poastal_postcode, $poastal_region, $poastal_country, $residential_address_id, $db);
+                                $return = $return_res unless $return_res;
+                                push @msgs, @msgs_res_address;
+                            }
+                            my ($mobile_id, $phone_id);
+                            my ($return_phone, @msgs_phone);
+                            if($mobile){
+                                ($mobile_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
+                                $return = $return_phone unless $return_phone;
+                                push @msgs, @msgs_phone;
+                            }
+                            if($phone){
+                                ($phone_id, $return_phone, @msgs_phone) = $self->create_phone($phone, $db);
+                                $return = $return_phone unless $return_phone;
+                                push @msgs, @msgs_phone;
+                            }
+                            my $primary_phone_id = $phone_id;
+                            $primary_phone_id = $mobile_id if $mobile_id;
+                            my ($return_email, $primary_email_id, @msgs_email);
+                            ($primary_email_id, $return_email, @msgs_email) = $self->create_email($email, $db);
+                            $return = $return_email unless $return_email;
+                            push @msgs, @msgs_email;
+                            if($return){
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $db);
+                                $return = $return_details unless $return_details;
+                                push @msgs, @_msgs;
+                                if($return){
+                                    my ($passwd_id, $return_passwd, @msgs_passwd);
+                                    eval {
+                                        ($passwd_id, $return_passwd, @msgs_passwd) $self->create_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
+                                        $return = $return_passwd unless $return_passwd;
+                                        push @msgs, @msgs_passwd;
+                                    };
+                                    if($@){
+                                        $return = 0;
+                                        push @msgs, "Error: falied to create passwd: $@";
+                                    }
+                                }
+                            }else{
+                                push @msgs, "one of the dependencies failed.", "see above.";
+                            }
+                        }else{
+                            $return = 0;
+                            push @msgs, "failed to get primary _group id";
+                        }
+                    }else{
+                        $return = 0;
+                        push @msgs, "Failed to insert primary _group.";
+                    }
+                }else{
                     $return = 0;
+                    push @msgs, "Error: could not validate hashed password.", "hashed == \`$hashed'";
                 }
                 $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
                 return $return if $return;
@@ -2830,6 +2950,9 @@ use Crypt::URandom;
         $postal_postcode    = '' unless defined $postal_postcode;
         $postal_region      = '' unless defined $postal_region;
         $postal_country     = '' unless defined $postal_country;
+        $given              = '' unless defined $given;
+        $family             = '' unless defined $family;
+        $display_name       = '' unless defined $display_name;
 
         untie %session;
         $db->disconnect;
@@ -2875,6 +2998,40 @@ use Crypt::URandom;
         say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  required/>";
         say "                    </td>";
         say "                </tr>";
+        # given,  family annd dispaly name
+        say "                <script>";
+        say "                    function updatenames(){";
+        say "                        var gvn = document.getElementById(\"given\");";
+        say "                        var fam = document.getElementById(\"family\");";
+        say "                        var disp = document.getElementById(\"display_name\");";
+        say "                        disp.value = gvn.value + \" \" + fam.value;";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"given\">given name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"given\" id=\"given\" placeholder=\"given name\" value=\"$given\" onchange=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"family\">family name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"family\" id=\"family\" placeholder=\"family name\" value=\"$family\" onchange=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"display_name\">display_name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"password\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # phones 
         $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
         $pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
         my $placeholder = '+61438-567-876|0438 567 876|0438567876';
@@ -3062,6 +3219,27 @@ use Crypt::URandom;
         say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" class=\"require\" value=\"$postal_country\" $required/>";
         say "                    </td>";
         say "                </tr>";
+        # admin option
+        if($loggedin && $isadmin){
+            say "                <tr class=\"admin\">";
+            say "                    <td colspan=\"2\">";
+            say "                        <label for=\"admin\">admin</label>";
+            say "                    </td>";
+            say "                    <td>";
+            if($admin){
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked/>";
+            }else{
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\"/>";
+            }
+            say "                    </td>";
+            say "                </tr>";
+        }else{
+            say "                <tr hidden class=\"admin\">";
+            say "                    <td colspan=\"3\">";
+            say "                        <input type=\"hidden\" name=\"admin\" id=\"admin\" value=\"0\"/>";
+            say "                    </td>";
+            say "                </tr>";
+        }
         say "                <tr>";
         say "                    <td>";
         if($debug){
@@ -3275,6 +3453,136 @@ use Crypt::URandom;
 
         return 1;
     } ## --- end sub admin
+
+
+    sub create_address {
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $db) = @_;
+        my ($address_id, $return, @msgs);
+        $return = 1;
+        my $sql    = "INSERT INTO address(unit, street, city_suberb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country);
+        };
+        if($@){
+            push @msgs, "Insert into address failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $address_id = $r->{id};
+        }else{
+            push @msgs, "Insert into address failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($address_id, $return, @msgs);
+    } ## --- end sub create_address
+
+
+    sub create_phone {
+        my ($self, $phone, $db) = @_;
+        my ($phone_id, $return, @msgs);
+        $return = 1;
+        my $sql    = "INSERT INTO phone(_number)VALUES(?)  RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($phone);
+        };
+        if($@){
+            push @msgs, "Insert into phone failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $phone_id = $r->{id};
+        }else{
+            push @msgs, "Insert into phone failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($phone_id, $return, @msgs);
+    } ## --- end sub create_phone
+
+
+    sub create_email {
+        my ($self, $email, $db) = @_;
+        my ($email_id, $return, @msgs);
+        $return = 1;
+        my $sql    = "INSERT INTO email(_email)VALUES(?)  RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($email);
+        };
+        if($@){
+            push @msgs, "Insert into email failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $email_id = $r->{id};
+        }else{
+            push @msgs, "Insert into email failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($email_id, $return, @msgs);
+    } ## --- end sub create_email
+
+
+    sub create_passwd_details {
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $db) = @_;
+        my ($passwd_details_id, $return, @msgs);
+        $return = 1;
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id);
+        };
+        if($@){
+            push @msgs, "Insert into passwd_details failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $passwd_details_id = $r->{id};
+        }else{
+            push @msgs, "Insert into passwd_details failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($passwd_details_id, $return, @msgs);
+    } ## --- end sub create_passwd_details
+    
+
+    sub create_passwd {
+        my ($self, $username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db) = @_;
+        my ($passwd_id, $return, @msgs);
+        $return = 1;
+        my $sql    = "INSERT INTO passwd(username, _password, email_id, passwd_details_id, primary_group_id, _admin)VALUES(?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin);
+        };
+        if($@){
+            push @msgs, "Insert into phone failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $passwd_id = $r->{id};
+        }else{
+            push @msgs, "Insert into phone failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($passwd_id, $return, @msgs);
+    } ## --- end sub create_passwd
 
 }
 
