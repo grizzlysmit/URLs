@@ -2902,7 +2902,7 @@ use Crypt::URandom;
                                 if($return){
                                     my ($passwd_id, $return_passwd, @msgs_passwd);
                                     eval {
-                                        ($passwd_id, $return_passwd, @msgs_passwd) $self->create_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
+                                        ($passwd_id, $return_passwd, @msgs_passwd)  = $self->create_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
                                         $return = $return_passwd unless $return_passwd;
                                         push @msgs, @msgs_passwd;
                                     };
