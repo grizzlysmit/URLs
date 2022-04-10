@@ -2870,7 +2870,7 @@ use Crypt::URandom;
                         $return = 0;
                     }
                     $line = __LINE__;
-                    $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $line], [qw(return sql query result line)]));
+                    $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
                     $query->finish();
                     if($result){
                         push @msgs, "Succeded in inserting primary group";
