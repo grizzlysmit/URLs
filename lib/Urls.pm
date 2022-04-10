@@ -2996,7 +2996,7 @@ use Crypt::URandom;
             say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
         }else{
             $hidden = '';
-            $required = '$required';
+            $required = 'required';
             say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"0\"/>";
             say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\"/>";
         }
