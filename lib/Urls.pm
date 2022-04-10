@@ -3487,6 +3487,9 @@ use Crypt::URandom;
 
     sub create_address {
         my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
+                [qw($unit street city_suberb postcode region country line)]));
         my ($address_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
@@ -3541,6 +3544,8 @@ use Crypt::URandom;
 
     sub create_email {
         my ($self, $email, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$email, $line], [qw(email line)]));
         my ($email_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO email(_email)VALUES(?)  RETURNING id;\n";
@@ -3567,6 +3572,8 @@ use Crypt::URandom;
 
     sub create_passwd_details {
         my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $line], [qw(display_name given family residential_address_id postal_address_id primary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
@@ -3593,6 +3600,8 @@ use Crypt::URandom;
 
     sub create_passwd {
         my ($self, $username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$phone, $line], [qw(phone line)]));
         my ($passwd_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO passwd(username, _password, email_id, passwd_details_id, primary_group_id, _admin)VALUES(?, ?, ?, ?, ?, ?)  RETURNING id;\n";
