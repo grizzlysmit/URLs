@@ -2834,14 +2834,18 @@ use Crypt::URandom;
             && (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
             && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
             && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ && ($postal_same?1:$cond)){
+            $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
             $given = '' unless defined $given;
             $family = '' unless defined $family;
             $display_name = "$given $family" unless $display_name;
+            $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
             my @msgs;
             my $return = 1;
             if($submit eq 'Register'){
                 my $hashed_password = $self->generate_hash($password);
+                $self->log(Data::Dumper->Dump([$password, $hashed_password], [qw(password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password], [qw(password hashed_password)]));
                     my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
@@ -2923,6 +2927,8 @@ use Crypt::URandom;
                         push @msgs, "Failed to insert primary _group.";
                     }
                 }else{
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
                     $return = 0;
                     push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                 }
