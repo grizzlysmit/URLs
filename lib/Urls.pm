@@ -2819,9 +2819,13 @@ use Crypt::URandom;
         if($password && $repeat
             && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
                     || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
             $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
         }elsif(($password || $repeat) && $password ne $repeat){
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and repeat password did not match!');
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
         }elsif(defined $username && defined $email && defined && $password && $repeat
