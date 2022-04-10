@@ -3487,7 +3487,7 @@ use Crypt::URandom;
         my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $db) = @_;
         my ($address_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO address(unit, street, city_suberb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
+        my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
