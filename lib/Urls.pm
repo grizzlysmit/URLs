@@ -2469,9 +2469,9 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my $pbkdf2 = Crypt::PBKDF2->new(
-            hash_class => 'HMACSHA2',
-            #hash_class => 'HMACSHA1',
-            hash_args => {sha_size => 512}, 
+            #hash_class => 'HMACSHA2',
+            hash_class => 'HMACSHA1',
+            #hash_args => {sha_size => 512}, 
             iterations => 2048,
             output_len => 64,
             salt_len => 16,
@@ -2487,9 +2487,9 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my $pbkdf2 = Crypt::PBKDF2->new(
-            hash_class => 'HMACSHA2',
-            #hash_class => 'HMACSHA1',
-            hash_args => {sha_size => 512}, 
+            #hash_class => 'HMACSHA2',
+            hash_class => 'HMACSHA1',
+            #hash_args => {sha_size => 512}, 
             iterations => 2048,
             output_len => 64,
             salt_len => 16,
