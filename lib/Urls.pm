@@ -2939,6 +2939,9 @@ use Crypt::URandom;
                 $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
                 return $return if $return;
             }
+        }else{
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
         }
 
         $username           = '' unless defined $username;
