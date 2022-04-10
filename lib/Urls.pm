@@ -2838,8 +2838,9 @@ use Crypt::URandom;
             && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
             && $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
             && (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
-            && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
-            && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ && ($postal_same?1:$cond)){
+            #&& $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+            #&& $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+            && ($postal_same?1:$cond)){
             $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
             $given = '' unless defined $given;
             $family = '' unless defined $family;
