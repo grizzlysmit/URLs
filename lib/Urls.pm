@@ -2887,6 +2887,9 @@ use Crypt::URandom;
                         if($result){
                             my $r      = $query->fetchrow_hashref();
                             my $primary_group_id = $r->{id};
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
+                            $query->finish();
                             my ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($unit, $street, $city_suberb, $postcode, $region, $country, $db);
                             $return = $return_res unless $return_res;
                             push @msgs, @msgs_res_address;
@@ -2934,6 +2937,7 @@ use Crypt::URandom;
                                 push @msgs, "one of the dependencies failed.", "see above.";
                             }
                         }else{
+                            $query->finish();
                             $return = 0;
                             push @msgs, "failed to get primary _group id";
                         }
