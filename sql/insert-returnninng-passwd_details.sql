@@ -1,0 +1,2 @@
+-- INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;
+SELECT display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id FROM passwd_details pd
