@@ -2795,7 +2795,7 @@ use Crypt::URandom;
                 }
             }else{
                 $return = 0;
-                push @msgs, "could not find your record somethinnng is wrong with your loginn";
+                push @msgs, "could not find your record somethinnng is wrong with your login";
             }
             $self->message($debug, \%session, $db, ($return?'start again':'register'), ($return ? 'register' : undef), !$return, @msgs);
             return 0 unless $return;
@@ -2859,7 +2859,7 @@ use Crypt::URandom;
                 if($self->validate($hashed_password, $password)){
                     my $line = __LINE__;
                     $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                    my $sql    = "INSERT INTO _group(name) VALUES(?);\n";
+                    my $sql    = "INSERT INTO _group(_name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
                     eval {
@@ -2875,7 +2875,7 @@ use Crypt::URandom;
                     if($result){
                         push @msgs, "Succeded in inserting primary group";
                         $sql       = "SELECT g.id FROM _group g\n";
-                        $sql      .= "WHERE g.name = ?\n";
+                        $sql      .= "WHERE g._name = ?\n";
                         $query  = $db->prepare($sql);
                         eval {
                             $result = $query->execute($username);
