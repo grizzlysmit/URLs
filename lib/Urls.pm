@@ -2899,6 +2899,8 @@ use Crypt::URandom;
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
                             }
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($mobile_id, $phone_id);
                             my ($return_phone, @msgs_phone);
                             if($mobile){
@@ -3511,6 +3513,8 @@ use Crypt::URandom;
 
     sub create_phone {
         my ($self, $phone, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$phone, $line], [qw(phone line)]));
         my ($phone_id, $return, @msgs);
         $return = 1;
         my $sql    = "INSERT INTO phone(_number)VALUES(?)  RETURNING id;\n";
