@@ -3028,7 +3028,7 @@ use Crypt::URandom;
         say "                        <label for=\"display_name\">display_name</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
+        say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
         say "                    </td>";
         say "                </tr>";
         # phones 
