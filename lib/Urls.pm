@@ -2731,6 +2731,17 @@ use Crypt::URandom;
 
                 $self->log(Data::Dumper->Dump([$result, $username, $password, $hashed_password], [qw(result username password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
+                    #my $loggedin               = $session{loggedin};
+                    #my $loggedin_id            = $session{loggedin_id};
+                    #my $loggedin_username      = $session{loggedin_username};
+                    #my $loggedin_admin         = $session{loggedin_admin};
+                    #my $loggedin_display_name  = $session{loggedin_display_name};
+                    #my $loggedin_given         = $session{loggedin_given};
+                    #my $loggedin_family        = $session{loggedin_family};
+                    #my $loggedin_email         = $session{loggedin_email};
+                    #my $loggedin_phone_nnumber = $session{loggedin_phone_nnumber};
+                    #my $loggedin_groupname     = $session{loggedin_groupname};
+                    #my $loggedin_groupnname_id = $session{loggedin_groupnname_id};
                     $session{loggedin}               = $loggedin_id;
                     $session{loggedin_id}            = $loggedin_id;
                     $session{loggedin_username}      = $loggedin_username;
@@ -2742,6 +2753,7 @@ use Crypt::URandom;
                     $session{loggedin_phone_number}  = $phone_number;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
+                    $self->log(Data::Dumper->Dump([$r, \%session], [qw(r %session)]));
                     push @msgs, "Loggedin";
                 }
             }
