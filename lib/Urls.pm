@@ -3052,6 +3052,9 @@ use Crypt::URandom;
                     && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
                     && (!$postal_region || $postal_region =~ m/^[^;\'\"]+$/) && $postal_country =~ m/^[^;\'\"]+$/;
 
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
+
         if($password && $repeat
             && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
                     || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
@@ -3064,19 +3067,18 @@ use Crypt::URandom;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and repeat password did not match!');
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
-        }elsif(1 ||(defined $username && defined $email && defined && $password && $repeat
+        }elsif(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $country
-            #&& $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
-            #&& (!$city_suberb || $city_suberb =~ m/^[^;\'\"]+$/) 
-            #&& (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
-            #&& (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
-            #&& (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
-            #&& $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
-            #&& (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
-            #&& $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
-            #&& $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
-            #&& ($postal_same?1:$cond)
-        )){
+            && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
+            && (!$city_suberb || $city_suberb =~ m/^[^;\'\"]+$/) 
+            && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
+            && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
+            && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
+            && $city_suberb =~ m/^[^;\'\"]+$/ && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
+            && (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
+            && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+            && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+            && ($postal_same?1:$cond)){
             $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
             $given = '' unless defined $given;
             $family = '' unless defined $family;
