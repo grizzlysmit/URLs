@@ -1394,7 +1394,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_links', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1422,6 +1421,8 @@ use Crypt::URandom;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $self->links('delete_links', \%session);
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
