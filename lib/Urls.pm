@@ -37,6 +37,7 @@ use Data::Validate::URI qw(is_uri);
 use DBI;
 use Crypt::PBKDF2;
 use Crypt::URandom;
+use HTML::Entities;
 
 {
     my %logpaths;
@@ -3056,11 +3057,23 @@ use Crypt::URandom;
                     postal_city_suberb postal_postcode postal_region postal_country postal_same loggedin
                     loggedin_id loggedin_username isadmin admin)]));
 
+        $unit                = encode_entities($unit)               if defined $unit;
+        $street              = encode_entities($street)             if defined $street;
+        $city_suberb         = encode_entities($city_suberb)        if defined $city_suberb;
+        $country             = encode_entities($country)            if defined $country;
+        $given               = encode_entities($given)              if defined $given;
+        $family              = encode_entities($family)             if defined $family;
+        $display_name        = encode_entities($display_name)       if defined $display_name;
+        $postal_unit         = encode_entities($postal_unit)        if defined $postal_unit;
+        $postal_street       = encode_entities($postal_street)      if defined $postal_street;
+        $postal_city_suberb  = encode_entities($postal_city_suberb) if defined $postal_city_suberb;
+        $postal_country      = encode_entities($postal_country)     if defined $postal_country;
+
         my $cond = defined $postal_street && defined $postal_country
-                    && (!$postal_city_suberb || $postal_city_suberb =~ m/^[^;\'\"]+$/)
-                    && (!$postal_unit || $postal_unit =~ m/^[^;\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
-                    && $postal_city_suberb =~ m/^[^;\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
-                    && (!$postal_region || $postal_region =~ m/^[^;\'\"]+$/) && $postal_country =~ m/^[^;\'\"]+$/;
+                    && (!$postal_city_suberb || $postal_city_suberb =~ m/^[^\'\"]+$/)
+                    && (!$postal_unit || $postal_unit =~ m/^[^\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
+                    && $postal_city_suberb =~ m/^[^\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
+                    && (!$postal_region || $postal_region =~ m/^[^\'\"]+$/) && $postal_country =~ m/^[^\'\"]+$/;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
@@ -3080,10 +3093,10 @@ use Crypt::URandom;
         }elsif(defined $username && defined $email && $password && $repeat
             && defined $street && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
-            #&& (!$city_suberb || $city_suberb =~ m/^[^\;\'\"]+$/) 
+            && (!$city_suberb || $city_suberb =~ m/^[^\'\"]+$/) 
             && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
-            #&& (!$unit || $unit =~ m/^[a-zA-Z0-9 -]+$/) && $street =~ m/^[a-zA-Z0-9 -]+$/
+            && (!$unit || $unit =~ m/^[^\'\"]+$/) && $street =~ m/^[^\'\"]+$/
             && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
             && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
             && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
