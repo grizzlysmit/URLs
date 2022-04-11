@@ -434,7 +434,43 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         $self->links('list_aliases', \%session);
+
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -457,7 +493,10 @@ use Crypt::URandom;
             $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
         }
         $query->finish();
+
+        untie %session;
         $db->disconnect;
+
         say "        <h1>Aliases</h1>";
         say "        <table>";
         say "            <tr><th>alias</th><th>target section</th></tr>";
@@ -477,7 +516,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_alias', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -521,6 +559,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('add_alias', \%session);
 
         my $alias  = $req->param('alias');
         my $target = $req->param('target');
@@ -721,7 +761,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -765,6 +804,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('add_page', \%session);
 
         my $page_length = $req->param('page_length');
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
@@ -836,6 +877,9 @@ use Crypt::URandom;
                 $return = 0;
             }
             $self->message($debug, \%session, $db, 'add_page', 'Add an other Page', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
         
@@ -933,7 +977,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_link', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -977,6 +1020,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('add_link', \%session);
 
         my $section  = $req->param('section');
         my $name     = $req->param('name');
@@ -1031,6 +1076,9 @@ use Crypt::URandom;
                 $return = 0;
             }
             $self->message($debug, \%session, $db, 'add_link', 'Add Another Link', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
 
@@ -1135,7 +1183,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_pseudo_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1163,6 +1210,8 @@ use Crypt::URandom;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $self->links('add_pseudo_page', \%session);
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
@@ -1198,16 +1247,25 @@ use Crypt::URandom;
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
                 $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, @msgs);
+
+                untie %session;
+                $db->disconnect;
                 return 0;
             }
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $query->finish();
                 $self->message($debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+
+                untie %session;
+                $db->disconnect;
                 return 1;
             }else{
                 $query->finish();
                 $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+
+                untie %session;
+                $db->disconnect;
                 return 0;
             }
         }
@@ -1511,6 +1569,9 @@ use Crypt::URandom;
                 }
             }
             $self->message($debug, \%session, $db, 'delete_links', 'Delete some more links', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
 
@@ -1687,7 +1748,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_pages', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1715,6 +1775,8 @@ use Crypt::URandom;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $self->links('delete_pages', \%session);
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
@@ -1784,6 +1846,9 @@ use Crypt::URandom;
                 }
             }
             $self->message($debug, \%session, $db, 'delete_pages', 'Delete some more pages', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
 
@@ -1878,7 +1943,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_pseudo_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1906,6 +1970,8 @@ use Crypt::URandom;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $self->links('delete_pseudo_page', \%session);
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
@@ -1961,6 +2027,9 @@ use Crypt::URandom;
                 }
             }
             $self->message($debug, \%session, $db, 'delete_pseudo_page', 'Delete some more pseudo_pages', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
 
@@ -2063,7 +2132,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_aliases', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2091,6 +2159,8 @@ use Crypt::URandom;
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
+
+        $self->links('delete_aliases', \%session);
 
         my $delete  = $req->param('delete');
 
@@ -2290,8 +2360,46 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
         $self->links('user', \%session);
-        return ;
+
+        untie %session;
+        $db->disconnect;
+        return 1;
     } ## --- end sub user
 
 
@@ -2299,8 +2407,6 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-
-        $self->links('delete_orphaned_links_sections', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2338,6 +2444,9 @@ use Crypt::URandom;
                 push @delete_set, $req->param($_);
             }
         }
+
+        $self->links('delete_orphaned_links_sections', \%session);
+
         $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
 
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
@@ -2367,6 +2476,9 @@ use Crypt::URandom;
                 }
             }
             $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', undef, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return $return;
         }
 
@@ -2521,8 +2633,6 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('login', \%session);
-
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -2565,6 +2675,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('login', \%session);
 
         my $submit    = $req->param('submit');
         my $username  = $req->param('username');
@@ -2612,8 +2724,14 @@ use Crypt::URandom;
                     $session{loggedin_phone_number}  = $phone_number;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
+                    push @msgs, "Loggedin";
                 }
             }
+            $self->message($debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
+
+            untie %session;
+            $db->disconnect;
+            return $return;
         }
 
 
@@ -2869,11 +2987,17 @@ use Crypt::URandom;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
             $self->message($debug, \%session, $db, ($return?'start again':'register'), ($return ? 'register' : undef), !$return, @msgs);
+
+            untie %session;
+            $db->disconnect;
             return 0 unless $return;
         }
 
         $admin = 0 unless $isadmin; # admins can only be made by admins. #
 
+
+        untie %session;
+        $db->disconnect;
         return 0 if $loggedin && !$isadmin; # Only admins and nnew users should be usinng this page. #
 
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
