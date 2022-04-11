@@ -2762,6 +2762,8 @@ use Crypt::URandom;
 
             $self->message($debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
 
+            $self->log(Data::Dumper->Dump([\%session], [qw(%session)]));
+
             untie %session;
             $db->disconnect;
             return $return;
