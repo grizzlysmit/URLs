@@ -2715,7 +2715,7 @@ use Crypt::URandom;
                 my $loggedin_id       = $r->{id};
                 my $loggedin_username = $r->{username};
                 my $primary_group_id  = $r->{group_id};
-                my $hashed_password   = $r->{password};
+                my $hashed_password   = $r->{_password};
                 my $_admin            = $r->{_admin};
                 my $display_name      = $r->{display_name};
                 my $given             = $r->{given};
@@ -2723,7 +2723,10 @@ use Crypt::URandom;
                 my $email             = $r->{_email};
                 my $phone_number      = $r->{phone_number};
                 my $groupname        = $r->{groupname};
-                $self->log(Data::Dumper->Dump([$sql, $r], [qw(sql r)]));
+                $self->log(Data::Dumper->Dump([$loggedin_id, $r], [qw(loggedin_id r)]));
+                $self->log(Data::Dumper->Dump([$sql, $loggedin_username, $primary_group_id, $hashed_password, $_admin,
+                            $display_name, $given, $family, $email, $phone_number, $groupname],
+                        [qw(sql loggedin_username primary_group_id hashed_password _admin display_name given family email phone_number roupname)]));
 
                 $self->log(Data::Dumper->Dump([$result, $username, $password, $hashed_password], [qw(result username password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
