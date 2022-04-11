@@ -2802,8 +2802,6 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('logout', \%session);
-
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -2846,6 +2844,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('logout', \%session);
 
         my $delete  = $req->param('delete');
 
@@ -2899,8 +2899,6 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('register', \%session);
-
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -2943,6 +2941,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('register', \%session);
 
         my $submit             = $req->param('submit');
         my $username           = $req->param('username');
@@ -3604,8 +3604,6 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('admin', \%session);
-
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -3648,6 +3646,8 @@ use Crypt::URandom;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->links('admin', \%session);
 
         my $delete  = $req->param('delete');
 
