@@ -3031,9 +3031,11 @@ use Crypt::URandom;
         $admin = 0 unless $isadmin; # admins can only be made by admins. #
 
 
-        untie %session;
-        $db->disconnect;
-        return 0 if $loggedin && !$isadmin; # Only admins and nnew users should be usinng this page. #
+        if($loggedin && !$isadmin){
+            untie %session;
+            $db->disconnect;
+            return 0; # Only admins and nnew users should be usinng this page. #
+        }
 
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
