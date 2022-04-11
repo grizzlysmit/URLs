@@ -3080,10 +3080,10 @@ use Crypt::URandom;
         }elsif(defined $username && defined $email && defined && $password && $repeat
             && defined $street && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
-            && (!$city_suberb || $city_suberb =~ m/^[^\;\'\"]+$/) 
+            #&& (!$city_suberb || $city_suberb =~ m/^[^\;\'\"]+$/) 
             && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
-            && (!$unit || $unit =~ m/^[^\;\'\"]+$/) && $street =~ m/^[^\;\'\"]+$/
+            #&& (!$unit || $unit =~ m/^[a-zA-Z0-9 -]+$/) && $street =~ m/^[a-zA-Z0-9 -]+$/
             && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
             && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
             #&& $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
