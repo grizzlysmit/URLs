@@ -2561,6 +2561,8 @@ use Crypt::URandom;
         my $password  = $req->param('password');
 
         if(defined $username && defined $password && $username =~ m/^\w+$/){
+            my @msgs;
+            my $return = 1;
             my $sql  = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
             $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
             $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
