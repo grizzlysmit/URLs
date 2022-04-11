@@ -283,7 +283,7 @@ use Crypt::URandom;
             # error
         }
 
-        $self->links('main');
+        $self->links('main', \%session);
         say "        <form action=\"index.pl\" method=\"post\">";
         say "            <h1>Urls</h1>";
         my $page_length = $req->param('page_length');
@@ -434,7 +434,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('list_aliases');
+        $self->links('list_aliases', \%session);
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
         my $dbpass          = $cfg->val('urls_db', 'dbpass');
@@ -477,7 +477,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_alias');
+        $self->links('add_alias', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -721,7 +721,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_page');
+        $self->links('add_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -933,7 +933,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_link');
+        $self->links('add_link', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1135,7 +1135,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('add_pseudo_page');
+        $self->links('add_pseudo_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1335,7 +1335,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_links');
+        $self->links('delete_links', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1687,7 +1687,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_pages');
+        $self->links('delete_pages', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -1878,7 +1878,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_pseudo_page');
+        $self->links('delete_pseudo_page', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2063,7 +2063,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('delete_aliases');
+        $self->links('delete_aliases', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2290,7 +2290,7 @@ use Crypt::URandom;
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
-        $self->links('user');
+        $self->links('user', \%session);
         return ;
     } ## --- end sub user
 
@@ -2300,7 +2300,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('delete_orphaned_links_sections');
+        $self->links('delete_orphaned_links_sections', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2521,7 +2521,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('login');
+        $self->links('login', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2673,7 +2673,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('logout');
+        $self->links('logout', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -2770,7 +2770,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('register');
+        $self->links('register', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -3371,7 +3371,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('profile');
+        $self->links('profile', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -3469,7 +3469,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
-        $self->links('admin');
+        $self->links('admin', \%session);
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
