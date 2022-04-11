@@ -2872,18 +2872,18 @@ use Crypt::URandom;
             $session{loggedin_phone_number}  = 0;
             $session{loggedin_groupname}     = 0;
             $session{loggedin_groupnname_id} = 0;
-            say "        <form action=\"main.pl\" method=\"post\">";
-            say "            <h1>Logout</h1>";
-            say "            <table>";
-            say "                <tr>";
-            say "                    <td>";
-            say "                        <input type=\"sumit\" name=\"submit\" id=\"cancel\" value=\"Done\"/>";
-            say "                    </td>";
-            say "                </tr>";
-            say "            </table>";
+
+            $self->links('logout', \%session);
+
+            untie %session;
+            $db->disconnect;
+
             return 1;
         }elsif($submit eq 'Cancel'){
             $self->links('logout', \%session);
+
+            untie %session;
+            $db->disconnect;
 
             return 1;
         }else{
@@ -2900,7 +2900,7 @@ use Crypt::URandom;
         say "            <table>";
         say "                <tr>";
         say "                    <td colspan=\"3\">";
-        say "                        <input type=\"sumit\" name=\"submit\" id=\"cancel\" value=\"Cancel\"/>";
+        say "                        <input type=\"submit\" name=\"submit\" id=\"cancel\" value=\"Cancel\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
