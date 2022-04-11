@@ -386,6 +386,7 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my %session = %{$sess};
+        $self->log(Data::Dumper->Dump([$sess, \%session], [qw(sess %session)]));
         my $loggedin               = $session{loggedin};
         my $loggedin_id            = $session{loggedin_id};
         my $loggedin_username      = $session{loggedin_username};
