@@ -3077,7 +3077,7 @@ use Crypt::URandom;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and repeat password did not match!');
             $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
-        }elsif(defined $username && defined $email && defined && $password && $repeat
+        }elsif(defined $username && defined $email && $password && $repeat
             && defined $street && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
             #&& (!$city_suberb || $city_suberb =~ m/^[^\;\'\"]+$/) 
