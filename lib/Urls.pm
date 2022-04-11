@@ -67,13 +67,13 @@ use Crypt::URandom;
             { href => 'list-aliases.pl', name => 'list aliases', fun => 'list_aliases', visability => 'loggedin', }, 
             { href => 'profile.pl', name => "profile", fun => 'profile', visability => 'loggedin', }, 
             { href => 'delete-orphaned-links-sections.pl', name => "delete orphaned links_sections", fun => 'delete_orphaned_links_sections', visability => 'loggedin', }, 
-            { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', }, 
+            { href => 'delete-aliases.pl', name => 'delete aliases', fun => 'delete_aliases', visability => 'loggedin', }, 
             { href => 'delete-links.pl', name => 'delete links', fun => 'delete_links', visability => 'loggedin', }, 
             { href => 'delete-pages.pl', name => 'delete pages', fun => 'delete_pages', visability => 'loggedin', }, 
             { href => 'delete-pseudo-page.pl', name => 'delete pseudo-pages', fun => 'delete_pseudo_page', visability => 'loggedin', }, 
             { href => 'login.pl', name => "login", fun => 'login', visability => 'loggedout', }, 
             { href => 'logout.pl', name => "logout", fun => 'logout', visability => 'loggedin', }, 
-            { href => 'admin.pl', name => "Admin", fun => 'admin', visability => 'loggedin,admin', }, 
+            { href => 'admin.pl', name => "Admin", fun => 'admin', visability => 'admin', }, 
             { href => 'register.pl', name => "Register", fun => 'register', visability => 'loggedout', }, 
         ];
 
@@ -386,10 +386,17 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
         my %session = %{$sess};
-        my $loggedin = $session{loggedin};
-        my $loggedin = $session{loggedin};
-        my $loggedin = $session{loggedin};
-        my $loggedin = $session{loggedin};
+        my $loggedin               = $session{loggedin};
+        my $loggedin_id            = $session{loggedin_id};
+        my $loggedin_username      = $session{loggedin_username};
+        my $loggedin_admin         = $session{loggedin_admin};
+        my $loggedin_display_name  = $session{loggedin_display_name};
+        my $loggedin_given         = $session{loggedin_given};
+        my $loggedin_family        = $session{loggedin_family};
+        my $loggedin_email         = $session{loggedin_email};
+        my $loggedin_phone_nnumber = $session{loggedin_phone_nnumber};
+        my $loggedin_groupname     = $session{loggedin_groupname};
+        my $loggedin_groupnname_id = $session{loggedin_groupnname_id};
         my @pages = @{$PAGES{$ident}};
         say "        <table>";
         say "            <tr>";
@@ -399,6 +406,9 @@ use Crypt::URandom;
             my $name       = $page->{name};
             my $fun        = $page->{fun};
             my $visability = $page->{visability};
+            next if(!$loggedin && $visability eq 'loggedin');
+            next if($loggedin && $visability eq 'loggedout');
+            next if(!$loggedin_admin && $visability eq 'admin');
             #next if $fun eq $Fun;
             $cnt++;
             say "                <td>";
@@ -2577,33 +2587,31 @@ use Crypt::URandom;
                 push @msgs, "Insert into passwd failed: $@";
                 $return = 0;
             }
-            {
-                if($result){
-                    my $r      = $query->fetchrow_hashref();
-                    my $loggedin_id       = $r->{id};
-                    my $loggedin_username = $r->{username};
-                    my $primary_group_id  = $r->{group_id};
-                    my $hashed_password   = $r->{password};
-                    my $_amin             = $r->{_admin};
-                    my $display_name      = $r->{display_name};
-                    my $given             = $r->{given};
-                    my $family            = $r->{_family};
-                    my $email             = $r->{_email};
-                    my $phone_number      = $r->{phone_number};
-                    my $groupname        = $r->{groupname};
-                    if($self->validate($hashed_password, $password)){
-                        $session{loggedin}               = $loggedin_id;
-                        $session{loggedin_id}            = $loggedin_id;
-                        $session{loggedin_username}      = $loggedin_username;
-                        $session{loggedin_amin}          = $_amin;
-                        $session{loggedin_display_name}  = $display_name;
-                        $session{loggedin_given}         = $given;
-                        $session{loggedin_family}        = $family;
-                        $session{loggedin_email}         = $email;
-                        $session{loggedin_phone_nnumber} = $phone_nnumber;
-                        $session{loggedin_groupname}     = $groupname;
-                        $session{loggedin_groupnname_id} = $primary_group_id;
-                    }
+            if($result){
+                my $r      = $query->fetchrow_hashref();
+                my $loggedin_id       = $r->{id};
+                my $loggedin_username = $r->{username};
+                my $primary_group_id  = $r->{group_id};
+                my $hashed_password   = $r->{password};
+                my $_admin            = $r->{_admin};
+                my $display_name      = $r->{display_name};
+                my $given             = $r->{given};
+                my $family            = $r->{_family};
+                my $email             = $r->{_email};
+                my $phone_number      = $r->{phone_number};
+                my $groupname        = $r->{groupname};
+                if($self->validate($hashed_password, $password)){
+                    $session{loggedin}               = $loggedin_id;
+                    $session{loggedin_id}            = $loggedin_id;
+                    $session{loggedin_username}      = $loggedin_username;
+                    $session{loggedin_admin}         = $_admin;
+                    $session{loggedin_display_name}  = $display_name;
+                    $session{loggedin_given}         = $given;
+                    $session{loggedin_family}        = $family;
+                    $session{loggedin_email}         = $email;
+                    $session{loggedin_phone_nnumber} = $phone_nnumber;
+                    $session{loggedin_groupname}     = $groupname;
+                    $session{loggedin_groupnname_id} = $primary_group_id;
                 }
             }
         }
