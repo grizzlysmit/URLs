@@ -2581,7 +2581,7 @@ use Crypt::URandom;
                 my $r      = $query->fetchrow_hashref();
                 my $loggedin_id       = $r->{id};
                 my $loggedin_username = $r->{username};
-                my $primary_group_id  = $r->{primary_group_id};
+                my $primary_group_id  = $r->{group_id};
                 my $hashed_password   = $r->{password};
                 my $_amin             = $r->{_admin};
                 my $display_name      = $r->{display_name};
@@ -2600,8 +2600,8 @@ use Crypt::URandom;
                     $session{loggedin_family}        = $family;
                     $session{loggedin_email}         = $email;
                     $session{loggedin_phone_nnumber} = $phone_nnumber;
-                    $session{loggedin_groupname}    = $loggedin_groupname;
-                    $session{loggedin_groupnname}    = $loggedin_groupnname;
+                    $session{loggedin_groupname}     = $groupname;
+                    $session{loggedin_groupnname_id} = $primary_group_id;
                 }
             }
         }
