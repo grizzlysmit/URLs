@@ -2707,7 +2707,7 @@ use Crypt::URandom;
                 $result = $query->execute($username);
             };
             if($@){
-                push @msgs, "Insert into passwd failed: $@";
+                push @msgs, "SELECT FROM passwd failed: $@";
                 $return = 0;
             }
             if($result){
@@ -2723,6 +2723,8 @@ use Crypt::URandom;
                 my $email             = $r->{_email};
                 my $phone_number      = $r->{phone_number};
                 my $groupname        = $r->{groupname};
+
+                $self->log(Data::Dumper->Dump([$username, $password, $hashed_password], [qw(username password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
                     $session{loggedin}               = $loggedin_id;
                     $session{loggedin_id}            = $loggedin_id;
@@ -2738,6 +2740,7 @@ use Crypt::URandom;
                     push @msgs, "Loggedin";
                 }
             }
+            $query->finish();
             $self->message($debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
 
             untie %session;
