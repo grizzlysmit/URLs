@@ -435,6 +435,15 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
@@ -2361,6 +2370,15 @@ use Crypt::URandom;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
 
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
@@ -2986,7 +3004,7 @@ use Crypt::URandom;
                 $return = 0;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
-            $self->message($debug, \%session, $db, ($return?'start again':'register'), ($return ? 'register' : undef), !$return, @msgs);
+            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return, @msgs);
 
             untie %session;
             $db->disconnect;
