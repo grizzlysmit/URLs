@@ -2732,17 +2732,6 @@ use Crypt::URandom;
 
                 $self->log(Data::Dumper->Dump([$result, $username, $password, $hashed_password], [qw(result username password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
-                    #my $loggedin               = $session{loggedin};
-                    #my $loggedin_id            = $session{loggedin_id};
-                    #my $loggedin_username      = $session{loggedin_username};
-                    #my $loggedin_admin         = $session{loggedin_admin};
-                    #my $loggedin_display_name  = $session{loggedin_display_name};
-                    #my $loggedin_given         = $session{loggedin_given};
-                    #my $loggedin_family        = $session{loggedin_family};
-                    #my $loggedin_email         = $session{loggedin_email};
-                    #my $loggedin_phone_nnumber = $session{loggedin_phone_nnumber};
-                    #my $loggedin_groupname     = $session{loggedin_groupname};
-                    #my $loggedin_groupnname_id = $session{loggedin_groupnname_id};
                     $session{loggedin}               = $loggedin_id;
                     $session{loggedin_id}            = $loggedin_id;
                     $session{loggedin_username}      = $loggedin_username;
@@ -2869,23 +2858,49 @@ use Crypt::URandom;
             $self->debug_init($debug, $log);
         }
 
-        $self->links('logout', \%session);
+        my $submit  = $req->param('submit');
 
-        my $delete  = $req->param('delete');
+        if($submit eq 'Logout'){
+            $session{loggedin}               = 0;
+            $session{loggedin_id}            = 0;
+            $session{loggedin_username}      = 0;
+            $session{loggedin_admin}         = 0;
+            $session{loggedin_display_name}  = 0;
+            $session{loggedin_given}         = 0;
+            $session{loggedin_family}        = 0;
+            $session{loggedin_email}         = 0;
+            $session{loggedin_phone_number}  = 0;
+            $session{loggedin_groupname}     = 0;
+            $session{loggedin_groupnname_id} = 0;
+            say "        <form action=\"main.pl\" method=\"post\">";
+            say "            <h1>Logout</h1>";
+            say "            <table>";
+            say "                <tr>";
+            say "                    <td colspan=\"3\">";
+            say "                        <input type=\"sumit\" name=\"submit\" id=\"cancel\" value=\"Done\"/>";
+            say "                    </td>";
+            say "                </tr>";
+            say "            </table>";
+            return 1;
+        }elsif($submit eq 'Cancel'){
+            $self->links('logout', \%session);
+
+            return 1;
+        }else{
+            $self->links('logout', \%session);
+
+            say "        <form action=\"logout.pl\" method=\"post\">";
+            say "            <h1>Logout</h1>";
+        }
 
 
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"logout.pl\" method=\"post\">";
-        say "            <h1>Add Alias</h1>";
         say "            <table>";
         say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"alias\">Alias: </label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                    <td colspan=\"3\">";
+        say "                        <input type=\"sumit\" name=\"submit\" id=\"cancel\" value=\"Cancel\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -2908,7 +2923,7 @@ use Crypt::URandom;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Logout\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
