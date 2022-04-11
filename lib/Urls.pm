@@ -2577,31 +2577,33 @@ use Crypt::URandom;
                 push @msgs, "Insert into passwd failed: $@";
                 $return = 0;
             }
-            if($result){
-                my $r      = $query->fetchrow_hashref();
-                my $loggedin_id       = $r->{id};
-                my $loggedin_username = $r->{username};
-                my $primary_group_id  = $r->{group_id};
-                my $hashed_password   = $r->{password};
-                my $_amin             = $r->{_admin};
-                my $display_name      = $r->{display_name};
-                my $given             = $r->{given};
-                my $family            = $r->{_family};
-                my $email             = $r->{_email};
-                my $phone_number      = $r->{phone_number};
-                my $groupname        = $r->{groupname};
-                if($self->validate($hashed_password, $password)){
-                    $session{loggedin}               = $loggedin_id;
-                    $session{loggedin_id}            = $loggedin_id;
-                    $session{loggedin_username}      = $loggedin_username;
-                    $session{loggedin_amin}          = $_amin;
-                    $session{loggedin_display_name}  = $display_name;
-                    $session{loggedin_given}         = $given;
-                    $session{loggedin_family}        = $family;
-                    $session{loggedin_email}         = $email;
-                    $session{loggedin_phone_nnumber} = $phone_nnumber;
-                    $session{loggedin_groupname}     = $groupname;
-                    $session{loggedin_groupnname_id} = $primary_group_id;
+            {
+                if($result){
+                    my $r      = $query->fetchrow_hashref();
+                    my $loggedin_id       = $r->{id};
+                    my $loggedin_username = $r->{username};
+                    my $primary_group_id  = $r->{group_id};
+                    my $hashed_password   = $r->{password};
+                    my $_amin             = $r->{_admin};
+                    my $display_name      = $r->{display_name};
+                    my $given             = $r->{given};
+                    my $family            = $r->{_family};
+                    my $email             = $r->{_email};
+                    my $phone_number      = $r->{phone_number};
+                    my $groupname        = $r->{groupname};
+                    if($self->validate($hashed_password, $password)){
+                        $session{loggedin}               = $loggedin_id;
+                        $session{loggedin_id}            = $loggedin_id;
+                        $session{loggedin_username}      = $loggedin_username;
+                        $session{loggedin_amin}          = $_amin;
+                        $session{loggedin_display_name}  = $display_name;
+                        $session{loggedin_given}         = $given;
+                        $session{loggedin_family}        = $family;
+                        $session{loggedin_email}         = $email;
+                        $session{loggedin_phone_nnumber} = $phone_nnumber;
+                        $session{loggedin_groupname}     = $groupname;
+                        $session{loggedin_groupnname_id} = $primary_group_id;
+                    }
                 }
             }
         }
