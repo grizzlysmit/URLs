@@ -1684,8 +1684,8 @@ use Crypt::URandom;
         $fun =~ tr/_/-/;
 
 
-        untie %session;
-        $db->disconnect;
+        #untie %session;
+        #$db->disconnect;
 
         if($dont_do_form){
             say "        <table>";
@@ -2759,6 +2759,7 @@ use Crypt::URandom;
                 }
             }
             $query->finish();
+
             $self->message($debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
 
             untie %session;
