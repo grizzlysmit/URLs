@@ -480,14 +480,6 @@ use Crypt::URandom;
 
         $self->links('list_aliases', \%session);
 
-        my $dbserver        = $cfg->val('urls_db', 'dbserver');
-        my $dbuser          = $cfg->val('urls_db', 'dbuser');
-        my $dbpass          = $cfg->val('urls_db', 'dbpass');
-        my $dbname          = $cfg->val('urls_db', 'dbname');
-        my $dbport          = $cfg->val('urls_db', 'dbport');
-        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
-        #return 0;
-        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         my $sql  = "SELECT a.name, a.section FROM aliases a\n";
         $sql    .= "ORDER BY a.name\n";
         my $query           = $db->prepare($sql);
