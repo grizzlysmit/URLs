@@ -3134,7 +3134,7 @@ use Crypt::URandom;
                             $line = __LINE__;
                             $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
                             $query->finish();
-                            my ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($unit, $street, $city_suberb, $postcode, $region, $country, $db);
+                            my ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($unit, $street, $city_suberb, $postcode, $region, $country, undef, $db);
                             $return = $return_res unless $return_res;
                             push @msgs, @msgs_res_address;
                             my $postal_address_id = $residential_address_id;
@@ -3730,11 +3730,12 @@ use Crypt::URandom;
 
 
     sub create_address {
-        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $db) = @_;
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
                 [qw($unit street city_suberb postcode region country line)]));
         my ($address_id, $return, @msgs);
+        $address_id = $default_id;
         $return = 1;
         my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
         my $query  = $db->prepare($sql);
