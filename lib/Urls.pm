@@ -2723,7 +2723,7 @@ use Crypt::URandom;
                 my $email             = $r->{_email};
                 my $phone_number      = $r->{phone_number};
                 my $groupname        = $r->{groupname};
-                $self->log(Data::Dumper->Dump([$r], [qw(r)]));
+                $self->log(Data::Dumper->Dump([$sql, $r], [qw(sql r)]));
 
                 $self->log(Data::Dumper->Dump([$result, $username, $password, $hashed_password], [qw(result username password hashed_password)]));
                 if($self->validate($hashed_password, $password)){
