@@ -382,9 +382,14 @@ use Crypt::URandom;
 
     
     sub links {
-        my ($self, $Fun) = @_;
+        my ($self, $Fun, $sess) = @_;
         my $ident           = ident $self;
         my $debug = $debug{$ident};
+        my %session = %{$sess};
+        my $loggedin = $session{loggedin};
+        my $loggedin = $session{loggedin};
+        my $loggedin = $session{loggedin};
+        my $loggedin = $session{loggedin};
         my @pages = @{$PAGES{$ident}};
         say "        <table>";
         say "            <tr>";
@@ -2551,27 +2556,81 @@ use Crypt::URandom;
             $self->debug_init($debug, $log);
         }
 
-        my $delete  = $req->param('delete');
+        my $submit    = $req->param('submit');
+        my $username  = $req->param('username');
+        my $password  = $req->param('password');
+
+        if(defined $username && defined $password && $username =~ m/^\w+$/){
+            my $sql  = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+            $sql    .= "e._email, ph._number phone_number, g._name groupnname, g.id group_id\n";
+            $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+            $sql    .= "         JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql    .= "WHERE p.username = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin);
+            };
+            if($@){
+                push @msgs, "Insert into passwd failed: $@";
+                $return = 0;
+            }
+            if($result){
+                my $r      = $query->fetchrow_hashref();
+                my $loggedin_id       = $r->{id};
+                my $loggedin_username = $r->{username};
+                my $primary_group_id  = $r->{primary_group_id};
+                my $hashed_password   = $r->{password};
+                my $_amin             = $r->{_admin};
+                my $display_name      = $r->{display_name};
+                my $given             = $r->{given};
+                my $family            = $r->{_family};
+                my $email             = $r->{_email};
+                my $phone_number      = $r->{phone_number};
+                my $groupname        = $r->{groupname};
+                if($self->validate($hashed_password, $password)){
+                    $session{loggedin}               = $loggedin_id;
+                    $session{loggedin_id}            = $loggedin_id;
+                    $session{loggedin_username}      = $loggedin_username;
+                    $session{loggedin_amin}          = $_amin;
+                    $session{loggedin_display_name}  = $display_name;
+                    $session{loggedin_given}         = $given;
+                    $session{loggedin_family}        = $family;
+                    $session{loggedin_email}         = $email;
+                    $session{loggedin_phone_nnumber} = $phone_nnumber;
+                    $session{loggedin_groupname}    = $loggedin_groupname;
+                    $session{loggedin_groupnname}    = $loggedin_groupnname;
+                }
+            }
+        }
 
 
         untie %session;
         $db->disconnect;
 
+        my $title   = "only a-z, A-Z, 0-9 and _  allowed";
+        my $pattern = '[a-zA-Z0-9_]+';
         say "        <form action=\"login.pl\" method=\"post\">";
-        say "            <h1>Add Alias</h1>";
+        say "            <h1>Login</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"alias\">Alias: </label>";
+        say "                        <label for=\"username\">Username: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$usernae\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
+        $title   = "Passwords on this system are,  between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
+        $pattern = '(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}';
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"target\">Target: </label>";
+        say "                        <label for=\"password\">password </label>";
         say "                    </td>";
+        say "                    <td>";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" required/>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
@@ -2587,7 +2646,7 @@ use Crypt::URandom;
         }
         say "                    </td>";
         say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Login\">";
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
@@ -3611,14 +3670,14 @@ use Crypt::URandom;
             $result = $query->execute($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin);
         };
         if($@){
-            push @msgs, "Insert into phone failed: $@";
+            push @msgs, "Insert into passwd failed: $@";
             $return = 0;
         }
         if($result){
             my $r      = $query->fetchrow_hashref();
             $passwd_id = $r->{id};
         }else{
-            push @msgs, "Insert into phone failed";
+            push @msgs, "Insert into passwd failed";
             $return = 0;
         }
         $query->finish();
