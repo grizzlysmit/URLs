@@ -3083,9 +3083,9 @@ use Crypt::URandom;
             && (!$city_suberb || $city_suberb =~ m/^[^\;\'\"]+$/) 
             && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
             && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
-            && (!$unit || $unit =~ m/^[^;\'\"]+$/) && $street =~ m/^[^;\'\"]+$/
+            && (!$unit || $unit =~ m/^[^\;\'\"]+$/) && $street =~ m/^[^\;\'\"]+$/
             && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
-            && (!$region || $region =~ m/^[^;\'\"]+$/) && $country =~ m/^[^;\'\"]+$/
+            && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
             && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
             && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
             && ($postal_same?1:$cond)){
