@@ -2609,7 +2609,7 @@ use Crypt::URandom;
                     $session{loggedin_given}         = $given;
                     $session{loggedin_family}        = $family;
                     $session{loggedin_email}         = $email;
-                    $session{loggedin_phone_nnumber} = $phone_nnumber;
+                    $session{loggedin_phone_number}  = $phone_number;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
                 }
@@ -2630,7 +2630,7 @@ use Crypt::URandom;
         say "                        <label for=\"username\">Username: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$usernae\" autofocus required/>";
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "Passwords on this system are,  between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
