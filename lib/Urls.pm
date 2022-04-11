@@ -2702,7 +2702,7 @@ use HTML::Entities;
             my $sql  = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
             $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
             $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
-            $sql    .= "         JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
             $sql    .= "WHERE p.username = ?\n";
             my $query  = $db->prepare($sql);
             my $result;
