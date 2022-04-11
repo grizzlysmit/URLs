@@ -406,6 +406,7 @@ use Crypt::URandom;
             my $name       = $page->{name};
             my $fun        = $page->{fun};
             my $visability = $page->{visability};
+            $self->log(Data::Dumper->Dump([$visability, $loggedin, $loggedin_admin], [qw(visability loggedin loggedin_admin)]));
             next if(!$loggedin && $visability eq 'loggedin');
             next if($loggedin && $visability eq 'loggedout');
             next if(!$loggedin_admin && $visability eq 'admin');
