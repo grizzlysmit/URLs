@@ -2515,13 +2515,13 @@ use HTML::Entities;
                         my $passwd_details_id = $r->{passwd_details_id};
                         my $primary_group_id  = $r->{primary_group_id};
                         my $email_id          = $r->{email_id};
-                        my ($return_email, @msgs_email) = $self->delete_email($email_id);
+                        my ($return_email, @msgs_email) = $self->delete_email($email_id, $db);
                         push @msgs, @msgs_email;
                         $return = 0 unless $return_email;
-                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id);
+                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, $db);
                         push @msgs, @msgs_group;
                         $return = 0 unless $return_group;
-                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id);
+                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, $db);
                         push @msgs, @msgs_passwd_details;
                         $return = 0 unless $return_passwd_details;
                         $sql     = "DELETE FROM passwd\n";
@@ -2540,6 +2540,7 @@ use HTML::Entities;
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
         my $query  = $db->prepare($sql);
         my $result;
+        my @msgs;
         eval {
             $result = $query->execute();
         };
@@ -2553,6 +2554,13 @@ use HTML::Entities;
                 push @user_details, $r;
                 $r      = $query->fetchrow_hashref();
             }
+        }else{
+            push @msgs, "SELECT FROM passwd failed";
+            $return = 0;
+        }
+        unless($return){
+            $self->message($debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
+            return $return;
         }
         
         say "        <form action=\"user.pl\" method=\"post\">";
