@@ -2609,35 +2609,35 @@ use HTML::Entities;
             }
             say "                <tr>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$passwd_id</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$passwd_id</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$username</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$username</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$given</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$given</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$family</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$family</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$email</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$email</div></label>";
             say "                    </td>";
             say "                    <td>";
             $phone_number = '&nbsp;' unless $phone_number;
-            say "                        <label for=\"selected_$passwd_id\"><div>$phone_number</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$phone_number</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$groupname</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$groupname</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div>$_admin_checked</div></label>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$_admin_checked</div></label>";
             say "                    </td>";
             say "                    <td>";
             if($passwd_id == 1){
-                say "                        <label for=\"selected_$passwd_id\"><div>&nbsp;</div></label>";
+                say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">&nbsp;</div></label>";
             }else{
-                say "                        <label for=\"selected_$passwd_id\"><div><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
+                say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
             }
             say "                    </td>";
             say "                </tr>";
