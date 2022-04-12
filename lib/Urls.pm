@@ -2538,7 +2538,7 @@ use HTML::Entities;
         $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-        $sql    .= "GROUP BY p.username, pd.given, pd._family\n";
+        $sql    .= "ORDER BY p.username, pd.given, pd._family\n";
         my $query  = $db->prepare($sql);
         my $result;
         my @msgs;
