@@ -435,7 +435,7 @@ use HTML::Entities;
         }
         say "            </tr>";
         say "        </table>";
-        return ;
+        return 1;
     } ## --- end sub links
 
 
@@ -3713,36 +3713,53 @@ use HTML::Entities;
         $db->disconnect;
 
         say "        <form action=\"admin.pl\" method=\"post\">";
-        say "            <h1>Add Alias</h1>";
-        say "            <table>";
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"alias\">Alias: </label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
-        say "                    </td>";
-        say "                </tr>";
-        say "                <tr>";
-        say "                    <td>";
+        say "        <h1>Admin</h1>";
+        say "        <table>";
+        say "            <tr>";
+        say "                <td>";
+        say "                    <form action=\"register.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Register a new user\"/></form>";
+        say "                </td>";
+        say "            </tr>";
+        say "            <tr>";
+        say "                <td>";
+        say "                    <form action=\"user.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Edit Users\"/></form>";
+        say "                </td>";
+        say "            </tr>";
+        say "            <tr>";
+        say "                <td>";
+        say "                    <form action=\"register.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Register a new user\"/></form>";
+        say "                </td>";
+        say "            </tr>";
+        say "            <tr>";
+        say "                <td>";
+        say "                    <form action=\"register.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Register a new user\"/></form>";
+        say "                </td>";
+        say "            </tr>";
+        say "            <tr>";
+        say "                <td>";
+        say "                    <form action=\"admin.pl\" method=\"post\">";
+        say "                        <table>";
+        say "                            <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                                <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                            </td>";
+            say "                            <td>";
+            say "                                <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                                <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                            </td>";
+            say "                            <td>";
+            say "                                <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
         }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
-        say "                    </td>";
-        say "                </tr>";
-        say "            </table>";
-        say "        </form>";
+        say "                            </td>";
+        say "                            <td>";
+        say "                                <input name=\"submit\" type=\"submit\" value=\"Apply\">";
+        say "                            </td>";
+        say "                        </table>";
+        say "                    </form>";
+        say "                </td>";
+        say "            </tr>";
+        say "        </table>";
 
         return 1;
     } ## --- end sub admin
