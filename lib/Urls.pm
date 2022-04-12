@@ -2541,6 +2541,7 @@ use HTML::Entities;
         my $query  = $db->prepare($sql);
         my $result;
         my @msgs;
+        my $return = 1;
         eval {
             $result = $query->execute();
         };
