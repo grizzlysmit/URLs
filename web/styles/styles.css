@@ -25,3 +25,6 @@ table {
 body {
     text-align: center;
 }
+label {
+    width: 100%;
+}            
