@@ -3696,8 +3696,7 @@ use HTML::Entities;
             $debug = $debug{$ident};
         }
 
-        $self->log(Data::Dumper->Dump([$debug, \%session],
-                [qw(debug \%session)]));
+        $self->log(Data::Dumper->Dump([$debug, \%session], [qw(debug \%session)]));
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
@@ -3714,6 +3713,8 @@ use HTML::Entities;
             }
             $self->debug_init($debug, $log);
         }
+
+        $self->log(Data::Dumper->Dump([$debug, \%session], [qw(debug \%session)]));
 
         $self->links('admin', \%session);
 
