@@ -2379,7 +2379,7 @@ use HTML::Entities;
         my $dbport          = $cfg->val('urls_db', 'dbport');
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
-        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
         my %session;
 
@@ -2388,13 +2388,13 @@ use HTML::Entities;
             tie %session, 'Apache::Session::Postgres', $id, {
                 Handle => $db,
                 TableName => 'sessions', 
-                Commit     => 1
+                #Commit     => 1
             };
         }else{
             tie %session, 'Apache::Session::Postgres', undef(), {
                 Handle => $db,
                 TableName => 'sessions', 
-                Commit     => 1
+                #Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
         }
