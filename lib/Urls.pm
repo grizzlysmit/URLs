@@ -2598,6 +2598,7 @@ use HTML::Entities;
             my $family            = $user->{_family};
             my $email             = $user->{_email};
             my $phone_number      = $user->{phone_number};
+            $phone_number         = '' unless defined $phone_number;
             my $groupname         = $user->{groupname};
             my $_admin_checked;
             if($_admin){
