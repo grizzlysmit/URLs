@@ -27,5 +27,5 @@ body {
 }
 label {
     width: 200px;
-    display: inline-flex;
+    display: inline-block;
 }            
