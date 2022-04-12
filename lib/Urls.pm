@@ -2652,10 +2652,10 @@ use HTML::Entities;
             say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
         }
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"3\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"4\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
         say "                    </td>";
         say "                </tr>";
