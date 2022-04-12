@@ -2473,7 +2473,7 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             if($submit eq 'Toggle Admin Flag'){
-                for $passwd_id (@selected){
+                for my $passwd_id (@selected){
                     if($passwd_id == 1){
                         push @msgs, "leave user id == 1 alone this is a reserved account";
                         next;
@@ -2625,7 +2625,7 @@ use HTML::Entities;
             say "                        <label for=\"selected_$passwd_id\"><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></label>";
             say "                    </td>";
             say "                </tr>";
-            if($cnt % $page_length = 0){
+            if($cnt % $page_length == 0){
                 say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th></tr>";
             }
         }
