@@ -3042,9 +3042,11 @@ use HTML::Entities;
             $query->finish();
             $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
 
-            untie %session;
-            $db->disconnect;
-            return 0 unless $return;
+            unless($return){
+                untie %session;
+                $db->disconnect;
+                return 0;
+            }
         }
 
         $admin = 0 unless $isadmin; # admins can only be made by admins. #
