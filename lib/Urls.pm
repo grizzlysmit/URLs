@@ -416,7 +416,13 @@ use HTML::Entities;
             $cnt++;
             say "                <td>";
             #say "                    <a href=\"$href\" >$name</a>\n";
-            if($fun eq $Fun){
+            if($fun eq 'profile'){
+                if($fun eq $Fun){
+                    say "                    <button id=\"$fun\" type=\"button\" disabled>$loggedin_username</button>\n";
+                }else{
+                    say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$loggedin_username\" /></form>\n";
+                }
+            }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
             }else{
                 say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
