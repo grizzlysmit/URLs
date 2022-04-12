@@ -2624,6 +2624,7 @@ use HTML::Entities;
             say "                        <label for=\"selected_$passwd_id\"><div>$email</div></label>";
             say "                    </td>";
             say "                    <td>";
+            $phone_number = '&nbsp;' unless $phone_number;
             say "                        <label for=\"selected_$passwd_id\"><div>$phone_number</div></label>";
             say "                    </td>";
             say "                    <td>";
