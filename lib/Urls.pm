@@ -2634,7 +2634,11 @@ use HTML::Entities;
             say "                        <label for=\"selected_$passwd_id\"><div>$_admin_checked</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <label for=\"selected_$passwd_id\"><div><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
+            if($passwd_id == 1){
+                say "                        <label for=\"selected_$passwd_id\"><div>&nbsp;</div></label>";
+            }else{
+                say "                        <label for=\"selected_$passwd_id\"><div><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
+            }
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
