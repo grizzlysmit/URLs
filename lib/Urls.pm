@@ -2946,6 +2946,8 @@ use HTML::Entities;
         my $submit    = $req->param('submit');
         my $username  = $req->param('username');
         my $password  = $req->param('password');
+        $username   = '' unless defined $username;
+        $password   = '' unless defined $password;
 
         if(defined $username && defined $password && $username =~ m/^\w+$/){
             my @msgs;
