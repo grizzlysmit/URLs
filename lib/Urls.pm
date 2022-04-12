@@ -3030,6 +3030,7 @@ use HTML::Entities;
             }
             $query->finish();
             if($return){
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id], [qw(debug \%session r loggedin_username loggedin_id)]));
                 my $r      = $query->fetchrow_hashref();
                 if($r->{username} eq $loggedin_username){
                     $isadmin = $r->{_admin};
