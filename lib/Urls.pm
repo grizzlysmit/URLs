@@ -3028,10 +3028,10 @@ use HTML::Entities;
                 push @msgs, "Insert into _group failed: $@";
                 $return = 0;
             }
-                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug \%session loggedin_username loggedin_id sql)]));
+                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
             if($return){
                 my $r      = $query->fetchrow_hashref();
-                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug \%session r loggedin_username loggedin_id sql)]));
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
                 if($r->{username} eq $loggedin_username){
                     $isadmin = $r->{_admin};
                 }
