@@ -26,6 +26,9 @@ body {
     text-align: center;
 }
 label {
-    width: 200px;
-    display: inline-table;
+    width: 100%;
+    display: flex;
 }            
+div {
+    width: 100%;
+}
