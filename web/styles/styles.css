@@ -26,5 +26,6 @@ body {
     text-align: center;
 }
 label {
-    width: 100%;
+    width: 200px;
+    display: block;
 }            
