@@ -3028,10 +3028,10 @@ use HTML::Entities;
                 push @msgs, "Insert into _group failed: $@";
                 $return = 0;
             }
-            $query->finish();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug \%session loggedin_username loggedin_id sql)]));
             if($return){
                 my $r      = $query->fetchrow_hashref();
-                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id], [qw(debug \%session r loggedin_username loggedin_id)]));
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug \%session r loggedin_username loggedin_id sql)]));
                 if($r->{username} eq $loggedin_username){
                     $isadmin = $r->{_admin};
                 }
@@ -3039,6 +3039,7 @@ use HTML::Entities;
                 $return = 0;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
+            $query->finish();
             $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return, @msgs);
 
             untie %session;
