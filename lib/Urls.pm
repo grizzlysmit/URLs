@@ -3696,6 +3696,9 @@ use HTML::Entities;
             $debug = $debug{$ident};
         }
 
+        $self->log(Data::Dumper->Dump([$debug, \%session],
+                [qw(debug \%session)]));
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -3714,7 +3717,7 @@ use HTML::Entities;
 
         $self->links('admin', \%session);
 
-        my $delete  = $req->param('delete');
+        #my $delete  = $req->param('delete');
 
 
         untie %session;
@@ -3777,7 +3780,7 @@ use HTML::Entities;
         my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
-                [qw($unit street city_suberb postcode region country line)]));
+                [qw(unit street city_suberb postcode region country line)]));
         my ($address_id, $return, @msgs);
         $address_id = $default_id;
         $return = 1;
