@@ -418,9 +418,9 @@ use HTML::Entities;
             #say "                    <a href=\"$href\" >$name</a>\n";
             if($fun eq 'profile'){
                 if($fun eq $Fun){
-                    say "                    <button id=\"$fun\" type=\"button\" disabled>$loggedin_username</button>\n";
+                    say "                    <button id=\"$fun\" type=\"button\" disabled>$name: $loggedin_username</button>\n";
                 }else{
-                    say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$loggedin_username\" /></form>\n";
+                    say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name: $loggedin_username\" /></form>\n";
                 }
             }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
