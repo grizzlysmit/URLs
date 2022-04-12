@@ -1697,13 +1697,13 @@ use HTML::Entities;
         if($dont_do_form){
             say "        <table>";
             if($button_msg){
-                say "            <tr><th colspan=\"3\">Message</th></tr>";
+                say "            <tr><th>Message</th></tr>";
             }else{
-                say "            <tr><th colspan=\"3\">Error: Message</th></tr>";
+                say "            <tr><th>Error: Message</th></tr>";
             }
             for my $msg (@msgs){
                 say "            <tr>";
-                say "                <td colspan=\"3\">";
+                say "                <td>";
                 say "                    $msg";
                 say "                </td>";
                 say "            </tr>";
@@ -2417,8 +2417,242 @@ use HTML::Entities;
 
         $self->links('user', \%session);
 
+        my $loggedin           = $session{loggedin};
+        my $loggedin_id        = $session{loggedin_id};
+        my $loggedin_username  = $session{loggedin_username};
+        my $loggedin_admin     = $session{loggedin_admin};
+        my $isadmin;
+        if($loggedin && $loggedin_id && $loggedin_username){
+            my @msgs;
+            my $return = 1;
+            my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
+            $sql    .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($loggedin_id);
+            };
+            if($@){
+                push @msgs, "Insert into _group failed: $@";
+                $return = 0;
+            }
+                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            if($return){
+                my $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "could not find your record somethinnng is wrong with your login";
+            }
+            $query->finish();
+            if($loggedin_admin != $isadmin){
+                $return = 0;
+                push @msgs, "session admin rights did nnot match db something is wrong!!!!";
+            }
+            $self->message($debug, \%session, $db, ($return?'main':'user'), ($return ? 'user' : undef), !$return && @msgs, @msgs) if @msgs;
+
+            unless($return){
+                untie %session;
+                $db->disconnect;
+                return 0;
+            }
+        }
+
+        my $submit  = $req->param('submit');
+
+        my @params  = $req->param;
+        my @selected;
+        for (@params){
+            if(m/^selected_\[\d+\]$/){
+                push @selected, $req->param($_);
+            }        }
+        if($submit){
+            my @msgs;
+            my $return = 1;
+            if($submit eq 'Toggle Admin Flag'){
+                for $passwd_id (@selected){
+                    if($passwd_id == 1){
+                        push @msgs, "leave user id == 1 alone this is a reserved account";
+                        next;
+                    }
+                    my $sql  = "UPDATE passwd SET _admin = NOT _admin WHERE id = ?;\n";
+                    my $query  = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result = $query->execute($passwd_id);
+                    };
+                    if($@){
+                        push @msgs, "UPDATE passwd passwd_id = $passwd_id failed: $@";
+                        $return = 0;
+                    }
+                    if($result){
+                    }
+                }
+                push @msgs, "Nothing to change" unless @selected;
+            }elsif($submit eq 'Delete Users'){
+                for $passwd_id (@selected){
+                    if($passwd_id == 1){
+                        push @msgs, "leave user id == 1 alone this is a reserved account";
+                        next;
+                    }
+                    my $sql  = "SELECT p.username, p.passwd_details_id, p.primary_group_id, p.email_id FROM passwd p\n";
+                    $sql    .= "WHERE p.id = ?\n";
+                    my $query  = $db->prepare($sql);
+                    my $result;
+                    eval {
+                        $result = $query->execute($passwd_id);
+                    };
+                    if($@){
+                        push @msgs, "SELECT passwd passwd_id = $passwd_id failed: $@";
+                        $return = 0;
+                    }
+                    if($result){
+                        my $r                 = $query->fetchrow_hashref();
+                        my $username          = $r->{username};
+                        my $passwd_details_id = $r->{passwd_details_id};
+                        my $primary_group_id  = $r->{primary_group_id};
+                        my $email_id          = $r->{email_id};
+                        my ($return_email, @msgs_email) = $self->delete_email($email_id);
+                        push @msgs, @msgs_email;
+                        $return = 0 unless $return_email;
+                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id);
+                        push @msgs, @msgs_group;
+                        $return = 0 unless $return_group;
+                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id);
+                        push @msgs, @msgs_passwd_details;
+                        $return = 0 unless $return_passwd_details;
+                        $sql     = "DELETE FROM passwd\n";
+                        $sql    .= "WHERE id = ?\n";
+                    }
+                }
+                push @msgs, "Nothing to change" unless @selected;
+            }
+            $self->message($debug, \%session, $db, ($return?'main':'user'), ($return ? 'continue' : undef), 1, @msgs) if @msgs;
+        }
+
+        my @user_details;
+        my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+        $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
+        $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+        $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM passwd failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            while($r){
+                push @user_details, $r;
+                $r      = $query->fetchrow_hashref();
+            }
+        }
+        
+        say "        <form action=\"user.pl\" method=\"post\">";
+        say "            <h1>Edit User Details</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+
         untie %session;
         $db->disconnect;
+
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"5\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"4\">";
+        say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th></tr>";
+        my $cnt = 0;
+        for my $user (@user_details){
+            $cnt++;
+            my $passwd_id         = $user->{id};
+            my $username          = $user->{username};
+            my $primary_group_id  = $user->{group_id};
+            my $_admin            = $user->{_admin};
+            my $display_name      = $user->{display_name};
+            my $given             = $user->{given};
+            my $family            = $user->{_family};
+            my $email             = $user->{_email};
+            my $phone_number      = $user->{phone_number};
+            my $groupname         = $user->{groupname};
+            my $_admin_checked;
+            if($_admin){
+                $_admin_checked = '&radic;';
+            }else{
+                $_admin_checked = '&otimes;';
+            }
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$passwd_id</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$username</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$given</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$family</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$email</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$phone_number</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$groupname</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\">$_admin_checked</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></label>";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length = 0){
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th></tr>";
+            }
+        }
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+        }else{
+            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
         return 1;
     } ## --- end sub user
 
@@ -3920,6 +4154,33 @@ use HTML::Entities;
         $query->finish();
         return ($passwd_id, $return, @msgs);
     } ## --- end sub create_passwd
+
+
+    sub delete_email {
+        my ($self, $email_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$email_id, $line], [qw(email_id line)]));
+        my ($return, @msgs);
+        return ($return, @msgs);
+    } ## --- end sub delete_email
+
+
+    sub delete_group {
+        my ($self, $group_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_id, $line], [qw(group_id line)]));
+        my ($return, @msgs);
+        return ($return, @msgs);
+    } ## --- end sub delete_group
+
+
+    sub delete_passwd_details {
+        my ($self, $passwd_details_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$passwd_details_id, $line], [qw(passwd_details_id line)]));
+        my ($return, @msgs);
+        return ($return, @msgs);
+    } ## --- end sub delete_passwd_details
 
 }
 
