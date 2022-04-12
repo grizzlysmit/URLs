@@ -3040,7 +3040,7 @@ use HTML::Entities;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
             $query->finish();
-            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return, @msgs);
+            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
 
             untie %session;
             $db->disconnect;
