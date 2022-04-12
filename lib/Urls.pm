@@ -3659,7 +3659,6 @@ use HTML::Entities;
     sub admin {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
-        my $debug = $debug{$ident};
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -3686,6 +3685,15 @@ use HTML::Entities;
                 Commit     => 1
             };
             $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        my $submit  = $req->param('submit');
+        my $debug;
+        unless($submit eq 'Apply'){
+            $debug   = $req->param('debug');
+            $debug{$ident} = $debug;
+        }else{
+            $debug = $debug{$ident};
         }
 
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
