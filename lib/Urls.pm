@@ -3937,6 +3937,7 @@ use HTML::Entities;
         }
 
         my $submit  = $req->param('submit');
+        $submit = '' unless defined $submit;
         my $debug;
         unless($submit eq 'Apply'){
             $debug   = $req->param('debug');
