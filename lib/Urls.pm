@@ -3724,7 +3724,6 @@ use HTML::Entities;
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"admin.pl\" method=\"post\">";
         say "        <h1>Admin</h1>";
         say "        <table>";
         say "            <tr>";
