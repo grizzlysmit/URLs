@@ -3114,6 +3114,8 @@ use HTML::Entities;
 
         my $submit  = $req->param('submit');
 
+        $submit     = '' unless defined $submit;
+
         if($submit eq 'Logout'){
             $session{loggedin}               = 0;
             $session{loggedin_id}            = 0;
