@@ -2493,7 +2493,7 @@ use HTML::Entities;
                 }
                 push @msgs, "Nothing to change" unless @selected;
             }elsif($submit eq 'Delete Users'){
-                for $passwd_id (@selected){
+                for my $passwd_id (@selected){
                     if($passwd_id == 1){
                         push @msgs, "leave user id == 1 alone this is a reserved account";
                         next;
