@@ -3532,9 +3532,6 @@ use HTML::Entities;
         my $display_name       = $req->param('display_name');
         my $admin              = $req->param('admin');
 
-        my $loggedin           = $session{loggedin};
-        my $loggedin_id        = $session{loggedin_id};
-        my $loggedin_username  = $session{loggedin_username};
         my $isadmin;
         if($loggedin && $loggedin_id && $loggedin_username){
             my @msgs;
