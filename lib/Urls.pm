@@ -2046,7 +2046,7 @@ use HTML::Entities;
         }
 
         my $sql  = "SELECT p.id, p.name, p.full_name FROM pages p\n";
-        $sql    .= "WHERE  (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true) OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?)) AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
+        $sql    .= "WHERE  (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true) OR ((p.groupid = ? OR p.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?)) AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
         $sql    .= "ORDER BY p.name, p.full_name\n";
         my $query           = $db->prepare($sql);
         my $result;
