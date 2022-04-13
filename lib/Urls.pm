@@ -834,7 +834,7 @@ use HTML::Entities;
 
 
     sub valid_page {
-        my ($self, $target, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($self, $target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $ident           = ident $self;
         $self->log("start valid_page");
         $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
@@ -1163,7 +1163,7 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
             my $result;
             eval {
-                $result          = $query->execute($section, $loggedin_id, $loggedin_groupnname_id);
+                $result          = $query->execute($section, $loggedin_id, $loggedin_primary_group_id);
             };
             if($@){
                 push @msgs, "Error: $@";
