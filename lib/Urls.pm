@@ -2051,7 +2051,7 @@ use HTML::Entities;
         my $query           = $db->prepare($sql);
         my $result;
         eval {
-            $result         = $query->execute();
+            $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             $self->message($debug, \%session, $db, 'delete_pages', undef, undef, "Error: $@");
