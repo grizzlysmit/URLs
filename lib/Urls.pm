@@ -2771,16 +2771,13 @@ use HTML::Entities;
         $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-        $sql    .= "WHERE (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
-        $sql    .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
-        $sql    .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
         $sql    .= "ORDER BY p.username, pd.given, pd._family\n";
         my $query  = $db->prepare($sql);
         my $result;
         my @msgs;
         my $return = 1;
         eval {
-            $result = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+            $result = $query->execute();
         };
         if($@){
             push @msgs, "SELECT FROM passwd failed: $@";
