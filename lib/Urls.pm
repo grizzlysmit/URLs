@@ -102,17 +102,34 @@ use HTML::Entities;
     } ## --- end sub log
 
     sub in_a_page {
-        my ($self, $section, $db) = @_;
+        my ($self, $section, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $self->log(Data::Dumper->Dump([$section, $db], [qw(section db)]));
-        my $sql = 'SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?';
+        my $sql = "SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ? AND\n";
+        $sql   .= "     (? = 1 OR (pv.userid = ? AND (pv)._perms._user._read = true) OR\n";
+        $sql   .= "     ((pv.groupid = ? OR pv.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql   .= "           AND (pv)._perms._group._read = true) OR (pv)._perms._other._read = true)\n";
         my $query  = $db->prepare($sql);
-        my $result = $query->execute($section);
+        my $result = $query->execute($section, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         my $r      = $query->fetchrow_hashref();
         my $n      = $r->{n};
         $query->finish();
         $self->log(Data::Dumper->Dump([$query, $result, $r, $sql], [qw(query result r sql)]));
         return $n;
-    }
+    } ## --- end sub in_a_page
 
 
     sub main {
@@ -161,6 +178,19 @@ use HTML::Entities;
             }
             $self->debug_init($debug, $log);
         }
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $current_page    = $req->param('page');
         $self->log(Data::Dumper->Dump([$current_page], [qw(current_page)]));
         $current_page       = $session{current_page} if (!defined $current_page || $current_page =~ m/^\s*$/) && exists $session{current_page};
@@ -173,9 +203,12 @@ use HTML::Entities;
         $session{current_page}    = $current_page    if defined $current_page;
         $session{current_section} = $current_section if defined $current_section;
         my $sql             = "SELECT * FROM pagelike pl\n";
+        $sql               .= "WHERE (? = 1 OR (pl.userid = ? AND (pl)._perms._user._read = true)\n";
+        $sql               .= "       OR ((pl.groupid = ? OR pl.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               .= "                             AND (pl)._perms._group._read = true) OR (pl)._perms._other._read = true)\n";
         $sql               .= "ORDER BY pl.name, pl.full_name\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute();
+        my $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @pages;
         my $r               = $query->fetchrow_hashref();
@@ -190,9 +223,11 @@ use HTML::Entities;
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         if($current_section =~ m/^alias\^(.*)$/){
             $sql  = "SELECT a.section FROM aliases a\n";
-            $sql .= "WHERE a.name = ?\n";
+            $sql .= "WHERE a.name = ? AND (? = 1 OR (a.userid = ? AND (a)._perms._user._read = true)\n";
+            $sql .= "     OR ((a.groupid = ? OR a.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+            $sql .= "          AND (a)._perms._group._read = true) OR (a)._perms._other._read = true)\n";
             $query  = $db->prepare($sql);
-            $result = $query->execute($1);
+            $result = $query->execute($1, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
             $r      = $query->fetchrow_hashref();
             my $sec = $r->{section};
             $query->finish();
@@ -201,10 +236,13 @@ use HTML::Entities;
         $self->log(Data::Dumper->Dump([$current_page, $current_section], [qw(current_page current_section)]));
         my @sections;
         $sql  = "SELECT al.type, al.section FROM alias_links al\n";
+        $sql .= "WHERE (? = 1 OR (al.userid = ? AND (al)._perms._user._read = true) OR ((al.groupid = ?\n";
+        $sql .= "         OR al.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql .= "             AND (al)._perms._group._read = true) OR (al)._perms._other._read = true)\n";
         $sql .= "ORDER BY al.section\n";
         $query           = $db->prepare($sql);
-        $result          = $query->execute();
-        $r                  = $query->fetchrow_hashref();
+        $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+        $r               = $query->fetchrow_hashref();
         while($r){
             push @sections, $r;
             $r           = $query->fetchrow_hashref();
@@ -215,17 +253,21 @@ use HTML::Entities;
             if($current_section =~ m/^links\^(.*)$/){
                 my $secn = $1;
                 $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-                $sql   .= "WHERE pp.name = ? AND ls.section = ?\n";
+                $sql   .= "WHERE pp.name = ? AND (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+                $sql   .= "     OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql   .= "          AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
                 $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
                 $query  = $db->prepare($sql);
-                $result = $query->execute($pp, $secn);
+                $result = $query->execute($pp, $secn, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 $self->log(Data::Dumper->Dump([$current_page, $current_section, $query, $result, $sql, $pp, $secn], [qw(current_page current_section query result sql pp secn)]));
             }else{
                 $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-                $sql   .= "WHERE pp.name = ?\n";
+                $sql   .= "WHERE pp.name = ? AND (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+                $sql   .= "     OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql   .= "          AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
                 $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
                 $query  = $db->prepare($sql);
-                $result = $query->execute($pp);
+                $result = $query->execute($pp, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 $self->log(Data::Dumper->Dump([$current_page, $current_section, $query, $result, $sql, $pp], [qw(current_page current_section query result sql pp)]));
             }
             $r      = $query->fetchrow_hashref();
@@ -249,8 +291,8 @@ use HTML::Entities;
                 my $link      = $row->{link};
                 my $status    = $row->{status};
                 next if $status eq 'invalid';
-                next if $status eq 'unassigned' && $self->in_a_page($section, $db);
-                next if $status eq 'assigned'   && !$self->in_a_page($section, $db);
+                next if $status eq 'unassigned' && $self->in_a_page($section, \%session, $db);
+                next if $status eq 'assigned'   && !$self->in_a_page($section, \%session, $db);
                 push @body, { page_name => $page_name, full_name => $full_name, section => $section, name => $name, link => $link, };
             }
         }elsif($current_page =~ m/^page\^(.*)$/){
@@ -258,16 +300,21 @@ use HTML::Entities;
             if($current_section =~ m/^links\^(.*)$/){
                 my $secn = $1;
                 $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
-                $sql .= "WHERE lv.page_name = ? AND lv.section = ?\n";
+                $sql .= "WHERE lv.page_name = ? AND lv.section = ? AND (? = 1\n";
+                $sql .= "     OR (lv.userid = ? AND (lv)._perms._user._read = true)\n";
+                $sql .= "          OR ((lv.groupid = ? OR lv.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "               AND (lv)._perms._group._read = true) OR (lv)._perms._other._read = true)\n";
                 $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
                 $query  = $db->prepare($sql);
-                $result = $query->execute($pp, $secn);
+                $result = $query->execute($pp, $secn, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
             }else{
                 $sql  = "SELECT lv.page_name, lv.full_name, lv.section, lv.name, lv.link FROM page_link_view lv\n";
-                $sql .= "WHERE lv.page_name = ?\n";
+                $sql .= "WHERE lv.page_name = ? AND (? = 1 OR (lv.userid = ? AND (lv)._perms._user._read = true)\n";
+                $sql .= "     OR ((lv.groupid = ? OR lv.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "          AND (lv)._perms._group._read = true) OR (lv)._perms._other._read = true)\n";
                 $sql .= "ORDER BY lv.page_name, lv.full_name, lv.section, lv.name, lv.link;\n";
                 $query  = $db->prepare($sql);
-                $result = $query->execute($pp);
+                $result = $query->execute($pp, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
             }
             $r      = $query->fetchrow_hashref();
             while($r){
@@ -489,10 +536,25 @@ use HTML::Entities;
 
         $self->links('list_aliases', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $sql  = "SELECT a.name, a.section FROM aliases a\n";
+        $sql    .= "WHERE (? = 1 OR (a.userid = ? AND (a)._perms._user._read = true)\n";
+        $sql    .= "    OR ((a.groupid = ? OR a.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "        AND (a)._perms._group._read = true) OR (a)._perms._other._read = true)\n";
         $sql    .= "ORDER BY a.name\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute();
+        my $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @aliases;
         my $r               = $query->fetchrow_hashref();
@@ -572,21 +634,33 @@ use HTML::Entities;
 
         $self->links('add_alias', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $alias  = $req->param('alias');
         my $target = $req->param('target');
         my $set_page_length = $req->param('set_page_length');
 
         $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
         if(defined $set_page_length){
-        }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $db)){
+        }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $loggedin_id, $loggedin_primary_group_id, $db)){
             my @msgs;
             my $return = 1;
-            my $sql  = "INSERT INTO alias(name, target)VALUES(?, ?);\n";
+            my $sql  = "INSERT INTO alias(name, target, userid, groupid)VALUES(?, ?, ?, ?);\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$alias, $target, $sql], [qw(alias target sql)]));
             my $result;
             eval {
-                $result          = $query->execute($alias, $target);
+                $result          = $query->execute($alias, $target, $loggedin_id, $loggedin_primary_group_id);
             };
             if($@){
                 push @msgs, "Error: $@";
@@ -595,18 +669,22 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $sql  = "SELECT ls.section FROM links_sections ls\n";
-                $sql .= "WHERE ls.id = ?\n";
+                $sql .= "WHERE ls.id = ? AND (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+                $sql .= "    OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "        AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
                 $query           = $db->prepare($sql);
-                $result          = $query->execute($target);
+                $result          = $query->execute($target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 my $r            = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
                 push @msgs, "Alias  defined: $alias => $section";
             }else{
                 $sql  = "SELECT ls.section FROM links_sections ls\n";
-                $sql .= "WHERE ls.id = ?\n";
+                $sql .= "WHERE ls.id = ? AND (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+                $sql .= "   OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "      AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
                 $query           = $db->prepare($sql);
-                $result          = $query->execute($target);
+                $result          = $query->execute($target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 my $r            = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                 my $section      = $r->{section};
@@ -618,9 +696,12 @@ use HTML::Entities;
         }
 
         my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
+        $sql               .= "WHERE (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+        $sql               .= "     OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               .= "          AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
         $sql               .= "ORDER BY ls.section\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute();
+        my $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @sections;
         my $r               = $query->fetchrow_hashref();
@@ -638,9 +719,12 @@ use HTML::Entities;
         $session{debug} = $debug if defined $debug;
 
         $sql  = "SELECT a.name, a.section FROM aliases a\n";
+        $sql    .= "WHERE (? = 1 OR (a.userid = ? AND (a)._perms._user._read = true)\n";
+        $sql    .= "    OR ((a.groupid = ? OR a.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "        AND (a)._perms._group._read = true) OR (a)._perms._other._read = true)\n";
         $sql    .= "ORDER BY a.name\n";
         $query           = $db->prepare($sql);
-        $result          = $query->execute();
+        $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @aliases;
         $r               = $query->fetchrow_hashref();
@@ -728,16 +812,18 @@ use HTML::Entities;
 
 
     sub valid_section {
-        my ($self, $target, $db) = @_;
+        my ($self, $target, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $ident           = ident $self;
         $self->log("start valid_section");
         $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
         my $debug = $debug{$ident};
         return 0 if $target !~ m/^\d+$/;
         my $sql             = "SELECT COUNT(*) n FROM links_sections ls\n";
-        $sql               .= "WHERE ls.id = ?\n";
+        $sql               .= "WHERE ls.id = ? AND (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+        $sql               .= "     OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               .= "          AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute($target);
+        my $result          = $query->execute($target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my $r               = $query->fetchrow_hashref();
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
@@ -748,16 +834,18 @@ use HTML::Entities;
 
 
     sub valid_page {
-        my ($self, $target, $db) = @_;
+        my ($self, $target, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $ident           = ident $self;
         $self->log("start valid_page");
         $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
         my $debug = $debug{$ident};
         return 0 if $target !~ m/^\d+$/;
         my $sql             = "SELECT COUNT(*) n FROM pages p\n";
-        $sql               .= "WHERE p.id = ?\n";
+        $sql               .= "WHERE p.id = ? AND (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+        $sql               .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute($target);
+        my $result          = $query->execute($target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my $r               = $query->fetchrow_hashref();
         $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
@@ -817,6 +905,18 @@ use HTML::Entities;
 
         $self->links('add_page', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $page_length = $req->param('page_length');
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
         $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
@@ -837,33 +937,35 @@ use HTML::Entities;
         }elsif(defined $page && @members && $page =~ m/^(?:\w|\.|\+|-)+$/ && join(',', @members) =~ m/^\d+(?:,\d+)*$/){
             my @msgs;
             my $return = 1;
-            my $sql  = "INSERT INTO pages(name, full_name) VALUES(?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name\n";
+            my $sql  = "INSERT INTO pages(name, full_name, userid, groupid) VALUES(?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name\n";
             my $query           = $db->prepare($sql);
-            my $result          = $query->execute($page, $full_name);
+            my $result          = $query->execute($page, $full_name, $loggedin_id, $loggedin_primary_group_id);
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             $query->finish();
             if($result){
                 push @msgs, "Page $page added.";
-                $sql  =  "SELECT p.id FROM pages p\n";
-                $sql .=  "WHERE p.name = ?\n";
+                $sql  = "SELECT p.id FROM pages p\n";
+                $sql .= "WHERE p.name = ? AND (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+                $sql .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
                 $query           = $db->prepare($sql);
-                $result          = $query->execute($page);
+                $result          = $query->execute($page, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 $return = 0 if !$result;
                 my $r            = $query->fetchrow_hashref();
                 my $page_id      = $r->{id};
                 $query->finish();
-                $sql  = "INSERT INTO page_section(pages_id, links_section_id)\n";
-                $sql .= "VALUES(?, ?) ON CONFLICT (pages_id, links_section_id) DO NOTHING\n";
+                $sql  = "INSERT INTO page_section(pages_id, links_section_id, userid, groupid)\n";
+                $sql .= "VALUES(?, ?, ?, ?) ON CONFLICT (pages_id, links_section_id) DO NOTHING\n";
                 $self->log(Data::Dumper->Dump([\@members], [qw(@members)]));
                 $query           = $db->prepare($sql);
                 my (@good, @bad, @skipped);
                 for my $member (@members){
-                    if(!$self->valid_section($member, $db)){
+                    if(!$self->valid_section($member, $loggedin_id, $loggedin_primary_group_id, $db)){
                         push @skipped, $member;
                         next;
                     }
                     eval {
-                        $result      = $query->execute($page_id, $member);
+                        $result      = $query->execute($page_id, $member, $loggedin_id, $loggedin_primary_group_id);
                     };
                     if($@){
                         push @bad, $member;
@@ -895,9 +997,12 @@ use HTML::Entities;
         
 
         my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
+        $sql               .= "WHERE (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+        $sql               .= "   OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               .= "         AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
         $sql               .= "ORDER BY ls.section\n";
         my $query           = $db->prepare($sql);
-        my $result          = $query->execute();
+        my $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @sections;
         my $r               = $query->fetchrow_hashref();
@@ -1033,6 +1138,18 @@ use HTML::Entities;
 
         $self->links('add_link', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $section  = $req->param('section');
         my $name     = $req->param('name');
         my $link     = $req->param('link');
@@ -1041,12 +1158,12 @@ use HTML::Entities;
         if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && is_uri($link)){
             my @msgs;
             my $return = 1;
-            my $sql  = "INSERT INTO links_sections(section) VALUES(?) ON CONFLICT (section) DO NOTHING;\n";
+            my $sql  = "INSERT INTO links_sections(section, userid, groupid) VALUES(?, ?, ?) ON CONFLICT (section) DO NOTHING;\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$section, $name, $link, $sql], [qw(section name link sql)]));
             my $result;
             eval {
-                $result          = $query->execute($section);
+                $result          = $query->execute($section, $loggedin_id, $loggedin_groupnname_id);
             };
             if($@){
                 push @msgs, "Error: $@";
@@ -1056,17 +1173,19 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $sql  = "SELECT ls.id FROM links_sections ls\n";
-                $sql .= "WHERE ls.section = ?\n";
+                $sql .= "WHERE ls.section = ? AND (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+                $sql .= "    OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                $sql .= "        AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
                 $query           = $db->prepare($sql);
-                $result          = $query->execute($section);
+                $result          = $query->execute($section, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                 if($result){
                     push @msgs, "Section defined: $section";
                     my $r            = $query->fetchrow_hashref();
                     $self->log(Data::Dumper->Dump([$query, $result, $r], [qw(query result r)]));
                     my $section_id   = $r->{id};
-                    $sql  = 'INSERT INTO links(section_id, name, link) VALUES (?, ?, ?) ON CONFLICT (section_id, name) DO NOTHING';
+                    $sql  = 'INSERT INTO links(section_id, name, link, userid, groupid) VALUES (?, ?, ?, ?, ?) ON CONFLICT (section_id, name) DO NOTHING';
                     $query           = $db->prepare($sql);
-                    $result          = $query->execute($section_id, $name, $link);
+                    $result          = $query->execute($section_id, $name, $link, $loggedin_id, $loggedin_primary_group_id);
                     if($result){
                         push @msgs, "link defined: $section $name $link";
                         $query->finish();
@@ -1093,9 +1212,12 @@ use HTML::Entities;
         }
 
         my $sql    = "SELECT lsl.section, lsl.name, lsl.link FROM links_sections_join_links lsl\n";
+        $sql      .= "WHERE (? = 1 OR (lsl.userid = ? AND (lsl)._perms._user._read = true)\n";
+        $sql      .= "     OR ((lsl.groupid = ? OR lsl.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql      .= "          AND (lsl)._perms._group._read = true) OR (lsl)._perms._other._read = true)\n";
         $sql      .= "ORDER BY lsl.section, lsl.name;\n";
         my $query  = $db->prepare($sql);
-        my $result = $query->execute();
+        my $result = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         my $r      = $query->fetchrow_hashref();
         my @body;
         while($r){
@@ -1223,6 +1345,18 @@ use HTML::Entities;
 
         $self->links('add_pseudo_page', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -1246,12 +1380,12 @@ use HTML::Entities;
 
         $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern], [qw(name full_name status pattern)]));
         if(defined $name && defined $status && defined $pattern && $name =~ m/^(?:\w|-|\.|\@)+$/ && $status =~ m/^(?:invalid|unassigned|assigned|both)$/ && $pattern =~ m/^[^;\'\"]+$/){
-            my $sql  = "INSERT INTO pseudo_pages(name, full_name, status, pattern) VALUES(?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name, status = EXCLUDED.status, pattern = EXCLUDED.pattern;\n";
+            my $sql  = "INSERT INTO pseudo_pages(name, full_name, status, pattern, userid, groupid) VALUES(?, ?, ?, ?, ?, ?) ON CONFLICT (name) DO UPDATE SET full_name = EXCLUDED.full_name, status = EXCLUDED.status, pattern = EXCLUDED.pattern;\n";
             my $query           = $db->prepare($sql);
             $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern, $sql], [qw(name full_name status pattern sql)]));
             my $result;
             eval {
-                $result         = $query->execute($name, $full_name, $status, $pattern);
+                $result         = $query->execute($name, $full_name, $status, $pattern, $loggedin_id, $loggedin_primary_group_id);
             };
             if($@){
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
@@ -1281,12 +1415,15 @@ use HTML::Entities;
         }
         
         my $sql  = "SELECT pp.name, pp.full_name, pp.pattern, pp.status FROM pseudo_pages pp\n";
+        $sql    .= "WHERE (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+        $sql    .= "    OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "        AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
         $sql    .= "ORDER BY pp.name, pp.full_name\n";
         my $query           = $db->prepare($sql);
         $self->log(Data::Dumper->Dump([$name, $full_name, $status, $pattern, $sql], [qw(name full_name status pattern sql)]));
         my $result;
         eval {
-            $result         = $query->execute();
+            $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             my @msgs = ("Error: $@", "Pseudo page list failed");
@@ -1433,6 +1570,18 @@ use HTML::Entities;
 
         $self->links('delete_links', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -1465,11 +1614,15 @@ use HTML::Entities;
             my $return = 1;
             if($delete eq 'Delete Link'){
                 for my $link_id (@delete_set){
-                    my $sql  = "DELETE FROM links WHERE id = ?;\n";
+                    my $sql  = "DELETE FROM links\n";
+                    $sql    .= "WHERE id = ? AND (? = 1\n";
+                    $sql    .= "    OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql    .= "        OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "            AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($link_id);
+                        $result         = $query->execute($link_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         say "                <tr><td></td></tr>";
@@ -1491,12 +1644,14 @@ use HTML::Entities;
                 my %sections_to_delete;
                 for my $link_id (@delete_set){
                     my $sql  = "SELECT  l.section_id FROM links l\n";
-                    $sql    .= "WHERE l.id = ?;\n";
+                    $sql    .= "WHERE l.id = ? AND (? = 1 OR (l.userid = ? AND (l)._perms._user._read = true)\n";
+                    $sql    .= "    OR ((l.groupid = ? OR l.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "        AND (l)._perms._group._read = true) OR (l)._perms._other._read = true);\n";
                     my $query           = $db->prepare($sql);
                     $self->log(Data::Dumper->Dump([$link_id, $query, $sql], [qw(link_id query sql)]));
                     my $result;
                     eval {
-                        $result         = $query->execute($link_id);
+                        $result         = $query->execute($link_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: failed to get section_id: $@";
@@ -1514,10 +1669,12 @@ use HTML::Entities;
                         push @msgs,  "Error: failed to get section_id";
                     }
                     $query->finish();
-                    $sql  = "DELETE FROM links WHERE id = ?;\n";
+                    $sql  = "DELETE FROM links WHERE id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql .= "        OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql .= "                AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     $query           = $db->prepare($sql);
                     eval {
-                        $result         = $query->execute($link_id);
+                        $result         = $query->execute($link_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete links failed: $@";
@@ -1536,11 +1693,13 @@ use HTML::Entities;
                 }
                 for my $section_id (keys %sections_to_delete){
                     my $sql  = "SELECT COUNT(*) n FROM links l\n";
-                    $sql    .= "WHERE l.section_id = ?;\n";
+                    $sql    .= "WHERE l.section_id = ? AND (? = 1 OR (l.userid = ? AND (l)._perms._user._read = true)\nn";
+                    $sql    .= "     OR ((l.groupid = ? OR l.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\nn";
+                    $sql    .= "          AND (l)._perms._group._read = true) OR (l)._perms._other._read = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($section_id);
+                        $result         = $query->execute($section_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete links_sections failed: $@";
@@ -1556,10 +1715,12 @@ use HTML::Entities;
                             next;
                         }
                         $sql  = "DELETE FROM links_sections\n";
-                        $sql .= "WHERE id = ?\n";
+                        $sql .= "WHERE id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                        $sql .= "     OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                        $sql .= "          AND (_perms)._group._del = true) OR (_perms)._other._del = true)\n";
                         $query           = $db->prepare($sql);
                         eval {
-                            $result         = $query->execute($section_id);
+                            $result         = $query->execute($section_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                         };
                         if($@){
                             push @msgs,  "Error: Delete links_sections failed: $@";
@@ -1587,11 +1748,14 @@ use HTML::Entities;
         }
 
         my $sql  = "SELECT  l.id, l.section_id, (SELECT ls.section FROM links_sections ls WHERE ls.id = l.section_id) section, l.name, l.link FROM links l\n";
+        $sql    .= "WHERE (? = 1 OR (l.userid = ? AND (l)._perms._user._read = true)\n";
+        $sql    .= "     OR ((l.groupid = ? OR l.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "          AND (l)._perms._group._read = true) OR (l)._perms._other._read = true)\n";
         $sql    .= "ORDER BY section, l.name\n";
         my $query           = $db->prepare($sql);
         my $result;
         eval {
-            $result         = $query->execute();
+            $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             $self->message($debug, \%session, $db, 'delete_links', undef, undef, "Error: $@");
@@ -1789,6 +1953,18 @@ use HTML::Entities;
 
         $self->links('delete_pages', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -1821,11 +1997,14 @@ use HTML::Entities;
             my $return = 1;
             if($delete eq 'Delete Pages'){
                 for my $page_id (@delete_set){
-                    my $sql  = "DELETE FROM page_section WHERE pages_id = ?;\n";
+                    my $sql  = "DELETE FROM page_section\n";
+                    $sql    .= "WHERE pages_id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql    .= "      OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "            AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($page_id);
+                        $result         = $query->execute($page_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete page_section failed: $@";
@@ -1835,10 +2014,13 @@ use HTML::Entities;
                     }
                     if($result){
                         push @msgs,  "Delete page_section Success";
-                        $sql  = "DELETE FROM pages WHERE id = ?;\n";
+                        $sql  = "DELETE FROM pages\n";
+                        $sql .= "WHERE id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                        $sql .= "     OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                        $sql .= "          AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                         $query           = $db->prepare($sql);
                         eval {
-                            $result         = $query->execute($page_id);
+                            $result         = $query->execute($page_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                         };
                         if($@){
                             push @msgs,  "Error: Delete Pages failed: $@";
@@ -1864,6 +2046,7 @@ use HTML::Entities;
         }
 
         my $sql  = "SELECT p.id, p.name, p.full_name FROM pages p\n";
+        $sql    .= "WHERE ((l.userid = ? AND (l)._perms._user._read = true) OR (l.groupid = ? AND (l)._perms._group._read = true) OR (l)._perms._other._read = true)\n";
         $sql    .= "ORDER BY p.name, p.full_name\n";
         my $query           = $db->prepare($sql);
         my $result;
@@ -1984,6 +2167,18 @@ use HTML::Entities;
 
         $self->links('delete_pseudo_page', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $debug    = $session{debug} if !defined $debug && exists $session{debug};
         $debug{$ident} = $debug;
         $session{debug} = $debug if defined $debug;
@@ -2016,11 +2211,14 @@ use HTML::Entities;
             my $return = 1;
             if($delete eq 'Delete Pseudo-Pages'){
                 for my $page_id (@delete_set){
-                    my $sql  = "DELETE FROM pseudo_pages WHERE id = ?;\n";
+                    my $sql  = "DELETE FROM pseudo_pages\n";
+                    $sql    .= "WHERE id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql    .= "        OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "                AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($page_id);
+                        $result         = $query->execute($page_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete from pseudo_pages failed: $@";
@@ -2045,11 +2243,14 @@ use HTML::Entities;
         }
 
         my $sql  = "SELECT pp.id, pp.name, pp.full_name, pp.pattern, pp.status FROM pseudo_pages pp\n";
+        $sql    .= "WHERE (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+        $sql    .= "    OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "        AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
         $sql    .= "ORDER BY pp.name, pp.full_name\n";
         my $query           = $db->prepare($sql);
         my $result;
         eval {
-            $result         = $query->execute();
+            $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             $self->message($debug, \%session, $db, 'delete_pseudo_page', undef, undef, "Error: $@", "Cannot read from pseudo_pages");
@@ -2173,6 +2374,30 @@ use HTML::Entities;
 
         $self->links('delete_aliases', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $delete  = $req->param('delete');
 
         my @params          = $req->param;
@@ -2189,11 +2414,15 @@ use HTML::Entities;
             my $return = 1;
             if($delete eq 'Delete Aliases'){
                 for my $page_id (@delete_set){
-                    my $sql  = "DELETE FROM alias WHERE id = ?;\n";
+                    my $sql  = "DELETE FROM alias\n";
+                    $sql    .= "WHERE id = ? AND (? = 1\n";
+                    $sql    .= "        OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql    .= "                OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "                        AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($page_id);
+                        $result         = $query->execute($page_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete Aliases failed: $@";
@@ -2215,11 +2444,14 @@ use HTML::Entities;
         }
 
         my $sql  = "SELECT a.id, a.name, a.section FROM aliases a\n";
+        $sql    .= "WHERE (? = 1 OR (a.userid = ? AND (a)._perms._user._read = true)\n";
+        $sql    .= "     OR ((a.groupid = ? OR a.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "          AND (a)._perms._group._read = true) OR (a)._perms._other._read = true)\n";
         $sql    .= "ORDER BY a.name, a.section\n";
         my $query           = $db->prepare($sql);
         my $result;
         eval {
-            $result         = $query->execute();
+            $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             $self->message($debug, \%session, $db, 'delete_aliases', undef, "Error: $@", "Cannnot Read aliases");
@@ -2417,20 +2649,32 @@ use HTML::Entities;
 
         $self->links('user', \%session);
 
-        my $loggedin           = $session{loggedin};
-        my $loggedin_id        = $session{loggedin_id};
-        my $loggedin_username  = $session{loggedin_username};
-        my $loggedin_admin     = $session{loggedin_admin};
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return 0 unless $loggedin_admin;
+
         my $isadmin;
         if($loggedin && $loggedin_id && $loggedin_username){
             my @msgs;
             my $return = 1;
             my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
-            $sql    .= "WHERE p.id = ?\n";
+            $sql    .= "WHERE p.id = ? AND (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+            $sql    .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+            $sql    .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
             my $query  = $db->prepare($sql);
             my $result;
             eval {
-                $result = $query->execute($loggedin_id);
+                $result = $query->execute($loggedin_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
             };
             if($@){
                 push @msgs, "Insert into _group failed: $@";
@@ -2499,11 +2743,13 @@ use HTML::Entities;
                         next;
                     }
                     my $sql  = "SELECT p.username, p.passwd_details_id, p.primary_group_id, p.email_id FROM passwd p\n";
-                    $sql    .= "WHERE p.id = ?\n";
+                    $sql    .= "WHERE p.id = ? AND (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+                    $sql    .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
                     my $query  = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result = $query->execute($passwd_id);
+                        $result = $query->execute($passwd_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs, "SELECT passwd passwd_id = $passwd_id failed: $@";
@@ -2515,17 +2761,18 @@ use HTML::Entities;
                         my $passwd_details_id = $r->{passwd_details_id};
                         my $primary_group_id  = $r->{primary_group_id};
                         my $email_id          = $r->{email_id};
-                        my ($return_email, @msgs_email) = $self->delete_email($email_id, $db);
+                        my ($return_email, @msgs_email) = $self->delete_email($email_id, \%session, $db);
                         push @msgs, @msgs_email;
                         $return = 0 unless $return_email;
-                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, $db);
+                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, \%session, $db);
                         push @msgs, @msgs_group;
                         $return = 0 unless $return_group;
-                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, $db);
+                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, \%session, $db);
                         push @msgs, @msgs_passwd_details;
                         $return = 0 unless $return_passwd_details;
                         $sql     = "DELETE FROM passwd\n";
-                        $sql    .= "WHERE id = ?\n";
+                        $sql    .= "WHERE id = ?;\n";
+                        # TODO: finish this. #
                     }
                 }
                 push @msgs, "Nothing to change" unless @selected;
@@ -2538,13 +2785,16 @@ use HTML::Entities;
         $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+        $sql    .= "WHERE (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+        $sql    .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
         $sql    .= "ORDER BY p.username, pd.given, pd._family\n";
         my $query  = $db->prepare($sql);
         my $result;
         my @msgs;
         my $return = 1;
         eval {
-            $result = $query->execute();
+            $result = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             push @msgs, "SELECT FROM passwd failed: $@";
@@ -2717,6 +2967,18 @@ use HTML::Entities;
 
         $self->links('delete_orphaned_links_sections', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $self->log(Data::Dumper->Dump([\@params, \@delete_set], [qw(@params @delete_set)]));
 
         if(@delete_set && join(',', @delete_set) =~ m/^\d+(?:,\d+)*$/){
@@ -2724,11 +2986,14 @@ use HTML::Entities;
             my $return = 1;
             if($delete eq 'Delete Orphans'){
                 for my $links_section_id (@delete_set){
-                    my $sql  = "DELETE FROM links_sections WHERE id = ?;\n";
+                    my $sql  = "DELETE FROM links_sections\n";
+                    $sql    .= "WHERE id = ? AND (? = 1 OR (userid = ? AND (_perms)._user._del = true)\n";
+                    $sql    .= "        OR ((groupid = ? OR groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+                    $sql    .= "                AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
                     my $query           = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result         = $query->execute($links_section_id);
+                        $result         = $query->execute($links_section_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
                     };
                     if($@){
                         push @msgs,  "Error: Delete links_sections failed: $@";
@@ -2754,11 +3019,14 @@ use HTML::Entities;
 
         my $sql  = "SELECT ls.id, ls.section FROM links_sections ls\n";
         $sql    .= "WHERE (SELECT COUNT(*) n FROM links l WHERE l.section_id = ls.id) = 0\n";
+        $sql    .= "AND (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
+        $sql    .= "     OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.groupid FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql    .= "          AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
         $sql    .= "ORDER BY ls.section\n";
         my $query       = $db->prepare($sql);
         my $result;
         eval {
-            $result     = $query->execute();
+            $result     = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
             $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', undef, undef, "Error: $@", "Cannnot Read links_sections");
@@ -3239,6 +3507,18 @@ use HTML::Entities;
 
         $self->links('register', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         my $submit             = $req->param('submit');
         my $username           = $req->param('username');
         my $email              = $req->param('email');
@@ -3380,11 +3660,11 @@ use HTML::Entities;
                 if($self->validate($hashed_password, $password)){
                     my $line = __LINE__;
                     $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                    my $sql    = "INSERT INTO _group(_name) VALUES(?);\n";
+                    my $sql    = "INSERT INTO _group(_name, userid, groupid) VALUES(?, ?, ?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result = $query->execute($username);
+                        $result = $query->execute($username, $loggedin_id, $loggedin_primary_group_id);
                     };
                     if($@){
                         push @msgs, "Insert into _group failed: $@";
@@ -3977,6 +4257,18 @@ use HTML::Entities;
 
         $self->links('admin', \%session);
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         #my $delete  = $req->param('delete');
 
 
@@ -4036,18 +4328,18 @@ use HTML::Entities;
 
 
     sub create_address {
-        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $db) = @_;
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
                 [qw(unit street city_suberb postcode region country line)]));
         my ($address_id, $return, @msgs);
         $address_id = $default_id;
         $return = 1;
-        my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
+        my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country, userid, groupid)VALUES(?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country);
+            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country, $loggedin_id, $loggedin_primary_group_id);
         };
         if($@){
             push @msgs, "Insert into address failed: $@";
@@ -4066,16 +4358,16 @@ use HTML::Entities;
 
 
     sub create_phone {
-        my ($self, $phone, $db) = @_;
+        my ($self, $phone, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$phone, $line], [qw(phone line)]));
         my ($phone_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO phone(_number)VALUES(?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO phone(_number, userid, groupid)VALUES(?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($phone);
+            $result = $query->execute($phone, $loggedin_id, $loggedin_primary_group_id);
         };
         if($@){
             push @msgs, "Insert into phone failed: $@";
@@ -4094,16 +4386,16 @@ use HTML::Entities;
 
 
     sub create_email {
-        my ($self, $email, $db) = @_;
+        my ($self, $email, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$email, $line], [qw(email line)]));
         my ($email_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO email(_email)VALUES(?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO email(_email, userid, groupid)VALUES(?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($email);
+            $result = $query->execute($email, $loggedin_id, $loggedin_primary_group_id);
         };
         if($@){
             push @msgs, "Insert into email failed: $@";
@@ -4178,28 +4470,79 @@ use HTML::Entities;
 
 
     sub delete_email {
-        my ($self, $email_id, $db) = @_;
+        my ($self, $email_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete an email!") unless $loggedin_admin;
+
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$email_id, $line], [qw(email_id line)]));
         my ($return, @msgs);
+        # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_email
 
 
     sub delete_group {
-        my ($self, $group_id, $db) = @_;
+        my ($self, $group_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete a _group!") unless $loggedin_admin;
+
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$group_id, $line], [qw(group_id line)]));
         my ($return, @msgs);
+        # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_group
 
 
     sub delete_passwd_details {
-        my ($self, $passwd_details_id, $db) = @_;
+        my ($self, $passwd_details_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete a passwd_details record!") unless $loggedin_admin;
+
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_details_id, $line], [qw(passwd_details_id line)]));
         my ($return, @msgs);
+        # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_passwd_details
 
