@@ -4057,7 +4057,7 @@ use HTML::Entities;
             say "                </tr>";
         }
         say "                <tr>";
-        say "                    <pd>";
+        say "                    <td>";
         if($debug){
             say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
