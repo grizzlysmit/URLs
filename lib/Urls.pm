@@ -361,15 +361,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -693,15 +693,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -958,15 +958,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -1145,15 +1145,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -1354,15 +1354,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -1656,15 +1656,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -1727,15 +1727,15 @@ use HTML::Entities;
             say "                <tr>";
             say "                    <td>";
             if($debug){
-                say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+                say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
                 say "                    </td>";
                 say "                    <td>";
-                say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+                say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
             }else{
-                say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+                say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
                 say "                    </td>";
                 say "                    <td>";
-                say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+                say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
             }
             say "                    </td>";
             if($button_msg){
@@ -1928,15 +1928,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -2117,15 +2117,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td colspan=\"3\">";
@@ -2295,15 +2295,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -2648,15 +2648,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td colspan=\"3\">";
@@ -2839,15 +2839,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -3047,15 +3047,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -3167,15 +3167,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -3792,17 +3792,17 @@ use HTML::Entities;
             say "                </tr>";
         }
         say "                <tr>";
-        say "                    <td>";
+        say "                    <pd>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -3891,15 +3891,15 @@ use HTML::Entities;
         say "                <tr>";
         say "                    <td>";
         if($debug){
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                        <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
         say "                    <td>";
@@ -4011,15 +4011,15 @@ use HTML::Entities;
         say "                        <table>";
         say "                            <td>";
         if($debug){
-            say "                                <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked><label for=\"debug\"> debug</label>";
-            say "                            </td>";
-            say "                            <td>";
-            say "                                <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
         }else{
-            say "                                <input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"><label for=\"debug\"> debug</label>";
-            say "                            </td>";
-            say "                            <td>";
-            say "                                <input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked><label for=\"nodebug\"> nodebug</label>";
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                            </td>";
         say "                            <td>";
