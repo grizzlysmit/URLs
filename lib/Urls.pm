@@ -2656,13 +2656,11 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
-            $sql    .= "WHERE p.id = ? AND (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
-            $sql    .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
-            $sql    .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
+            $sql    .= "WHERE p.id = ?\n";
             my $query  = $db->prepare($sql);
             my $result;
             eval {
-                $result = $query->execute($loggedin_id, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+                $result = $query->execute($loggedin_id);
             };
             if($@){
                 push @msgs, "Insert into _group failed: $@";
