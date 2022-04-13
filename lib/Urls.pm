@@ -652,7 +652,7 @@ use HTML::Entities;
 
         $self->log(Data::Dumper->Dump([$alias, $target], [qw(alias target)]));
         if(defined $set_page_length){
-        }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $loggedin_id, $loggedin_primary_group_id, $db)){
+        }elsif(defined $alias && defined $target && $alias =~ m/^(?:\w|-|\.|\@)+$/ && $self->valid_section($target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $db)){
             my @msgs;
             my $return = 1;
             my $sql  = "INSERT INTO alias(name, target, userid, groupid)VALUES(?, ?, ?, ?);\n";
@@ -812,7 +812,7 @@ use HTML::Entities;
 
 
     sub valid_section {
-        my ($self, $target, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($self, $target, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
         my $ident           = ident $self;
         $self->log("start valid_section");
         $self->log(Data::Dumper->Dump([$target, $db], [qw(target db)]));
@@ -960,7 +960,7 @@ use HTML::Entities;
                 $query           = $db->prepare($sql);
                 my (@good, @bad, @skipped);
                 for my $member (@members){
-                    if(!$self->valid_section($member, $loggedin_id, $loggedin_primary_group_id, $db)){
+                    if(!$self->valid_section($member, $loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $db)){
                         push @skipped, $member;
                         next;
                     }
