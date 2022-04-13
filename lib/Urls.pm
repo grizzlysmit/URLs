@@ -2385,17 +2385,6 @@ use HTML::Entities;
         my $loggedin_phone_number     = $session{loggedin_phone_number};
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
-
-        my $loggedin                  = $session{loggedin};
-        my $loggedin_id               = $session{loggedin_id};
-        my $loggedin_username         = $session{loggedin_username};
-        my $loggedin_admin            = $session{loggedin_admin};
-        my $loggedin_display_name     = $session{loggedin_display_name};
-        my $loggedin_given            = $session{loggedin_given};
-        my $loggedin_family           = $session{loggedin_family};
-        my $loggedin_email            = $session{loggedin_email};
-        my $loggedin_phone_number     = $session{loggedin_phone_number};
-        my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
         my $delete  = $req->param('delete');
