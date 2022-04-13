@@ -253,7 +253,7 @@ use HTML::Entities;
             if($current_section =~ m/^links\^(.*)$/){
                 my $secn = $1;
                 $sql    = "SELECT pp.name \"page_name\", pp.full_name, ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-                $sql   .= "WHERE pp.name = ? AND (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+                $sql   .= "WHERE pp.name = ? AND ls.section = ? AND (? = 1 OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
                 $sql   .= "     OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
                 $sql   .= "          AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
                 $sql   .= "ORDER BY pp.name, ls.section, l.name, l.link\n";
