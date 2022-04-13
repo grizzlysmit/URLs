@@ -1,0 +1,1 @@
+SELECT * FROM links WHERE  id = 1 AND (1 = 1 OR (userid = 1 AND (_perms)._user._read = true) OR (groupid = 1 AND (_perms)._group._read = true) OR (_perms)._other._read = true)
