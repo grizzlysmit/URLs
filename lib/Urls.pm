@@ -1051,7 +1051,7 @@ use HTML::Entities;
             say "                        <label for=\"$section\"><div class=\"ex\">$section</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><input type=\"checkbox\" name=\"members[$cnt]\" id=\"$section\" value=\"$links_section_id\" /></div>";
+            say "                        <label for=\"$section\"><div class=\"ex\"><input type=\"checkbox\" name=\"members[$cnt]\" id=\"$section\" value=\"$links_section_id\" /></div></label>";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
