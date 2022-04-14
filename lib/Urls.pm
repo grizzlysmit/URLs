@@ -1810,7 +1810,7 @@ use HTML::Entities;
             say "                        <label for=\"$link_id\"><div class=\"ex\">$link</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$link_id\" value=\"$link_id\"/></div>";
+            say "                        <label for=\"$link_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$link_id\" value=\"$link_id\"/></div></label>";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
@@ -2101,7 +2101,7 @@ use HTML::Entities;
             say "                        <label for=\"$page_id\"><div class=\"ex\">$full_name</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$page_id\" value=\"$page_id\"/></div>";
+            say "                        <label for=\"$page_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$page_id\" value=\"$page_id\"/></div></label>";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
@@ -2308,7 +2308,7 @@ use HTML::Entities;
             say "                        <label for=\"$pseudo_page_id\"><div class=\"ex\">$status</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$pseudo_page_id\" value=\"$pseudo_page_id\"/></div>";
+            say "                        <label for=\"$pseudo_page_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$pseudo_page_id\" value=\"$pseudo_page_id\"/></div></label>";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
