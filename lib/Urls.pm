@@ -2499,13 +2499,13 @@ use HTML::Entities;
             my $section    = $row->{section};
             say "                <tr>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><label for=\"$alias_id\">$name</label></div>";
+            say "                        <label for=\"$alias_id\"><div class=\"ex\">$name</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><label for=\"$alias_id\">$section</label></div>";
+            say "                        <label for=\"$alias_id\"><div class=\"ex\">$section</div></label>";
             say "                    </td>";
             say "                    <td>";
-            say "                        <div class=\"ex\"><div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$alias_id\" value=\"$alias_id\"/></div></label>";
+            say "                        <label for=\"$alias_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"delete_set[$cnt]\" id=\"$alias_id\" value=\"$alias_id\"/></div></label>";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
