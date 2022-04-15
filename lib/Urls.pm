@@ -2880,6 +2880,12 @@ use HTML::Entities;
                 say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
             }
             say "                    </td>";
+            say "                    <td>";
+            say "                        <form action=\"user-details.pl\" method=\"post\">";
+            say "                            <input type=\"hidden\" name=\"passwd_id\" value=\"$passwd_id\">";
+            say "                            <input type=\"submit\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\">";
+            say "                        </form>";
+            say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
                 say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th></tr>";
