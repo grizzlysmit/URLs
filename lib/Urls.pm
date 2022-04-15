@@ -2747,18 +2747,27 @@ use HTML::Entities;
                         my $passwd_details_id = $r->{passwd_details_id};
                         my $primary_group_id  = $r->{primary_group_id};
                         my $email_id          = $r->{email_id};
+                        my ($return_addresses, @msgs_addresses) = $self->delete_addresses($passwd_id, \%session, $db);
+                        push @msgs, @msgs_addresses;
+                        $return = 0 unless $return_addresses;
+                        my ($return_emails, @msgs_emails) = $self->delete_emails($passwd_id, \%session, $db);
+                        push @msgs, @msgs_emails;
+                        $return = 0 unless $return_emails;
+                        my ($return_groups, @msgs_groups) = $self->delete_groups($passwd_id, \%session, $db);
+                        push @msgs, @msgs_groups;
+                        $return = 0 unless $return_groups;
+                        my ($return_passwd, @msgs_passwd) = $self->delete_passwd($passwd_id, $group_id, \%session, $db);
+                        push @msgs, @msgs_passwd;
+                        $return = 0 unless $return_passwd;
+                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, \%session, $db);
+                        push @msgs, @msgs_passwd_details;
+                        $return = 0 unless $return_passwd_details;
                         my ($return_email, @msgs_email) = $self->delete_email($email_id, \%session, $db);
                         push @msgs, @msgs_email;
                         $return = 0 unless $return_email;
                         my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, \%session, $db);
                         push @msgs, @msgs_group;
                         $return = 0 unless $return_group;
-                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, \%session, $db);
-                        push @msgs, @msgs_passwd_details;
-                        $return = 0 unless $return_passwd_details;
-                        $sql     = "DELETE FROM passwd\n";
-                        $sql    .= "WHERE id = ?;\n";
-                        # TODO: finish this. #
                     }
                 }
                 push @msgs, "Nothing to change" unless @selected;
@@ -4470,7 +4479,20 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$email_id, $line], [qw(email_id line)]));
         my ($return, @msgs);
-        # TODO: fishish the. #
+        $return = 1;
+        my $sql  = "DELETE FROM email\n";
+        $sql    .= "WHERE id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($email_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not delete record from table email: $@";
+        }
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_email
 
@@ -4496,10 +4518,172 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$group_id, $line], [qw(group_id line)]));
         my ($return, @msgs);
+        $return = 1;
+        my $sql  = "SELECT COUNT(*) n FROM passwd\n";
+        $sql    .= "WHERE primary_group_id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($group_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not read record from table passwd: $@";
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            my $n      = $r->{n};
+            if($n >= 1){
+                push @msgs, "group still in use";
+                return ($return, @msgs);
+            }
+        }else{
+            push @msgs, "Error: could not read record from table passwd";
+            return ($return, @msgs);
+        }
+        $sql  = "DELETE FROM _group\n";
+        $sql    .= "WHERE id = ?\n";
+        $query  = $db->prepare($sql);
+        $result;
+        eval {
+            $result = $query->execute($email_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not delete record from table email: $@";
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_group
 
+
+    sub delete_groups {
+        my ($self, $passwd_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_passwdname        = $session{loggedin_passwdname};
+        my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
+
+        return (0, "Only an Admin may delete a groups record!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql  = "DELETE FROM groups\n";
+        $sql    .= "WHERE passwd_id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($passwd_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table groups: $@";
+        }
+        #if($result){
+        #}
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub delete_groups
+
+
+    sub delete_addresses {
+        my ($self, $passwd_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_passwdname        = $session{loggedin_passwdname};
+        my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
+
+        return (0, "Only an Admin may delete a addresses record!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql  = "DELETE FROM addresses\n";
+        $sql    .= "WHERE passwd_id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($passwd_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table addresses: $@";
+        }
+        #if($result){
+        #    $return = 0;
+        #    push @msgs, "Error: could not DELETE record from table addresses";
+        #}
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub delete_addresses
+
+
+    sub delete_emails {
+        my ($self, $passwd_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_passwdname        = $session{loggedin_passwdname};
+        my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
+
+        return (0, "Only an Admin may delete a emails record!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql  = "DELETE FROM emails\n";
+        $sql    .= "WHERE passwd_id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($passwd_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table emails $@";
+        }
+        #if($result){
+        #    $return = 0;
+        #    push @msgs, "Error: could not DELETE record from table emails";
+        #}
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub delete_emails
 
     sub delete_passwd_details {
         my ($self, $passwd_details_id, $_session, $db) = @_;
@@ -4525,6 +4709,74 @@ use HTML::Entities;
         # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_passwd_details
+
+
+    sub delete_passwd {
+        my ($self, $passwd_id, $group_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete a _group!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
+
+        my ($return, @msgs);
+        $return = 1;
+        $self->move_ownnership_of_all_urls_etc($passwd_id, $group_id, $loggedin_id, $loggedin_primary_group_id, $db);
+
+        my $sql  = "DELETE FROM passwd\n";
+        $sql    .= "WHERE id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($passwd_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not delete record from table passwd: $@";
+        }
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$return, \@msgs, $line], [qw(return @msgs line)]));
+        my $r      = $query->fetchrow_hashref();
+        # TODO: fishish the. #
+        return ($return, @msgs);
+    } ## --- end sub delete_passwd
+
+
+    sub move_ownnership_of_all_urls_etc {
+        my ($self, $passwd_id, $group_id, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($return, @msgs);
+        my $sql  = "UPDATE secure SET userid = ?,  groupid = ?\n";
+        $sql    .= "WHERE userid = ? OR groupid = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($loggedin_id, $loggedin_primary_group_id, $passwd_id, $group_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not UPDATE record from table secure: $@";
+        }
+        #if(!$result){
+        #    $return = 0;
+        #    push @msgs, "Error: could not UPDATE record from table secure";
+        #}
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub move_ownnership_of_all_urls_etc
 
 }
 
