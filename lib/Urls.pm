@@ -4542,7 +4542,6 @@ use HTML::Entities;
         $sql  = "DELETE FROM _group\n";
         $sql    .= "WHERE id = ?\n";
         $query  = $db->prepare($sql);
-        $result;
         eval {
             $result = $query->execute($group_id);
         };
@@ -4747,8 +4746,6 @@ use HTML::Entities;
         }
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$return, \@msgs, $line], [qw(return @msgs line)]));
-        my $r      = $query->fetchrow_hashref();
-        # TODO: fishish the. #
         return ($return, @msgs);
     } ## --- end sub delete_passwd
 
