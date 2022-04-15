@@ -2756,7 +2756,7 @@ use HTML::Entities;
                         my ($return_groups, @msgs_groups) = $self->delete_groups($passwd_id, \%session, $db);
                         push @msgs, @msgs_groups;
                         $return = 0 unless $return_groups;
-                        my ($return_passwd, @msgs_passwd) = $self->delete_passwd($passwd_id, $group_id, \%session, $db);
+                        my ($return_passwd, @msgs_passwd) = $self->delete_passwd($passwd_id, $primary_group_id, \%session, $db);
                         push @msgs, @msgs_passwd;
                         $return = 0 unless $return_passwd;
                         my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, \%session, $db);
@@ -4491,7 +4491,7 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not delete record from table email: $@";
         }
-        my $line = __LINE__;
+        $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_email
@@ -4546,7 +4546,7 @@ use HTML::Entities;
         $query  = $db->prepare($sql);
         $result;
         eval {
-            $result = $query->execute($email_id);
+            $result = $query->execute($group_id);
         };
         if($@){
             $return = 0;
@@ -4747,7 +4747,7 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not delete record from table passwd: $@";
         }
-        my $line = __LINE__;
+        $line = __LINE__;
         $self->log(Data::Dumper->Dump([$return, \@msgs, $line], [qw(return @msgs line)]));
         my $r      = $query->fetchrow_hashref();
         # TODO: fishish the. #
