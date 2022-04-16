@@ -3119,7 +3119,6 @@ use HTML::Entities;
             $secodary_phone_id      = $r->{secodary_phone_id};
         }
 
-        my $isadmin;
         if($loggedin && $loggedin_id && $loggedin_username){
             my @msgs;
             my $return = 1;
@@ -5122,7 +5121,7 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
                 [qw(unit street city_suberb postcode region country line)]));
-        my ($address_id, $return, @msgs);
+        my ($returning_address_id, $return, @msgs);
         $returning_address_id = $default_id;
         $return = 1;
         my $sql    = "UPDATE address SET unit = ?, street = ?, city_suburb = ?, postcode = ?, region = ?, country = ?, userid = ?, groupid = ?\"";
