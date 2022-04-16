@@ -2967,7 +2967,7 @@ use HTML::Entities;
             $self->debug_init($debug, $log);
         }
 
-        $self->links('admin', \%session);
+        $self->links('user_details', \%session);
 
         my $loggedin                  = $session{loggedin};
         my $loggedin_id               = $session{loggedin_id};
@@ -2983,7 +2983,6 @@ use HTML::Entities;
 
         my $submit             = $req->param('submit');
         my $user_id;
-        my $group_id;
         my $username;
         my $email;
         my $password;
@@ -3008,33 +3007,46 @@ use HTML::Entities;
         my $display_name;
         my $admin;
         my $isadmin;
+        my $group_id;
+        my $email_id;
+        my $residential_address_id;
+        my $postal_address_id;
+        my $primary_group_id;
+        my $primary_phone_id;
+        my $secodary_phone_id;
         
         if($submit eq 'Save Changes'){
-            $user_id            = $req->param('user_id');
-            $group_id           = $req->param('group_id');
-            $username           = $req->param('username');
-            $email              = $req->param('email');
-            $password           = $req->param('password');
-            $repeat             = $req->param('repeat');
-            $mobile             = $req->param('mobile');
-            $phone              = $req->param('phone');
-            $unit               = $req->param('unit');
-            $street             = $req->param('street');
-            $city_suburb        = $req->param('city_suburb');
-            $postcode           = $req->param('postcode');
-            $region             = $req->param('region');
-            $country            = $req->param('country');
-            $postal_same        = $req->param('postal_same');
-            $postal_unit        = $req->param('postal_unit');
-            $postal_street      = $req->param('postal_street');
-            $postal_city_suburb = $req->param('postal_city_suburb');
-            $postal_postcode    = $req->param('postal_postcode');
-            $postal_region      = $req->param('postal_region');
-            $postal_country     = $req->param('postal_country');
-            $given              = $req->param('given');
-            $family             = $req->param('family');
-            $display_name       = $req->param('display_name');
-            $admin              = $req->param('admin');
+            $user_id                = $req->param('user_id');
+            $username               = $req->param('username');
+            $email                  = $req->param('email');
+            $password               = $req->param('password');
+            $repeat                 = $req->param('repeat');
+            $mobile                 = $req->param('mobile');
+            $phone                  = $req->param('phone');
+            $unit                   = $req->param('unit');
+            $street                 = $req->param('street');
+            $city_suburb            = $req->param('city_suburb');
+            $postcode               = $req->param('postcode');
+            $region                 = $req->param('region');
+            $country                = $req->param('country');
+            $postal_same            = $req->param('postal_same');
+            $postal_unit            = $req->param('postal_unit');
+            $postal_street          = $req->param('postal_street');
+            $postal_city_suburb     = $req->param('postal_city_suburb');
+            $postal_postcode        = $req->param('postal_postcode');
+            $postal_region          = $req->param('postal_region');
+            $postal_country         = $req->param('postal_country');
+            $given                  = $req->param('given');
+            $family                 = $req->param('family');
+            $display_name           = $req->param('display_name');
+            $admin                  = $req->param('admin');
+            $group_id               = $req->param('group_id');
+            $email_id               = $req->param('email_id');
+            $residential_address_id = $req->param('residential_address_id');
+            $postal_address_id      = $req->param('postal_address_id');
+            $primary_group_id       = $req->param('primary_group_id');
+            $primary_phone_id       = $req->param('primary_phone_id');
+            $secodary_phone_id      = $req->param('secodary_phone_id');
         }else{
             my @msgs;
             my $return = 1;
@@ -3042,7 +3054,8 @@ use HTML::Entities;
             my $sql             = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
-            $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, pd.residential_address_id, pd.postal_address_id\n";
+            $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
+            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secodary_phone_id\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
             $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id\n";
@@ -3071,32 +3084,39 @@ use HTML::Entities;
             }
             unless($return){
                 $self->message($debug, \%session, $db, 'user', undef, undef, @msgs);
+                return 0;
             }
-            $user_id            = $r->{id};
-            $group_id           = $r->{primary_group_id};
-            $username           = $r->{username};
-            $email              = $r->{_email};
-            $password           = '';
-            $repeat             = '';
-            $mobile             = $r->{mobile};
-            $phone              = $r->{phone};
-            $unit               = $r->{unit};
-            $street             = $r->{street};
-            $city_suburb        = $r->{city_suburb};
-            $postcode           = $r->{postcode};
-            $region             = $r->{region};
-            $country            = $r->{country};
-            $postal_same        = ($r->{residential_address_id} == $r->{postal_address_id});
-            $postal_unit        = $r->{postal_unit};
-            $postal_street      = $r->{postal_street};
-            $postal_city_suburb = $r->{postal_city_suburb};
-            $postal_postcode    = $r->{postal_postcode};
-            $postal_region      = $r->{postal_region};
-            $postal_country     = $r->{postal_country};
-            $given              = $r->{given};
-            $family             = $r->{_family};
-            $display_name       = $r->{display_name};
-            $admin              = $r->{_admin};
+            $user_id                = $r->{id};
+            $username               = $r->{username};
+            $email                  = $r->{_email};
+            $password               = '';
+            $repeat                 = '';
+            $mobile                 = $r->{mobile};
+            $phone                  = $r->{phone};
+            $unit                   = $r->{unit};
+            $street                 = $r->{street};
+            $city_suburb            = $r->{city_suburb};
+            $postcode               = $r->{postcode};
+            $region                 = $r->{region};
+            $country                = $r->{country};
+            $postal_same            = ($r->{residential_address_id} == $r->{postal_address_id});
+            $postal_unit            = $r->{postal_unit};
+            $postal_street          = $r->{postal_street};
+            $postal_city_suburb     = $r->{postal_city_suburb};
+            $postal_postcode        = $r->{postal_postcode};
+            $postal_region          = $r->{postal_region};
+            $postal_country         = $r->{postal_country};
+            $given                  = $r->{given};
+            $family                 = $r->{_family};
+            $display_name           = $r->{display_name};
+            $admin                  = $r->{_admin};
+            $group_id               = $r->{group_id};
+            $email_id               = $r->{email_id};
+            $residential_address_id = $r->{residential_address_id};
+            $postal_address_id      = $r->{postal_address_id};
+            $primary_group_id       = $r->{primary_group_id};
+            $primary_phone_id       = $r->{primary_phone_id};
+            $secodary_phone_id      = $r->{secodary_phone_id};
         }
 
         my $isadmin;
@@ -3182,13 +3202,7 @@ use HTML::Entities;
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
                 my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
                 $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
-            }elsif(($password || $repeat) && $password ne $repeat){
-                my $line = __LINE__;
-                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
-                my @msgs = ('password and repeat password did not match!');
-                $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
-            }elsif(defined $username && defined $email && $password && $repeat
-                && defined $street && defined $country
+            }elsif(defined $username && defined $email && defined $street && defined $country
                 && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
                 && (!$city_suburb || $city_suburb =~ m/^[^\'\"]+$/) 
                 && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
@@ -3196,8 +3210,8 @@ use HTML::Entities;
                 && (!$unit || $unit =~ m/^[^\'\"]+$/) && $street =~ m/^[^\'\"]+$/
                 && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
                 && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
-                && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
-                && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+                && (!$password || $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)
+                && (!$repeat || $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ )
                 && ($postal_same?1:$cond)){
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
                 $given = '' unless defined $given;
@@ -3206,18 +3220,23 @@ use HTML::Entities;
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
                 my @msgs;
                 my $return = 1;
-                if($submit eq 'Register'){
-                    my $hashed_password = $self->generate_hash($password);
+                if($submit eq 'Save Changes'){
+                    my $hashed_password;
+                    if($password && $repeat && $password eq $repeat){
+                        $hashed_password = $self->generate_hash($password);
+                    }else{
+                        push @msgs, "password and repeat password did nnot match ignoring";
+                    }
                     my $line = __LINE__;
                     $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                    if($self->validate($hashed_password, $password)){
+                    if(!$hashed_password || $self->validate($hashed_password, $password)){
                         my $line = __LINE__;
                         $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                        my $sql    = "UPDATE _group(_name, userid, groupid) VALUES(?, ?, ?);\n";
+                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ?;\n";
                         my $query  = $db->prepare($sql);
                         my $result;
                         eval {
-                            $result = $query->execute($username, $loggedin_id, $loggedin_primary_group_id);
+                            $result = $query->execute($username, $group_id);
                         };
                         if($@){
                             push @msgs, "Insert into _group failed: $@";
@@ -3235,7 +3254,7 @@ use HTML::Entities;
                                 $result = $query->execute($username);
                             };
                             if($@){
-                                push @msgs, "Error: could not find the new _group please contact your webmaster";
+                                push @msgs, "Error: could not find the _group please contact your webmaster";
                                 $return = 0;
                             }
                             if($result){
@@ -3244,12 +3263,12 @@ use HTML::Entities;
                                 $line = __LINE__;
                                 $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
                                 $query->finish();
-                                my ($residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $db);
+                                my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
-                                my $postal_address_id = $residential_address_id;
+                                my $new_postal_address_id = $new_residential_address_id;
                                 if(!$postal_same){
-                                    ($residential_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                    ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
                                     $return = $return_res unless $return_res;
                                     push @msgs, @msgs_res_address;
                                 }
@@ -3278,7 +3297,7 @@ use HTML::Entities;
                                 $return = $return_email unless $return_email;
                                 push @msgs, @msgs_email;
                                 if($return){
-                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
+                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
                                     $return = $return_details unless $return_details;
                                     push @msgs, @_msgs;
                                     if($return){
@@ -3311,7 +3330,7 @@ use HTML::Entities;
                         $return = 0;
                         push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                     }
-                    $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
+                    $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'login' : undef), !$return, @msgs);
                     return $return if $return;
                 }
             }else{
@@ -3348,7 +3367,7 @@ use HTML::Entities;
 
         my $title   = "only a-z, A-Z, 0-9 and _  allowed";
         my $pattern = '[a-zA-Z0-9_]+';
-        say "        <form action=\"register.pl\" method=\"post\">";
+        say "        <form action=\"user_details.pl\" method=\"post\">";
         say "            <h1>Register New Account</h1>";
         say "            <table>";
         say "                <tr>";
@@ -3359,6 +3378,12 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"old_username\" value=\"$username\"/>";
         say "                        <input type=\"hidden\" name=\"user_id\" value=\"$user_id\"/>";
         say "                        <input type=\"hidden\" name=\"group_id\" value=\"$group_id\"/>";
+        say "                        <input type=\"hidden\" name=\"email_id\" value=\"$email_id\"/>";
+        say "                        <input type=\"hidden\" name=\"residential_address_id\" value=\"$residential_address_id\"/>";
+        say "                        <input type=\"hidden\" name=\"postal_address_id\" value=\"$postal_address_id\"/>";
+        say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
+        say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>";
+        say "                        <input type=\"hidden\" name=\"secodary_phone_id\" value=\"$secodary_phone_id\"/>";
         say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
@@ -4427,7 +4452,7 @@ use HTML::Entities;
                             push @msgs, @msgs_res_address;
                             my $postal_address_id = $residential_address_id;
                             if(!$postal_same){
-                                ($residential_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
                             }
@@ -5063,7 +5088,7 @@ use HTML::Entities;
 
 
     sub create_address {
-        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
                 [qw(unit street city_suberb postcode region country line)]));
@@ -5091,6 +5116,37 @@ use HTML::Entities;
         return ($address_id, $return, @msgs);
     } ## --- end sub create_address
 
+
+    sub update_address {
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $address_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
+                [qw(unit street city_suberb postcode region country line)]));
+        my ($address_id, $return, @msgs);
+        $returning_address_id = $default_id;
+        $return = 1;
+        my $sql    = "UPDATE address SET unit = ?, street = ?, city_suburb = ?, postcode = ?, region = ?, country = ?, userid = ?, groupid = ?\"";
+        $sql      .= "WHERE id = ?\n";
+        $sql      .= "RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country, $address_id);
+        };
+        if($@){
+            push @msgs, "Insert into address failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $returning_address_id = $r->{id};
+        }else{
+            push @msgs, "Insert into address failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($returning_address_id, $return, @msgs);
+    } ## --- end sub update_address
 
     sub create_phone {
         my ($self, $phone, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
