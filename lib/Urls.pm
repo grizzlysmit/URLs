@@ -2992,7 +2992,7 @@ use HTML::Entities;
         my $phone;
         my $unit;
         my $street;
-        my $city_suber;
+        my $city_suberb;
         my $postcode;
         my $region;
         my $country;
@@ -3007,6 +3007,7 @@ use HTML::Entities;
         my $family;
         my $display_name;
         my $admin;
+        my $isadmin;
         
         if($submit eq 'Save Changes'){
             $user_id            = $req->param('user_id');
@@ -3057,8 +3058,9 @@ use HTML::Entities;
                 $return = 0;
             }
             $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            my $r;
             if($return){
-                my $r      = $query->fetchrow_hashref();
+                $r      = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
                 if($r->{username} eq $loggedin_username){
                     $isadmin = $r->{_admin};
