@@ -5176,16 +5176,16 @@ use HTML::Entities;
 
 
     sub create_email {
-        my ($self, $email, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($self, $email, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$email, $line], [qw(email line)]));
         my ($email_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO email(_email, userid, groupid)VALUES(?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO email(_email)VALUES(?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($email, $loggedin_id, $loggedin_primary_group_id);
+            $result = $query->execute($email);
         };
         if($@){
             push @msgs, "Insert into email failed: $@";
