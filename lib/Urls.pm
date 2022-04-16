@@ -3035,16 +3035,41 @@ use HTML::Entities;
             $display_name       = $req->param('display_name');
             $admin              = $req->param('admin');
         }else{
+            my @msgs;
+            my $return = 1;
             my $passwd_id       = $req->param('passwd_id');
-            my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
-            $sql    .= "ra.unit, ra.street, ra.city_suberb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
-            $sql    .= "pa.city_suberb postal_city_suberb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
-            $sql    .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, pd.residential_address_id, pd.postal_address_id\n";
-            $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
-            $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.secodary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql    .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql    .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
-            $sql    .= "WHERE p.id = ?\n";
+            my $sql             = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+            $sql               .= "ra.unit, ra.street, ra.city_suberb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
+            $sql               .= "pa.city_suberb postal_city_suberb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
+            $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, pd.residential_address_id, pd.postal_address_id\n";
+            $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+            $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secodary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
+            $sql               .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($passwd_id);
+            };
+            if($@){
+                push @msgs, "SELECT passwd etc al failed: $@";
+                $return = 0;
+            }
+            $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            if($return){
+                my $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "SELECT passwd etc al failed";
+            }
+            unless($return){
+                $self->message($debug, \%session, $db, 'user', undef, undef, @msgs);
+            }
             $user_id            = $r->{id};
             $group_id           = $r->{primary_group_id};
             $username           = $r->{username};
@@ -3087,7 +3112,7 @@ use HTML::Entities;
                 push @msgs, "SELECT _group failed: $@";
                 $return = 0;
             }
-                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
             if($return){
                 my $r      = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
