@@ -5508,9 +5508,159 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_details_id, $line], [qw(passwd_details_id line)]));
         my ($return, @msgs);
-        # TODO: fishish the. #
+        my $sql  = "SELECT pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id FROM passwd_details pd\n";
+        $sql    .= "WHERE pd.id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($passwd_details_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not SELECT record from table passwd_details $@";
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            my $residential_address_id = $r->{residential_address_id};
+            my $postal_address_id      = $r->{postal_address_id};
+            my $primary_phone_id       = $r->{primary_phone_id};
+            my $secondary_phone_id     = $r->{secondary_phone_id};
+            $query->finish;
+            if($return){
+                $sql  = "DELETE FROM passwd_details\n";
+                $sql .= "WHERE id = ?\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($passwd_details_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT record from table passwd_details $@";
+                }
+                if($result){
+                }else{
+                }
+                $query->finish;
+                my ($return_res_address, @msgs_res_address) = $self->delete_address($residential_address_id, \%session, $db);
+                $return = 0 unless $return_res_address;
+                push @msgs, @msgs_res_address;
+                my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
+                $return = 0 unless $return_post_address;
+                push @msgs, @msgs_post_address;
+                my ($return_prim_phone, @msgs_prim_phone) = $self->delete_phone($primary_phone_id, \%session, $db);
+                $return = 0 unless $return_prim_phone;
+                push @msgs, @msgs_prim_phone;
+                my ($return_sec_phone, @msgs_sec_phone) = $self->delete_phone($secondary_phone_id, \%session, $db);
+                $return = 0 unless $return_post_address;
+                push @msgs, @msgs_post_address;
+            }
+        }else{
+            $return = 0;
+            push @msgs, "Error: could not SELECT record from table passwd_details";
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_passwd_details
+
+
+    sub delete_address {
+        my ($self, $address_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete a address record!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$address_id, $line], [qw(address_id line)]));
+        my ($return, @msgs);
+        my $sql  = "DELETE FROM address\n";
+        $sql    .= "WHERE id = ?\n";
+        $sql    .= "RETURNING unit, street, city_suburb, postcode, region, country;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($address_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not DELETE record FROM table address: $@";
+        }
+        if($result){
+            my $r           = $query->fetchrow_hashref();
+            my $unit        = $r->{unit};
+            my $street      = $r->{street};
+            my $city_suburb = $r->{city_suburb};
+            my $postcode    = $r->{postcode};
+            my $region      = $r->{region};
+            my $country     = $r->{country};
+            push @msgs, "address: $unit, $street, $city_suburb, $postcode, $region, $country deleted";
+        }else{
+            $return = 0;
+            push @msgs, "Error: could not DELETE record FROM table address";
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub delete_address
+
+
+    sub delete_phone {
+        my ($self, $phone_id, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        return (0, "Only an Admin may delete a phone record!") unless $loggedin_admin;
+
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$phone_id, $line], [qw(phone_id line)]));
+        my ($return, @msgs);
+        my $sql  = "DELETE FROM phone\n";
+        $sql    .= "WHERE id = ?\n";
+        $sql    .= "RETURNING _number\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($phone_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table passwd_details: $@";
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            my $number = $r->{_number};
+            push @msgs, "phone_number: $number deleted";
+        }else{
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table passwd_details";
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
+        return ($return, @msgs);
+    } ## --- end sub delete_phone
 
 
     sub delete_passwd {
@@ -5549,6 +5699,7 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not delete record from table passwd: $@";
         }
+        $query->finish;
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$return, \@msgs, $line], [qw(return @msgs line)]));
         return ($return, @msgs);
@@ -5573,6 +5724,7 @@ use HTML::Entities;
         #    $return = 0;
         #    push @msgs, "Error: could not UPDATE record from table secure";
         #}
+        $query->finish;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
