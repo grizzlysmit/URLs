@@ -5512,6 +5512,7 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_details_id, $line], [qw(passwd_details_id line)]));
         my ($return, @msgs);
+        $return = 1;
         my $sql  = "SELECT pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id FROM passwd_details pd\n";
         $sql    .= "WHERE pd.id = ?\n";
         my $query  = $db->prepare($sql);
@@ -5547,15 +5548,18 @@ use HTML::Entities;
                     push @msgs, "Error: could not DELETE record from table passwd_details $@";
                 }
                 if($result){
-                    my $r           = $query->fetchrow_hashref();
+                    my $r            = $query->fetchrow_hashref();
                     my $display_name = $r->{display_name};
-                    my $given    = $r->{given};
-                    my $family      = $r->{_family};
+                    my $given        = $r->{given};
+                    my $family       = $r->{_family};
+                    $self->log(Data::Dumper->Dump([$result, $query, $sql, $return, \@msgs, $display_name, $given, $family, $line],
+                            [qw(result query sql return @msgs display_name given family line)]));
                     push @msgs, "address: $display_name, $given, $family, ... deleted";
                 }else{
                     $return = 0;
                     push @msgs, "Error: could not DELETE record from table passwd_details $@";
                 }
+                $self->log(Data::Dumper->Dump([$return, \@msgs, $result, $query, $sql, $line], [qw(return @msgs result query sql line)]));
                 $query->finish;
                 my ($return_res_address, @msgs_res_address) = $self->delete_address($residential_address_id, \%session, $db);
                 $return = 0 unless $return_res_address;
