@@ -2982,6 +2982,8 @@ use HTML::Entities;
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
         my $submit             = $req->param('submit');
+        my $user_id;
+        my $group_id;
         my $usernameg;
         my $emailg;
         my $passwordg;
