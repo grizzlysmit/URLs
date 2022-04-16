@@ -3013,7 +3013,7 @@ use HTML::Entities;
         my $postal_address_id;
         my $primary_group_id;
         my $primary_phone_id;
-        my $secodary_phone_id;
+        my $secondary_phone_id;
         
         if($submit eq 'Save Changes'){
             $user_id                = $req->param('user_id');
@@ -3046,7 +3046,7 @@ use HTML::Entities;
             $postal_address_id      = $req->param('postal_address_id');
             $primary_group_id       = $req->param('primary_group_id');
             $primary_phone_id       = $req->param('primary_phone_id');
-            $secodary_phone_id      = $req->param('secodary_phone_id');
+            $secondary_phone_id      = $req->param('secondary_phone_id');
         }else{
             my @msgs;
             my $return = 1;
@@ -3055,7 +3055,7 @@ use HTML::Entities;
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
-            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secodary_phone_id\n";
+            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
             $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id\n";
@@ -3116,7 +3116,7 @@ use HTML::Entities;
             $postal_address_id      = $r->{postal_address_id};
             $primary_group_id       = $r->{primary_group_id};
             $primary_phone_id       = $r->{primary_phone_id};
-            $secodary_phone_id      = $r->{secodary_phone_id};
+            $secondary_phone_id      = $r->{secondary_phone_id};
         }
 
         if($loggedin && $loggedin_id && $loggedin_username){
@@ -3286,9 +3286,9 @@ use HTML::Entities;
                                     push @msgs, @msgs_phone;
                                 }
                                 my $primary_phone_id = $phone_id;
-                                my $secodary_phone_id;
+                                my $secondary_phone_id;
                                 if($mobile_id){
-                                    $secodary_phone_id = $primary_phone_id;
+                                    $secondary_phone_id = $primary_phone_id;
                                     $primary_phone_id = $mobile_id;
                                 }
                                 my ($return_email, $primary_email_id, @msgs_email);
@@ -3296,7 +3296,7 @@ use HTML::Entities;
                                 $return = $return_email unless $return_email;
                                 push @msgs, @msgs_email;
                                 if($return){
-                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
+                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $primary_email_id, $db);
                                     $return = $return_details unless $return_details;
                                     push @msgs, @_msgs;
                                     if($return){
@@ -3382,7 +3382,7 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"postal_address_id\" value=\"$postal_address_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>";
-        say "                        <input type=\"hidden\" name=\"secodary_phone_id\" value=\"$secodary_phone_id\"/>";
+        say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>";
         say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
         say "                    </td>";
         say "                </tr>";
@@ -4470,9 +4470,9 @@ use HTML::Entities;
                                 push @msgs, @msgs_phone;
                             }
                             my $primary_phone_id = $phone_id;
-                            my $secodary_phone_id;
+                            my $secondary_phone_id;
                             if($mobile_id){
-                                $secodary_phone_id = $primary_phone_id;
+                                $secondary_phone_id = $primary_phone_id;
                                 $primary_phone_id = $mobile_id;
                             }
                             my ($return_email, $primary_email_id, @msgs_email);
@@ -4480,7 +4480,7 @@ use HTML::Entities;
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $db);
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -5204,17 +5204,17 @@ use HTML::Entities;
 
 
     sub create_passwd_details {
-        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $db) = @_;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $line],
-                [qw(display_name given family residential_address_id postal_address_id primary_phone_id secodary_phone_id primary_email_id line)]));
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $line],
+                [qw(display_name given family residential_address_id postal_address_id primary_phone_id secondary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secodary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id);
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id);
         };
         if($@){
             push @msgs, "Insert into passwd_details failed: $@";
