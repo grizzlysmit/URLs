@@ -3045,7 +3045,7 @@ use HTML::Entities;
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, pd.residential_address_id, pd.postal_address_id\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id\n";
             $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
             $sql               .= "WHERE p.id = ?\n";
             my $query  = $db->prepare($sql);
