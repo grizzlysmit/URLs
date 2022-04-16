@@ -5148,16 +5148,16 @@ use HTML::Entities;
     } ## --- end sub update_address
 
     sub create_phone {
-        my ($self, $phone, $loggedin_id, $loggedin_primary_group_id, $db) = @_;
+        my ($self, $phone, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$phone, $line], [qw(phone line)]));
         my ($phone_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO phone(_number, userid, groupid)VALUES(?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO phone(_number)VALUES(?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($phone, $loggedin_id, $loggedin_primary_group_id);
+            $result = $query->execute($phone);
         };
         if($@){
             push @msgs, "Insert into phone failed: $@";
