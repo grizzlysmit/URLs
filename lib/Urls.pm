@@ -2919,6 +2919,715 @@ use HTML::Entities;
     } ## --- end sub user
 
 
+    sub user_details {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
+        $self->links('admin', \%session);
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        my $submit             = $req->param('submit');
+        my $usernameg;
+        my $emailg;
+        my $passwordg;
+        my $repeatg;
+        my $mobileg;
+        my $phoneg;
+        my $unitg;
+        my $streetg;
+        my $city_suberbg;
+        my $postcodeg;
+        my $regiong;
+        my $countryg;
+        my $postal_sameg;
+        my $postal_unitg;
+        my $postal_streetg;
+        my $postal_city_suberbg;
+        my $postal_postcodeg;
+        my $postal_regiong;
+        my $postal_countryg;
+        my $giveng;
+        my $familyg;
+        my $display_nameg;
+        my $adming;
+        
+        if($submit eq 'Save Changes'){
+            $user_id            = $req->param('user_id');
+            $group_id           = $req->param('group_id');
+            $username           = $req->param('username');
+            $email              = $req->param('email');
+            $password           = $req->param('password');
+            $repeat             = $req->param('repeat');
+            $mobile             = $req->param('mobile');
+            $phone              = $req->param('phone');
+            $unit               = $req->param('unit');
+            $street             = $req->param('street');
+            $city_suberb        = $req->param('city_suberb');
+            $postcode           = $req->param('postcode');
+            $region             = $req->param('region');
+            $country            = $req->param('country');
+            $postal_same        = $req->param('postal_same');
+            $postal_unit        = $req->param('postal_unit');
+            $postal_street      = $req->param('postal_street');
+            $postal_city_suberb = $req->param('postal_city_suberb');
+            $postal_postcode    = $req->param('postal_postcode');
+            $postal_region      = $req->param('postal_region');
+            $postal_country     = $req->param('postal_country');
+            $given              = $req->param('given');
+            $family             = $req->param('family');
+            $display_name       = $req->param('display_name');
+            $admin              = $req->param('admin');
+        }else{
+            my $passwd_id       = $req->param('passwd_id');
+            my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+            $sql    .= "ra.unit, ra.street, ra.city_suberb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
+            $sql    .= "pa.city_suberb postal_city_suberb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
+            $sql    .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, pd.residential_address_id, pd.postal_address_id\n";
+            $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+            $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.secodary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql    .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql    .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
+            $sql    .= "WHERE p.id = ?\n";
+            $user_id            = $r->{id};
+            $group_id           = $r->{primary_group_id};
+            $username           = $r->{username};
+            $email              = $r->{_email};
+            $password           = '';
+            $repeat             = '';
+            $mobile             = $r->{mobile};
+            $phone              = $r->{phone};
+            $unit               = $r->{unit};
+            $street             = $r->{street};
+            $city_suberb        = $r->{city_suberb};
+            $postcode           = $r->{postcode};
+            $region             = $r->{region};
+            $country            = $r->{country};
+            $postal_same        = ($r->{residential_address_id} == $r->{postal_address_id});
+            $postal_unit        = $r->{postal_unit};
+            $postal_street      = $r->{postal_street};
+            $postal_city_suberb = $r->{postal_city_suberb};
+            $postal_postcode    = $r->{postal_postcode};
+            $postal_region      = $r->{postal_region};
+            $postal_country     = $r->{postal_country};
+            $given              = $r->{given};
+            $family             = $r->{_family};
+            $display_name       = $r->{display_name};
+            $admin              = $r->{_admin};
+        }
+
+        my $isadmin;
+        if($loggedin && $loggedin_id && $loggedin_username){
+            my @msgs;
+            my $return = 1;
+            my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
+            $sql    .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($loggedin_id);
+            };
+            if($@){
+                push @msgs, "SELECT _group failed: $@";
+                $return = 0;
+            }
+                $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            if($return){
+                my $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "could not find your record somethinnng is wrong with your login";
+            }
+            $query->finish();
+            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
+
+            unless($return){
+                untie %session;
+                $db->disconnect;
+                return 0;
+            }
+        }
+
+        $admin = 0 unless $isadmin; # admins can only be made by admins. #
+
+
+        if($loggedin && !$isadmin){
+            untie %session;
+            $db->disconnect;
+            return 0; # Only admins and nnew users should be usinng this page. #
+        }
+
+        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
+                    $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
+                    $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
+                    $postal_country, $postal_same, $loggedin, $loggedin_id, $loggedin_username, $isadmin, $admin],
+                    [qw(username email password repeat given family display_name
+                    mobile phone unit street city_suberb postcode region country postal_unit postal_street
+                    postal_city_suberb postal_postcode postal_region postal_country postal_same loggedin
+                    loggedin_id loggedin_username isadmin admin)]));
+
+        $unit                = encode_entities($unit)               if defined $unit;
+        $street              = encode_entities($street)             if defined $street;
+        $city_suberb         = encode_entities($city_suberb)        if defined $city_suberb;
+        $country             = encode_entities($country)            if defined $country;
+        $given               = encode_entities($given)              if defined $given;
+        $family              = encode_entities($family)             if defined $family;
+        $display_name        = encode_entities($display_name)       if defined $display_name;
+        $postal_unit         = encode_entities($postal_unit)        if defined $postal_unit;
+        $postal_street       = encode_entities($postal_street)      if defined $postal_street;
+        $postal_city_suberb  = encode_entities($postal_city_suberb) if defined $postal_city_suberb;
+        $postal_country      = encode_entities($postal_country)     if defined $postal_country;
+
+        if($submit eq 'Save Changes'){
+            my $cond = defined $postal_street && defined $postal_country
+                        && (!$postal_city_suberb || $postal_city_suberb =~ m/^[^\'\"]+$/)
+                        && (!$postal_unit || $postal_unit =~ m/^[^\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
+                        && $postal_city_suberb =~ m/^[^\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
+                        && (!$postal_region || $postal_region =~ m/^[^\'\"]+$/) && $postal_country =~ m/^[^\'\"]+$/;
+
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
+
+            if($password && $repeat
+                && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
+                        || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
+                my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
+                $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
+            }elsif(($password || $repeat) && $password ne $repeat){
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
+                my @msgs = ('password and repeat password did not match!');
+                $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
+            }elsif(defined $username && defined $email && $password && $repeat
+                && defined $street && defined $country
+                && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
+                && (!$city_suberb || $city_suberb =~ m/^[^\'\"]+$/) 
+                && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
+                && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
+                && (!$unit || $unit =~ m/^[^\'\"]+$/) && $street =~ m/^[^\'\"]+$/
+                && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
+                && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
+                && $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+                && $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/
+                && ($postal_same?1:$cond)){
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
+                $given = '' unless defined $given;
+                $family = '' unless defined $family;
+                $display_name = "$given $family" unless $display_name;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
+                my @msgs;
+                my $return = 1;
+                if($submit eq 'Register'){
+                    my $hashed_password = $self->generate_hash($password);
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                    if($self->validate($hashed_password, $password)){
+                        my $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                        my $sql    = "UPDATE _group(_name, userid, groupid) VALUES(?, ?, ?);\n";
+                        my $query  = $db->prepare($sql);
+                        my $result;
+                        eval {
+                            $result = $query->execute($username, $loggedin_id, $loggedin_primary_group_id);
+                        };
+                        if($@){
+                            push @msgs, "Insert into _group failed: $@";
+                            $return = 0;
+                        }
+                        $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
+                        $query->finish();
+                        if($result){
+                            push @msgs, "Succeded in inserting primary group";
+                            $sql       = "SELECT g.id FROM _group g\n";
+                            $sql      .= "WHERE g._name = ?\n";
+                            $query  = $db->prepare($sql);
+                            eval {
+                                $result = $query->execute($username);
+                            };
+                            if($@){
+                                push @msgs, "Error: could not find the new _group please contact your webmaster";
+                                $return = 0;
+                            }
+                            if($result){
+                                my $r      = $query->fetchrow_hashref();
+                                my $primary_group_id = $r->{id};
+                                $line = __LINE__;
+                                $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
+                                $query->finish();
+                                my ($residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suberb, $postcode, $region, $country, undef, $db);
+                                $return = $return_res unless $return_res;
+                                push @msgs, @msgs_res_address;
+                                my $postal_address_id = $residential_address_id;
+                                if(!$postal_same){
+                                    ($residential_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                    $return = $return_res unless $return_res;
+                                    push @msgs, @msgs_res_address;
+                                }
+                                $line = __LINE__;
+                                $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
+                                my ($mobile_id, $phone_id);
+                                my ($return_phone, @msgs_phone);
+                                if($mobile){
+                                    ($mobile_id, $return_phone, @msgs_phone) = $self->update_phone($mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
+                                if($phone){
+                                    ($phone_id, $return_phone, @msgs_phone) = $self->update_phone($phone, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
+                                my $primary_phone_id = $phone_id;
+                                my $secodary_phone_id;
+                                if($mobile_id){
+                                    $secodary_phone_id = $primary_phone_id;
+                                    $primary_phone_id = $mobile_id;
+                                }
+                                my ($return_email, $primary_email_id, @msgs_email);
+                                ($primary_email_id, $return_email, @msgs_email) = $self->update_email($email, $db);
+                                $return = $return_email unless $return_email;
+                                push @msgs, @msgs_email;
+                                if($return){
+                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
+                                    $return = $return_details unless $return_details;
+                                    push @msgs, @_msgs;
+                                    if($return){
+                                        my ($passwd_id, $return_passwd, @msgs_passwd);
+                                        eval {
+                                            ($passwd_id, $return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
+                                            $return = $return_passwd unless $return_passwd;
+                                            push @msgs, @msgs_passwd;
+                                        };
+                                        if($@){
+                                            $return = 0;
+                                            push @msgs, "Error: falied to update passwd: $@";
+                                        }
+                                    }
+                                }else{
+                                    push @msgs, "one of the dependencies failed.", "see above.";
+                                }
+                            }else{
+                                $query->finish();
+                                $return = 0;
+                                push @msgs, "failed to get primary _group id";
+                            }
+                        }else{
+                            $return = 0;
+                            push @msgs, "Failed to insert primary _group.";
+                        }
+                    }else{
+                        my $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                        $return = 0;
+                        push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
+                    }
+                    $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
+                    return $return if $return;
+                }
+            }else{
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
+            }
+        }
+
+        $username           = '' unless defined $username;
+        $email              = '' unless defined $email;
+        $password           = '' unless defined $password;
+        $repeat             = '' unless defined $repeat;
+        $mobile             = '' unless defined $mobile;
+        $phone              = '' unless defined $phone;
+        $unit               = '' unless defined $unit;
+        $street             = '' unless defined $street;
+        $city_suberb        = '' unless defined $city_suberb;
+        $postcode           = '' unless defined $postcode;
+        $region             = '' unless defined $region;
+        $country            = '' unless defined $country;
+        $postal_same        = 1  unless defined $postal_same;
+        $postal_unit        = '' unless defined $postal_unit;
+        $postal_street      = '' unless defined $postal_street;
+        $postal_city_suberb = '' unless defined $postal_city_suberb;
+        $postal_postcode    = '' unless defined $postal_postcode;
+        $postal_region      = '' unless defined $postal_region;
+        $postal_country     = '' unless defined $postal_country;
+        $given              = '' unless defined $given;
+        $family             = '' unless defined $family;
+        $display_name       = '' unless defined $display_name;
+
+        untie %session;
+        $db->disconnect;
+
+        my $title   = "only a-z, A-Z, 0-9 and _  allowed";
+        my $pattern = '[a-zA-Z0-9_]+';
+        say "        <form action=\"register.pl\" method=\"post\">";
+        say "            <h1>Register New Account</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"username\">Username</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"hidden\" name=\"old_username\" value=\"$username\"/>";
+        say "                        <input type=\"hidden\" name=\"user_id\" value=\"$user_id\"/>";
+        say "                        <input type=\"hidden\" name=\"group_id\" value=\"$group_id\"/>";
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
+        $pattern = '[a-z0-9.+%_-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"email\">email</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
+        $pattern = '(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"password\">password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"repeat\">Repeat Password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # given,  family annd dispaly name
+        say "                <script>";
+        say "                    function updatenames(){";
+        say "                        var gvn = document.getElementById(\"given\");";
+        say "                        var fam = document.getElementById(\"family\");";
+        say "                        var disp = document.getElementById(\"display_name\");";
+        say "                        disp.value = gvn.value + \" \" + fam.value;";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"given\">given name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"given\" id=\"given\" placeholder=\"given name\" value=\"$given\" oninput=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"family\">family name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"family\" id=\"family\" placeholder=\"family name\" value=\"$family\" oninput=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"display_name\">display_name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # phones 
+        $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
+        $pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
+        my $placeholder = '+61438-567-876|0438 567 876|0438567876';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"mobile\">mobile</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
+        $pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
+        $placeholder = '+612-9567-2876|(02) 9567 2876|0295672876';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"phone\">land line</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$phone\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <th colspan=\"3\">";
+        say "                        Residential Address";
+        say "                    </th>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"unit\">unit</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"unit\" id=\"unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$unit\" />";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"street\">street</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"street\" id=\"street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$street\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"city_suberb\">City/Suberb</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"city_suberb\" id=\"city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$city_suberb\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[A-Z0-9 -]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"postcode\">postcode</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postcode\" id=\"postcode\" placeholder=\"postcode\" pattern=\"$pattern\" title=\"$title\" value=\"$postcode\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"region\">Region/State/Province</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"region\" id=\"region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$region\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"country\">Country</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"country\" id=\"country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" value=\"$country\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <script>";
+        say "                    function togglePostal(){";
+        say "                        var chbx = document.getElementById(\"togglep\");";
+        say "                        var hiddenstuff = document.getElementsByClassName(\"postal\");";
+        say "                        for(let h of hiddenstuff){";
+        say "                            h.hidden = chbx.checked";
+        say "                        }";
+        say "                        var requiredstuff = document.getElementsByClassName(\"require\");";
+        say "                        for(let r of requiredstuff){";
+        say "                            r.required = !chbx.checked";
+        say "                        }";
+        say "                        var psame = document.getElementById(\"postal_same\");";
+        say "                        psame.value = chbx.checked?1:0;";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <th colspan=\"3\">";
+        say "                        Postal Address";
+        say "                    </th>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td colspan=\"2\">";
+        say "                        <label for=\"togglep\" id=\"lbl\">Same as Residential address</label>";
+        say "                    </td>";
+        say "                    <td>";
+        my $hidden;
+        my $required;
+        if($postal_same){
+            $hidden = 'hidden';
+            $required = '';
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
+        }else{
+            $hidden = '';
+            $required = 'required';
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"0\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\"/>";
+        }
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_unit\" >unit</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_unit\" id=\"postal_unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_unit\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_street\">street</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_street\" id=\"postal_street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_street\" class=\"require\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_city_suberb\">City/Suberb</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_city_suberb\" id=\"postal_city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_city_suberb\" class=\"require\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[A-Z0-9 -]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_postcode\">postcode</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_postcode\" id=\"postal_postcode\" placeholder=\"postcode\" pattern=\"$pattern\" value=\"$postal_postcode\" title=\"$title\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_region\">Region/State/Province</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_region\" id=\"postal_region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_region\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_country\">Country</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" class=\"require\" value=\"$postal_country\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # admin option
+        if($loggedin && $isadmin){
+            say "                <tr class=\"admin\">";
+            say "                    <td colspan=\"2\">";
+            say "                        <label for=\"admin\">admin</label>";
+            say "                    </td>";
+            say "                    <td>";
+            if($admin){
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked/>";
+            }else{
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\"/>";
+            }
+            say "                    </td>";
+            say "                </tr>";
+        }else{
+            say "                <tr hidden class=\"admin\">";
+            say "                    <td colspan=\"3\">";
+            say "                        <input type=\"hidden\" name=\"admin\" id=\"admin\" value=\"0\"/>";
+            say "                    </td>";
+            say "                </tr>";
+        }
+        say "                <tr>";
+        say "                    <td>";
+        if($debug){
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        }else{
+            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        }
+        say "                    </td>";
+        say "                    <td>";
+        say "                        <input name=\"submit\" type=\"submit\" value=\"Save Changes\">";
+        say "                    </td>";
+        say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
+    } ## --- end sub user_details
+
+
     sub delete_orphaned_links_sections {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
@@ -3653,11 +4362,11 @@ use HTML::Entities;
                 if($self->validate($hashed_password, $password)){
                     my $line = __LINE__;
                     $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                    my $sql    = "INSERT INTO _group(_name, userid, groupid) VALUES(?, ?, ?);\n";
+                    my $sql    = "INSERT INTO _group(_name) VALUES(?);\n";
                     my $query  = $db->prepare($sql);
                     my $result;
                     eval {
-                        $result = $query->execute($username, $loggedin_id, $loggedin_primary_group_id);
+                        $result = $query->execute($username);
                     };
                     if($@){
                         push @msgs, "Insert into _group failed: $@";
@@ -3708,13 +4417,17 @@ use HTML::Entities;
                                 push @msgs, @msgs_phone;
                             }
                             my $primary_phone_id = $phone_id;
-                            $primary_phone_id = $mobile_id if $mobile_id;
+                            my $secodary_phone_id;
+                            if($mobile_id){
+                                $secodary_phone_id = $primary_phone_id;
+                                $primary_phone_id = $mobile_id;
+                            }
                             my ($return_email, $primary_email_id, @msgs_email);
                             ($primary_email_id, $return_email, @msgs_email) = $self->create_email($email, $db);
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $db);
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -4407,16 +5120,17 @@ use HTML::Entities;
 
 
     sub create_passwd_details {
-        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db) = @_;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $line], [qw(display_name given family residential_address_id postal_address_id primary_phone_id primary_email_id line)]));
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $line],
+                [qw(display_name given family residential_address_id postal_address_id primary_phone_id secodary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id, secodary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id);
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $secodary_phone_id);
         };
         if($@){
             push @msgs, "Insert into passwd_details failed: $@";
