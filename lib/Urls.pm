@@ -5514,7 +5514,6 @@ use HTML::Entities;
         my ($return, @msgs);
         my $sql  = "SELECT pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id FROM passwd_details pd\n";
         $sql    .= "WHERE pd.id = ?\n";
-        $sql    .= "RETURNING display_name, given, _family;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
@@ -5534,6 +5533,7 @@ use HTML::Entities;
             if($return){
                 $sql  = "DELETE FROM passwd_details\n";
                 $sql .= "WHERE id = ?\n";
+                $sql .= "RETURNING display_name, given, _family;\n";
                 $query  = $db->prepare($sql);
                 eval {
                     $result = $query->execute($passwd_details_id);
@@ -5556,15 +5556,21 @@ use HTML::Entities;
                 my ($return_res_address, @msgs_res_address) = $self->delete_address($residential_address_id, \%session, $db);
                 $return = 0 unless $return_res_address;
                 push @msgs, @msgs_res_address;
-                my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
-                $return = 0 unless $return_post_address;
-                push @msgs, @msgs_post_address;
-                my ($return_prim_phone, @msgs_prim_phone) = $self->delete_phone($primary_phone_id, \%session, $db);
-                $return = 0 unless $return_prim_phone;
-                push @msgs, @msgs_prim_phone;
-                my ($return_sec_phone, @msgs_sec_phone) = $self->delete_phone($secondary_phone_id, \%session, $db);
-                $return = 0 unless $return_post_address;
-                push @msgs, @msgs_post_address;
+                if($residential_address_id != $postal_address_id){
+                    my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
+                    $return = 0 unless $return_post_address;
+                    push @msgs, @msgs_post_address;
+                }
+                if($primary_phone_id){
+                    my ($return_prim_phone, @msgs_prim_phone) = $self->delete_phone($primary_phone_id, \%session, $db);
+                    $return = 0 unless $return_prim_phone;
+                    push @msgs, @msgs_prim_phone;
+                }
+                if($secondary_phone_id){
+                    my ($return_sec_phone, @msgs_sec_phone) = $self->delete_phone($secondary_phone_id, \%session, $db);
+                    $return = 0 unless $return_post_address;
+                    push @msgs, @msgs_post_address;
+                }
             }
         }else{
             $query->finish;
