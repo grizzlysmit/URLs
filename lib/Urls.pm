@@ -2774,6 +2774,7 @@ use HTML::Entities;
                 }
                 push @msgs, "Nothing to change" unless @selected;
             }
+            $self->log(Data::Dumper->Dump([$return, \@msgs, $submit], [qw(return @msgs submit)]));
             $self->message($debug, \%session, $db, ($return?'main':'user'), ($return ? 'continue' : undef), 1, @msgs) if @msgs;
         }
 
@@ -5564,20 +5565,24 @@ use HTML::Entities;
                 my ($return_res_address, @msgs_res_address) = $self->delete_address($residential_address_id, \%session, $db);
                 $return = 0 unless $return_res_address;
                 push @msgs, @msgs_res_address;
+                $self->log(Data::Dumper->Dump([$result, $return, $return_res_address, \@msgs, $line], [qw(result return return_res_address @msgs line)]));
                 if($residential_address_id != $postal_address_id){
                     my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
                     $return = 0 unless $return_post_address;
                     push @msgs, @msgs_post_address;
+                    $self->log(Data::Dumper->Dump([$result, $return, $return_post_address, \@msgs, $line], [qw(result return return_post_address @msgs line)]));
                 }
                 if($primary_phone_id){
                     my ($return_prim_phone, @msgs_prim_phone) = $self->delete_phone($primary_phone_id, \%session, $db);
                     $return = 0 unless $return_prim_phone;
                     push @msgs, @msgs_prim_phone;
+                    $self->log(Data::Dumper->Dump([$result, $return, $return_prim_phone, \@msgs, $line], [qw(result return return_prim_phone @msgs line)]));
                 }
                 if($secondary_phone_id){
                     my ($return_sec_phone, @msgs_sec_phone) = $self->delete_phone($secondary_phone_id, \%session, $db);
                     $return = 0 unless $return_sec_phone;
                     push @msgs, @msgs_sec_phone;
+                    $self->log(Data::Dumper->Dump([$result, $return, $return_sec_phone, \@msgs, $line], [qw(result return return_sec_phone @msgs line)]));
                 }
             }
         }else{
@@ -5612,6 +5617,7 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$address_id, $line], [qw(address_id line)]));
         my ($return, @msgs);
+        $return = 1;
         my $sql  = "DELETE FROM address\n";
         $sql    .= "WHERE id = ?\n";
         $sql    .= "RETURNING unit, street, city_suburb, postcode, region, country;\n";
@@ -5664,6 +5670,7 @@ use HTML::Entities;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$phone_id, $line], [qw(phone_id line)]));
         my ($return, @msgs);
+        $return = 1;
         my $sql  = "DELETE FROM phone\n";
         $sql    .= "WHERE id = ?\n";
         $sql    .= "RETURNING _number\n";
