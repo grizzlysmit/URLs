@@ -2723,11 +2723,13 @@ use HTML::Entities;
                 }
                 push @msgs, "Nothing to change" unless @selected;
             }elsif($submit eq 'Delete Users'){
+                $self->log(Data::Dumper->Dump([$debug, \%session, $submit], [qw(debug %session submit)]));
                 for my $passwd_id (@selected){
                     if($passwd_id == 1){
                         push @msgs, "leave user id == 1 alone this is a reserved account";
                         next;
                     }
+                    $self->log(Data::Dumper->Dump([$passwd_id, \@msgs, $submit], [qw(passwd_id @msgs submit)]));
                     my $sql  = "SELECT p.username, p.passwd_details_id, p.primary_group_id, p.email_id FROM passwd p\n";
                     $sql    .= "WHERE p.id = ?\n";
                     my $query  = $db->prepare($sql);
@@ -2745,6 +2747,7 @@ use HTML::Entities;
                         my $passwd_details_id = $r->{passwd_details_id};
                         my $primary_group_id  = $r->{primary_group_id};
                         my $email_id          = $r->{email_id};
+                        $self->log(Data::Dumper->Dump([$r, $username, $passwd_details_id, $primary_group_id, $email_id, $sql], [qw(r username passwd_details_id primary_group_id email_id sql)]));
                         my ($return_addresses, @msgs_addresses) = $self->delete_addresses($passwd_id, \%session, $db);
                         push @msgs, @msgs_addresses;
                         $return = 0 unless $return_addresses;
@@ -2766,6 +2769,7 @@ use HTML::Entities;
                         my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, \%session, $db);
                         push @msgs, @msgs_group;
                         $return = 0 unless $return_group;
+                        $self->log(Data::Dumper->Dump([$return, \@msgs, $submit], [qw(return @msgs submit)]));
                     }
                 }
                 push @msgs, "Nothing to change" unless @selected;
@@ -5510,6 +5514,7 @@ use HTML::Entities;
         my ($return, @msgs);
         my $sql  = "SELECT pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id FROM passwd_details pd\n";
         $sql    .= "WHERE pd.id = ?\n";
+        $sql    .= "RETURNING display_name, given, _family;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
@@ -5535,10 +5540,17 @@ use HTML::Entities;
                 };
                 if($@){
                     $return = 0;
-                    push @msgs, "Error: could not SELECT record from table passwd_details $@";
+                    push @msgs, "Error: could not DELETE record from table passwd_details $@";
                 }
                 if($result){
+                    my $r           = $query->fetchrow_hashref();
+                    my $display_name = $r->{display_name};
+                    my $given    = $r->{given};
+                    my $family      = $r->{_family};
+                    push @msgs, "address: $display_name, $given, $family, ... deleted";
                 }else{
+                    $return = 0;
+                    push @msgs, "Error: could not DELETE record from table passwd_details $@";
                 }
                 $query->finish;
                 my ($return_res_address, @msgs_res_address) = $self->delete_address($residential_address_id, \%session, $db);
@@ -5555,6 +5567,7 @@ use HTML::Entities;
                 push @msgs, @msgs_post_address;
             }
         }else{
+            $query->finish;
             $return = 0;
             push @msgs, "Error: could not SELECT record from table passwd_details";
         }
