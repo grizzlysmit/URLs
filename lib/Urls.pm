@@ -5523,6 +5523,8 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not SELECT record from table passwd_details $@";
         }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$result, $return, $query, $line], [qw(result return query line)]));
         if($result){
             my $r      = $query->fetchrow_hashref();
             my $residential_address_id = $r->{residential_address_id};
@@ -5530,6 +5532,8 @@ use HTML::Entities;
             my $primary_phone_id       = $r->{primary_phone_id};
             my $secondary_phone_id     = $r->{secondary_phone_id};
             $query->finish;
+            $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$result, $return, $query, $line], [qw(result return query line)]));
             if($return){
                 $sql  = "DELETE FROM passwd_details\n";
                 $sql .= "WHERE id = ?\n";
