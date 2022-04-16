@@ -5234,6 +5234,7 @@ use HTML::Entities;
 
     sub create_passwd {
         my ($self, $username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db) = @_;
+        $admin = 0 unless defined $admin;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $line], [qw(username hashed_password primary_email_id passwd_details_id primary_group_id admin line)]));
         my ($passwd_id, $return, @msgs);
