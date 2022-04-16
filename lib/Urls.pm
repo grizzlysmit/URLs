@@ -5094,11 +5094,11 @@ use HTML::Entities;
         my ($address_id, $return, @msgs);
         $address_id = $default_id;
         $return = 1;
-        my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country, userid, groupid)VALUES(?, ?, ?, ?, ?, ?, ?, ?) RETURNING id;\n";
+        my $sql    = "INSERT INTO address(unit, street, city_suburb, postcode, region, country)VALUES(?, ?, ?, ?, ?, ?) RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country, $loggedin_id, $loggedin_primary_group_id);
+            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country);
         };
         if($@){
             push @msgs, "Insert into address failed: $@";
