@@ -5568,8 +5568,8 @@ use HTML::Entities;
                 }
                 if($secondary_phone_id){
                     my ($return_sec_phone, @msgs_sec_phone) = $self->delete_phone($secondary_phone_id, \%session, $db);
-                    $return = 0 unless $return_post_address;
-                    push @msgs, @msgs_post_address;
+                    $return = 0 unless $return_sec_phone;
+                    push @msgs, @msgs_sec_phone;
                 }
             }
         }else{
