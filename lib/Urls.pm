@@ -4480,7 +4480,7 @@ use HTML::Entities;
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db);
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -5204,17 +5204,17 @@ use HTML::Entities;
 
 
     sub create_passwd_details {
-        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $db) = @_;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $primary_email_id, $line],
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id, $line],
                 [qw(display_name given family residential_address_id postal_address_id primary_phone_id secodary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, primary_email_id, secodary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secodary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $primary_email_id, $secodary_phone_id);
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secodary_phone_id);
         };
         if($@){
             push @msgs, "Insert into passwd_details failed: $@";
