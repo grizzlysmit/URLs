@@ -2829,7 +2829,7 @@ use HTML::Entities;
         say "                    frm.action = 'user-details.pl';";
         say "                    var btn = document.getElementById(self);";
         say "                    alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action + \"\\nbtn.name == \" + btn.name + \"\\nbtn.value == \" + btn.value);";
-        say "                    document.getElementById(\"main_form\").submit();";
+        say "                    //document.getElementById(\"main_form\").submit();";
         say "                }";
         say "            </script>";
         say "            <table>";
