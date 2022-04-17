@@ -2810,7 +2810,7 @@ use HTML::Entities;
             return $return;
         }
         
-        say "        <form action=\"user.pl\" method=\"post\">";
+        say "        <form action=\"user.pl\" method=\"post\" id=\"main_form\">";
         say "            <h1>Edit User Details</h1>";
         my $page_length = $req->param('page_length');
         $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
@@ -2820,6 +2820,16 @@ use HTML::Entities;
         untie %session;
         $db->disconnect;
 
+        say "            <input type=\"hidden\" name=\"passwd_id\" id=\"passwd_id_hidden\" value=\"\">";
+        say "            <script>";
+        say "                function doSubmit(hidden_val){";
+        say "                    var h = document.getElementById(\"passwd_id_hidden\");";
+        say "                    h.value = hidden_val;";
+        say "                    var frm = document.getElementById(\"main_form\");";
+        say "                    frm.action = 'user-details.pl';";
+        say "                    frm.submit();";
+        say "                }";
+        say "            </script>";
         say "            <table>";
         say "                <tr>";
         say "                    <td colspan=\"5\">";
@@ -2886,10 +2896,7 @@ use HTML::Entities;
             }
             say "                    </td>";
             say "                    <td>";
-            say "                        <form action=\"user-details.pl\" method=\"post\">";
-            say "                            <input type=\"hidden\" name=\"passwd_id\" value=\"$passwd_id\">";
-            say "                            <input type=\"submit\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\">";
-            say "                        </form>";
+            say "                        <input type=\"button\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit('$passwd_id')\">";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
