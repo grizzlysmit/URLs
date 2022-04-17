@@ -2820,14 +2820,14 @@ use HTML::Entities;
         untie %session;
         $db->disconnect;
 
-        say "            <input type=\"hidden\" name=\"passwd_id\" id=\"passwd_id_hidden\" value=\"\">";
+        say "            <input type=\"hidden\" name=\"passwd_id\" id=\"passwd_id_hidden\" value=\"0\">";
         say "            <script>";
         say "                function doSubmit(hidden_val){";
         say "                    var h = document.getElementById(\"passwd_id_hidden\");";
         say "                    h.value = hidden_val;";
         say "                    var frm = document.getElementById(\"main_form\");";
         say "                    frm.action = 'user-details.pl';";
-        say "                    alert(\"Hello world! -- \" + hidden_val);";
+        say "                    alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action);";
         say "                    frm.submit();";
         say "                }";
         say "            </script>";
