@@ -2828,7 +2828,7 @@ use HTML::Entities;
         say "                    var frm = document.getElementById(\"main_form\");";
         say "                    frm.action = 'user-details.pl';";
         say "                    var btn = document.getElementById(self);";
-        say "                    //alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action + \"\\nbtn.name == \" + btn.name + \"\\nbtn.value == \" + btn.value);";
+        say "                    alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action + \"\\nbtn.name == \" + btn.name + \"\\nbtn.value == \" + btn.value);";
         say "                    document.getElementById(\"main_form\").submit();";
         say "                }";
         say "            </script>";
@@ -2898,7 +2898,7 @@ use HTML::Entities;
             }
             say "                    </td>";
             say "                    <td>";
-            say "                        <input type=\"button\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit('user_details[$cnt]', '$passwd_id')\">";
+            say "                        <input type=\"submit\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit('user_details[$cnt]', '$passwd_id')\">";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
