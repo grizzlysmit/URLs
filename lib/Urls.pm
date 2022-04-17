@@ -2827,6 +2827,7 @@ use HTML::Entities;
         say "                    h.value = hidden_val;";
         say "                    var frm = document.getElementById(\"main_form\");";
         say "                    frm.action = 'user-details.pl';";
+        say "                    alert(\"Hello world! -- \" + hidden_val);";
         say "                    frm.submit();";
         say "                }";
         say "            </script>";
