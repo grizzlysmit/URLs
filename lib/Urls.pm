@@ -3064,6 +3064,11 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             my $passwd_id       = $req->param('passwd_id');
+            if(!defined $passwd_id || $passwd_id <= 0){
+                my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id <= 0!!!");
+                $self->message($debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                return 0;
+            }
             my $sql             = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
