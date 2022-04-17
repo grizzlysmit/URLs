@@ -3396,7 +3396,11 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>";
         say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>";
-        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
+        if($user_id == 1){
+            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" disabled/>";
+        }else{
+            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
+        }
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
@@ -3406,7 +3410,11 @@ use HTML::Entities;
         say "                        <label for=\"email\">email</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        if($user_id == 1){
+            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
+        }else{
+            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        }
         say "                    </td>";
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
