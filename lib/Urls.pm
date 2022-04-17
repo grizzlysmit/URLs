@@ -2827,8 +2827,9 @@ use HTML::Entities;
         say "                    h.value = hidden_val;";
         say "                    var frm = document.getElementById(\"main_form\");";
         say "                    frm.action = 'user-details.pl';";
-        say "                    alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action);";
-        say "                    self.submit();";
+        say "                    var btn = document.getElementById(self);";
+        say "                    alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action + \"\\nbtn.name == \" + btn.name + \"\\nbtn.value == \" + btn.value);";
+        say "                    btn.submit();";
         say "                }";
         say "            </script>";
         say "            <table>";
@@ -2897,7 +2898,7 @@ use HTML::Entities;
             }
             say "                    </td>";
             say "                    <td>";
-            say "                        <input type=\"button\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit(this, '$passwd_id')\">";
+            say "                        <input type=\"button\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit('user_details[$cnt]', '$passwd_id')\">";
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
