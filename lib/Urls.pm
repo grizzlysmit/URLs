@@ -3093,6 +3093,11 @@ use HTML::Entities;
             if($return){
                 $r      = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if(!$r){
+                    my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id not found in DB!!!");
+                    $self->message($debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                    return 0;
+                }
                 if($r->{username} eq $loggedin_username){
                     $isadmin = $r->{_admin};
                 }
