@@ -4903,6 +4903,7 @@ use HTML::Entities;
             say "                                var cross = document.createElement(\"button\");";
             say "                                cross.setAttribute(\"type\", \"button\");";
             say "                                cross.setAttribute(\"value\", \"\" + cnt);";
+            say "                                cross.setAttribute(\"class\", \"inner\");";
             #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
             say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
             say "                                cross.innerHTML = \"&otimes;\";";

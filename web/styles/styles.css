@@ -39,11 +39,13 @@ label {
     margin-right: 0;
 }
 .elts {
-   /* 
-   width: -moz-fit-content;
-   width: fit-content;
-   // */
    margin-left: auto;
    margin-right: auto;
-   text-align: left;
+   text-align: left !important;
+}
+.inner {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: -moz-fit-content !important;
+    width: fit-content !important;
 }
