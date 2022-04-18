@@ -32,3 +32,11 @@ label {
 .ex {
     width: 100%;
 }
+.outter {
+   width: 100%;
+}
+.elts {
+   width: -moz-fit-content;
+   width: fit-content;
+   text-align: left;
+}

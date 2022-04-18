@@ -2760,13 +2760,13 @@ use HTML::Entities;
                         my ($return_passwd, @msgs_passwd) = $self->delete_passwd($passwd_id, $primary_group_id, \%session, $db);
                         push @msgs, @msgs_passwd;
                         $return = 0 unless $return_passwd;
-                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, \%session, $db);
+                        my ($return_passwd_details, @msgs_passwd_details) = $self->delete_passwd_details($passwd_details_id, $passwd_id, \%session, $db);
                         push @msgs, @msgs_passwd_details;
                         $return = 0 unless $return_passwd_details;
-                        my ($return_email, @msgs_email) = $self->delete_email($email_id, \%session, $db);
+                        my ($return_email, @msgs_email) = $self->delete_email($email_id, $passwd_id, \%session, $db);
                         push @msgs, @msgs_email;
                         $return = 0 unless $return_email;
-                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, \%session, $db);
+                        my ($return_group, @msgs_group) = $self->delete_group($primary_group_id, $passwd_id, \%session, $db);
                         push @msgs, @msgs_group;
                         $return = 0 unless $return_group;
                         $self->log(Data::Dumper->Dump([$return, \@msgs, $submit], [qw(return @msgs submit)]));
@@ -3094,7 +3094,7 @@ use HTML::Entities;
                 $r      = $query->fetchrow_hashref();
                 $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
                 if(!$r){
-                    my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id not found in DB!!!");
+                    my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id not found in Database!!!");
                     $self->message($debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
                     return 0;
                 }
@@ -3254,93 +3254,87 @@ use HTML::Entities;
                     if(!$hashed_password || $self->validate($hashed_password, $password)){
                         my $line = __LINE__;
                         $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ?;\n";
+                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ? RETURNING id;\n";
                         my $query  = $db->prepare($sql);
                         my $result;
-                        eval {
-                            $result = $query->execute($username, $group_id);
-                        };
-                        if($@){
-                            push @msgs, "Insert into _group failed: $@";
-                            $return = 0;
+                        if($group_id == 1){
+                            $result = 1; # dont't change the group (group_id == 1) i.e. Admin #
+                            $username = 'admin';
+                        }else{
+                            eval {
+                                $result = $query->execute($username, $group_id);
+                            };
+                            if($@){
+                                push @msgs, "UPDATE _group failed: $@";
+                                $return = 0;
+                            }
                         }
                         $line = __LINE__;
                         $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
                         $query->finish();
                         if($result){
-                            push @msgs, "Succeded in inserting primary group";
-                            $sql       = "SELECT g.id FROM _group g\n";
-                            $sql      .= "WHERE g._name = ?\n";
-                            $query  = $db->prepare($sql);
-                            eval {
-                                $result = $query->execute($username);
-                            };
-                            if($@){
-                                push @msgs, "Error: could not find the _group please contact your webmaster";
-                                $return = 0;
+                            my ($r,  $primary_group_id);
+                            unless($group_id == 1){
+                                push @msgs, "Succeded in  UPDATING _group";
+                                $r      = $query->fetchrow_hashref();
+                                $primary_group_id = $r->{id};
+                            }else{
+                                $primary_group_id = 1;
                             }
-                            if($result){
-                                my $r      = $query->fetchrow_hashref();
-                                my $primary_group_id = $r->{id};
-                                $line = __LINE__;
-                                $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
-                                $query->finish();
-                                my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
+                            $query->finish();
+                            my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
+                            $return = $return_res unless $return_res;
+                            push @msgs, @msgs_res_address;
+                            my $new_postal_address_id = $new_residential_address_id;
+                            if(!$postal_same){
+                                ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
-                                my $new_postal_address_id = $new_residential_address_id;
-                                if(!$postal_same){
-                                    ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
-                                    $return = $return_res unless $return_res;
-                                    push @msgs, @msgs_res_address;
-                                }
-                                $line = __LINE__;
-                                $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
-                                my ($mobile_id, $phone_id);
-                                my ($return_phone, @msgs_phone);
-                                if($mobile){
-                                    ($mobile_id, $return_phone, @msgs_phone) = $self->update_phone($mobile, $db);
-                                    $return = $return_phone unless $return_phone;
-                                    push @msgs, @msgs_phone;
-                                }
-                                if($phone){
-                                    ($phone_id, $return_phone, @msgs_phone) = $self->update_phone($phone, $db);
-                                    $return = $return_phone unless $return_phone;
-                                    push @msgs, @msgs_phone;
-                                }
-                                my $primary_phone_id = $phone_id;
-                                my $secondary_phone_id;
-                                if($mobile_id){
-                                    $secondary_phone_id = $primary_phone_id;
-                                    $primary_phone_id = $mobile_id;
-                                }
-                                my ($return_email, $primary_email_id, @msgs_email);
-                                ($primary_email_id, $return_email, @msgs_email) = $self->update_email($email, $db);
-                                $return = $return_email unless $return_email;
-                                push @msgs, @msgs_email;
+                            }
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
+                            my ($mobile_id, $phone_id);
+                            my ($return_phone, @msgs_phone);
+                            if($mobile){
+                                ($mobile_id, $return_phone, @msgs_phone) = $self->update_phone($mobile, $db);
+                                $return = $return_phone unless $return_phone;
+                                push @msgs, @msgs_phone;
+                            }
+                            if($phone){
+                                ($phone_id, $return_phone, @msgs_phone) = $self->update_phone($phone, $db);
+                                $return = $return_phone unless $return_phone;
+                                push @msgs, @msgs_phone;
+                            }
+                            my $primary_phone_id = $phone_id;
+                            my $secondary_phone_id;
+                            if($mobile_id){
+                                $secondary_phone_id = $primary_phone_id;
+                                $primary_phone_id = $mobile_id;
+                            }
+                            my ($return_email, $primary_email_id, @msgs_email);
+                            ($primary_email_id, $return_email, @msgs_email) = $self->update_email($email, $db);
+                            $return = $return_email unless $return_email;
+                            push @msgs, @msgs_email;
+                            if($return){
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $primary_email_id, $db);
+                                $return = $return_details unless $return_details;
+                                push @msgs, @_msgs;
                                 if($return){
-                                    my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $primary_email_id, $db);
-                                    $return = $return_details unless $return_details;
-                                    push @msgs, @_msgs;
-                                    if($return){
-                                        my ($passwd_id, $return_passwd, @msgs_passwd);
-                                        eval {
-                                            ($passwd_id, $return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
-                                            $return = $return_passwd unless $return_passwd;
-                                            push @msgs, @msgs_passwd;
-                                        };
-                                        if($@){
-                                            $return = 0;
-                                            push @msgs, "Error: falied to update passwd: $@";
-                                        }
+                                    my ($passwd_id, $return_passwd, @msgs_passwd);
+                                    eval {
+                                        ($passwd_id, $return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
+                                        $return = $return_passwd unless $return_passwd;
+                                        push @msgs, @msgs_passwd;
+                                    };
+                                    if($@){
+                                        $return = 0;
+                                        push @msgs, "Error: falied to update passwd: $@";
                                     }
-                                }else{
-                                    push @msgs, "one of the dependencies failed.", "see above.";
                                 }
                             }else{
-                                $query->finish();
-                                $return = 0;
-                                push @msgs, "failed to get primary _group id";
+                                push @msgs, "one of the dependencies failed.", "see above.";
                             }
                         }else{
                             $return = 0;
@@ -3390,7 +3384,7 @@ use HTML::Entities;
         my $title   = "only a-z, A-Z, 0-9 and _  allowed";
         my $pattern = '[a-zA-Z0-9_]+';
         say "        <form action=\"user_details.pl\" method=\"post\">";
-        say "            <h1>Register New Account</h1>";
+        say "            <h1>Edit Account: $username</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
@@ -4575,6 +4569,25 @@ use HTML::Entities;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
 
+        $sql  = "SELECT g.id, g._name FROM _group g;\n";
+        $query       = $db->prepare($sql);
+        eval {
+            $result     = $query->execute();
+        };
+        if($@){
+            $self->message($debug, \%session, $db, 'register', undef, undef, "Error: $@", "Cannnot Read _group");
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @groups;
+        my $r           = $query->fetchrow_hashref();
+        while($r){
+            push @groups, $r;
+            $r          = $query->fetchrow_hashref();
+        }
+        $query->finish();
+
         untie %session;
         $db->disconnect;
 
@@ -4852,6 +4865,77 @@ use HTML::Entities;
             }else{
                 say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\"/>";
             }
+            say "                    </td>";
+            say "                </tr>";
+            say "                <tr class=\"admin\">";
+            say "                    <td colspan=\"2\">";
+            say "                        <script>";
+            say "                            function groupOnclick(n){";
+            #say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
+            #say "                                var cross = document.getElementById(\"cross[\" + n + ']');";
+            #say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
+            say "                                var td    = document.getElementById(\"td[\" + n + ']');";
+            say "                                td.remove();";
+            say "                            }";
+            say "                            let cnt = 0;";
+            say "                            function group_selected() {";
+            say "                                var groupSelect = document.getElementById(\"groupSelect\");";
+            say "                                var val = groupSelect.value;";
+            say "                                var name = groupSelect.innerHTML;";
+            say "                                var btn = document.createElement(\"INPUT\");";
+            say "                                btn.setAttribute(\"type\", \"button\");";
+            say "                                btn.setAttribute(\"value\", name);";
+            say "                                btn.name = \"btn[\" + cnt + ']';";
+            say "                                btn.id   = \"btn[\" + cnt + ']';";
+            say "                                var cross = document.createElement(\"button\");";
+            say "                                cross.setAttribute(\"type\", \"button\");";
+            say "                                cross.setAttribute(\"value\", \"\" + cnt);";
+            #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
+            say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
+            say "                                cross.innerHTML = \"&otimes;\";";
+            say "                                cross.name = \"chk[\" + cnt + ']';";
+            say "                                cross.id   = \"cross[\" + cnt + ']';";
+            say "                                var hdn = document.createElement(\"INPUT\");";
+            say "                                hdn.setAttribute(\"type\", \"hidden\");";
+            say "                                hdn.setAttribute(\"value\", \"\" + val);";
+            say "                                hdn.name = \"group_id_add[\" + val + ']';";
+            say "                                hdn.id   = \"hdd[\" + cnt + ']';";
+            say "                                var row = document.getElementById(\"row\");";
+            say "                                var elt = document.createElement(\"TD\");";
+            say "                                elt.setAttribute(\"id\", \"td[\" + cnt + ']');";
+            say "                                elt.setAttribute(\"class\", \"elts\");";
+            say "                                elt.appendChild(btn);";
+            say "                                elt.appendChild(cross);";
+            say "                                elt.appendChild(hdn);";
+            say "                                row.appendChild(elt);";
+            say "                                cnt++;";
+            say "                            }";
+            say "                        </script>";
+            say "                        <table class=\"outter\">";
+            say "                           <tr class=\"outter\">";
+            say "                              <td class=\"outter\">";
+            say "                                  <table id=\"tbl\" class=\"elts\">";
+            say "                                      <tr id=\"row\" class=\"elts\">";
+            say "                                          <td class=\"elts\">";
+            say "                                               elts:";
+            say "                                          </td>";
+            say "                                      </tr>";
+            say "                                  </table>";
+            say "                              </td>";
+            say "                           </tr>";
+            say "                        </table>";
+            say "                    </td>";
+            say "                </tr>";
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <select id=\"groupSelect\" onchange=\"group_selected()\">";
+            say "                            <option id=\"row_id[0]\" value=\"0\" selected>-- nothinng selected --</option>";
+            for my $row (@groups){
+                my $available_group_id = $row->{id};
+                my $_name = $row->{_name};
+                say "                            <option id=\"row_id[$available_group_id]\" value=\"$available_group_id\">$_name</option>";
+            }
+            say "                        </select>";
             say "                    </td>";
             say "                </tr>";
         }else{
@@ -5293,7 +5377,7 @@ use HTML::Entities;
 
 
     sub delete_email {
-        my ($self, $email_id, $_session, $db) = @_;
+        my ($self, $email_id, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
 
         my $loggedin                  = $session{loggedin};
@@ -5308,7 +5392,7 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
-        return (0, "Only an Admin may delete an email!") unless $loggedin_admin;
+        return (0, "Only an Admin may delete an email!") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$email_id, $line], [qw(email_id line)]));
@@ -5332,7 +5416,7 @@ use HTML::Entities;
 
 
     sub delete_group {
-        my ($self, $group_id, $_session, $db) = @_;
+        my ($self, $group_id, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
 
         my $loggedin                  = $session{loggedin};
@@ -5347,7 +5431,7 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
-        return (0, "Only an Admin may delete a _group!") unless $loggedin_admin;
+        return (0, "Only an Admin may delete a _group!") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$group_id, $line], [qw(group_id line)]));
@@ -5376,7 +5460,7 @@ use HTML::Entities;
             return ($return, @msgs);
         }
         $sql  = "DELETE FROM _group\n";
-        $sql    .= "WHERE id = ?\n";
+        $sql    .= "WHERE id = ? RETURNING address_id;\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute($group_id);
@@ -5392,6 +5476,11 @@ use HTML::Entities;
     } ## --- end sub delete_group
 
 
+    ##################################################################
+    #                                                                #
+    #         remove all seconndary groups for the user              #
+    #                                                                #
+    ##################################################################
     sub delete_groups {
         my ($self, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
@@ -5408,14 +5497,14 @@ use HTML::Entities;
         my $loggedin_passwdname        = $session{loggedin_passwdname};
         my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
 
-        return (0, "Only an Admin may delete a groups record!") unless $loggedin_admin;
+        return (0, "Only an Admin may delete a groups record!") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql  = "DELETE FROM groups\n";
-        $sql    .= "WHERE passwd_id = ?\n";
+        $sql    .= "WHERE passwd_id = ? RETURNING group_id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
@@ -5425,14 +5514,99 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not DELETE record from table groups: $@";
         }
-        #if($result){
-        #}
+        if($result){
+            ####################################################################################
+            #                                                                                  #
+            #     collect all deleted groups to remove underlining _group if not required.     #
+            #                                                                                  #
+            ####################################################################################
+            my $r      = $query->fetchrow_hashref();
+            my @groups;
+            while($r){
+                my $group_id = $r->{group_id};
+                push @groups, $group_id;
+                $r      = $query->fetchrow_hashref();
+            }
+            $query->finish();
+            ################################################################################
+            #                                                                              #
+            #             remove _group record's if they are nolonger in use.              #
+            #                                                                              #
+            ################################################################################
+            for my $group_id (@groups){
+                my ($n, $m) == (-1, -1);
+                $sql  = "SELECT COUNT(*) n FROM groups gs\n";
+                $sql .= "WHERE gs.group_id = ?\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($group_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT records from table groups $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $n   = $r->{n};
+                }else{
+                    push @msgs, "check failed on groups";
+                }
+                $query->finish();
+                $sql  = "SELECT COUNT(*) n FROM passwd p\n";
+                $sql .= "WHERE p.primary_group_id = ?;\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($group_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT records from table passwd $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $m   = $r->{n};
+                }else{
+                    push @msgs, "check failed on passwd";
+                }
+                $query->finish();
+                if($n == 0 && $m == 0){
+                    $sql  = "DELETE FROM _group\n";
+                    $sql .= "WHERE id = ? RETURNING _name;\n";
+                    $query  = $db->prepare($sql);
+                    eval {
+                        $result = $query->execute($group_id);
+                    };
+                    if($@){
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table _group: $@";
+                    }
+                    if($result){
+                        $r      = $query->fetchrow_hashref();
+                        my $name        = $r->{_name};
+                        $query->finish();
+                        push @msgs, "Deleted _group: $name";
+                    }else{
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table groups";
+                        $query->finish();
+                    }
+                }
+            }
+        }else{
+            $query->finish();
+            push @msgs, "Error: could not DELETE record from table groups";
+        }
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_groups
 
 
+    ##################################################################
+    #                                                                #
+    #        remove all seconndary addresses for the user            #
+    #                                                                #
+    ##################################################################
     sub delete_addresses {
         my ($self, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
@@ -5449,14 +5623,14 @@ use HTML::Entities;
         my $loggedin_passwdname        = $session{loggedin_passwdname};
         my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
 
-        return (0, "Only an Admin may delete a addresses record!") unless $loggedin_admin;
+        return (0, "Only an Admin may delete a addresses record!") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql  = "DELETE FROM addresses\n";
-        $sql    .= "WHERE passwd_id = ?\n";
+        $sql    .= "WHERE passwd_id = ? RETURNING address_id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
@@ -5466,40 +5640,128 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not DELETE record from table addresses: $@";
         }
-        #if($result){
-        #    $return = 0;
-        #    push @msgs, "Error: could not DELETE record from table addresses";
-        #}
+        if($result){
+            ####################################################################################
+            #                                                                                  #
+            #   collect all deleted addresses to remove underlining address if not required.   #
+            #                                                                                  #
+            ####################################################################################
+            my $r      = $query->fetchrow_hashref();
+            my @addresses;
+            while($r){
+                my $address_id = $r->{address_id};
+                push @addresses, $address_id;
+                $r      = $query->fetchrow_hashref();
+            }
+            $query->finish();
+            ################################################################################
+            #                                                                              #
+            #            remove addresss record's if they are nolonger in use.             #
+            #                                                                              #
+            ################################################################################
+            for my $address_id (@addresses){
+                my ($n, $m) == (-1, -1);
+                $sql  = "SELECT COUNT(*) n FROM addresses a\n";
+                $sql .= "WHERE p.address_id = ?\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($address_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT records from table addresses $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $n   = $r->{n};
+                }else{
+                    push @msgs, "check failed on emails";
+                }
+                $query->finish();
+                $sql  = "SELECT COUNT(*) n FROM passwd_details pa\n";
+                $sql .= "WHERE ? IN (pa.residential_address_id, pa.postal_address_id)\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($address_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT records from table passwd_details $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $m   = $r->{n};
+                }else{
+                    push @msgs, "check failed on emails";
+                }
+                $query->finish();
+                if($n == 0 && $m == 0){
+                    $sql  = "DELETE FROM address\n";
+                    $sql .= "WHERE id = ? RETURNING unit, street, city_suburb, postcode, region, country\n";
+                    $query  = $db->prepare($sql);
+                    eval {
+                        $result = $query->execute($address_id);
+                    };
+                    if($@){
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table address: $@";
+                    }
+                    if($result){
+                        $r      = $query->fetchrow_hashref();
+                        my $unit        = $r->{unit};
+                        my $street      = $r->{street};
+                        my $city_suburb = $r->{city_suburb};
+                        my $postcode    = $r->{postcode};
+                        my $region      = $r->{region};
+                        my $country     = $r->{country};
+                        $query->finish();
+                        push @msgs, "Deleted address: $unit, $street, $city_suburb, $postcode, $region, $country";
+                    }else{
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table address";
+                        $query->finish();
+                    }
+                }
+            }
+        }else{
+            $query->finish();
+            push @msgs, "Error: could not DELETE record from table addresses";
+        }
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_addresses
 
 
+    ##################################################################
+    #                                                                #
+    #          remove all seconndary emails for the user             #
+    #                                                                #
+    ##################################################################
     sub delete_emails {
         my ($self, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
 
-        my $loggedin                  = $session{loggedin};
-        my $loggedin_id               = $session{loggedin_id};
-        my $loggedin_username         = $session{loggedin_username};
-        my $loggedin_admin            = $session{loggedin_admin};
-        my $loggedin_display_name     = $session{loggedin_display_name};
-        my $loggedin_given            = $session{loggedin_given};
-        my $loggedin_family           = $session{loggedin_family};
-        my $loggedin_email            = $session{loggedin_email};
-        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin                   = $session{loggedin};
+        my $loggedin_id                = $session{loggedin_id};
+        my $loggedin_username          = $session{loggedin_username};
+        my $loggedin_admin             = $session{loggedin_admin};
+        my $loggedin_display_name      = $session{loggedin_display_name};
+        my $loggedin_given             = $session{loggedin_given};
+        my $loggedin_family            = $session{loggedin_family};
+        my $loggedin_email             = $session{loggedin_email};
+        my $loggedin_phone_number      = $session{loggedin_phone_number};
         my $loggedin_passwdname        = $session{loggedin_passwdname};
         my $loggedin_primary_passwd_id = $session{loggedin_passwdnname_id};
 
-        return (0, "Only an Admin may delete a emails record!") unless $loggedin_admin;
+        return (0, "Only an Admin may delete a emails record! Unless it is your own") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql  = "DELETE FROM emails\n";
-        $sql    .= "WHERE passwd_id = ?\n";
+        $sql    .= "WHERE passwd_id = ? RETURNING email_id\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
@@ -5509,17 +5771,94 @@ use HTML::Entities;
             $return = 0;
             push @msgs, "Error: could not DELETE record from table emails $@";
         }
-        #if($result){
-        #    $return = 0;
-        #    push @msgs, "Error: could not DELETE record from table emails";
-        #}
+        if($result){
+            ################################################################################
+            #                                                                              #
+            #   collect all deleted emails to remove underlining email if not required.    #
+            #                                                                              #
+            ################################################################################
+            my $r      = $query->fetchrow_hashref();
+            my @emails;
+            while($r){
+                my $email_id = $r->{email_id};
+                push @emails, $email_id;
+                $r      = $query->fetchrow_hashref();
+            }
+            $query->finish();
+            ################################################################################
+            #                                                                              #
+            #              remove email record's if they are nolonger in use.              #
+            #                                                                              #
+            ################################################################################
+            for my $email_id (@emails){
+                my ($n, $m) == (-1, -1);
+                $sql  = "SELECT COUNT(*) n FROM emails e  WHERE e.email_id = ?\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($passwd_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT records from table emails $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $n   = $r->{n};
+                }else{
+                    push @msgs, "check failed on emails";
+                }
+                $query->finish();
+                $sql  = "SELECT COUNT(*) n FROM passwd p  WHERE p.email_id = ?\n";
+                $query  = $db->prepare($sql);
+                eval {
+                    $result = $query->execute($passwd_id);
+                };
+                if($@){
+                    $return = 0;
+                    push @msgs, "Error: could not SELECT FROM table passwd $@";
+                }
+                if($result){
+                    $r      = $query->fetchrow_hashref();
+                    $m   = $r->{n};
+                }else{
+                    push @msgs, "check failed on passwd";
+                }
+                $query->finish();
+                if($n == 0 && $m == 0){
+                    $sql  = "DELETE FROM email\n";
+                    $sql .= "WHERE id = ? RETURNING _email\n";
+                    $query  = $db->prepare($sql);
+                    eval {
+                        $result = $query->execute($passwd_id);
+                    };
+                    if($@){
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table email: $@";
+                    }
+                    if($result){
+                        $r      = $query->fetchrow_hashref();
+                        my $email = $r->{_email};
+                        push @msgs, "Deleted email: $email";
+                        $query->finish();
+                    }else{
+                        $return = 0;
+                        push @msgs, "Error: could not DELETE FROM table email";
+                        $query->finish();
+                    }
+                }
+            } # for my $email_id (@emails) #
+        }else{ # if($result) #
+            $query->finish();
+            $return = 0;
+            push @msgs, "Error: could not DELETE record from table emails";
+        }
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub delete_emails
 
     sub delete_passwd_details {
-        my ($self, $passwd_details_id, $_session, $db) = @_;
+        my ($self, $passwd_details_id, $passwd_id, $_session, $db) = @_;
         my %session = %{$_session};
 
         my $loggedin                  = $session{loggedin};
@@ -5534,7 +5873,9 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
-        return (0, "Only an Admin may delete a passwd_details record!") unless $loggedin_admin;
+        return (0, "Cannot DELETE admin!") if $passwd_details_id == 1;
+
+        return (0, "Only an Admin may delete a passwd_details record! unless it is your own") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_details_id, $line], [qw(passwd_details_id line)]));
@@ -5739,7 +6080,9 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
-        return (0, "Only an Admin may delete a _group!") unless $loggedin_admin;
+        return (0, "Cannot DELETE admin!") if $passwd_id == 1;
+
+        return (0, "you can only delete yourself, unless you are an Admin!") unless $loggedin_admin || $passwd_id == $loggedin_id;
 
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$passwd_id, $line], [qw(passwd_id line)]));
