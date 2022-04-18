@@ -4890,6 +4890,7 @@ use HTML::Entities;
             say "                            function group_selected() {";
             say "                                var groupSelect = document.getElementById(\"groupSelect\");";
             say "                                var val = groupSelect.value;";
+            say "                                if(val == 0) return";
             say "                                var opt = document.getElementById(\"row_id[\" + val + \"]\");";
             say "                                var name = opt.innerHTML;";
             say "                                opt.remove();";

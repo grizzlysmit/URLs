@@ -16,6 +16,7 @@ select {
 }
 table, th, td {
     border: 1px solid black;
+    text-align: left;
 }
 table {
     margin-left: auto;
@@ -33,7 +34,9 @@ label {
     width: 100%;
 }
 .outter {
-   width: 100%;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
 }
 .elts {
    width: -moz-fit-content;
