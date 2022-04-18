@@ -4326,6 +4326,13 @@ use HTML::Entities;
         my $family             = $req->param('family');
         my $display_name       = $req->param('display_name');
         my $admin              = $req->param('admin');
+        my @params             = $req->param;
+        my @group_id_add;
+        for (@params){
+            if(m/^group_id_add\[(\d+)\]$/){
+                push @group_id_add, $req->param($_);
+            }
+        }
 
         my $isadmin;
         if($loggedin && $loggedin_id && $loggedin_username){
@@ -4512,12 +4519,35 @@ use HTML::Entities;
                                     my ($passwd_id, $return_passwd, @msgs_passwd);
                                     eval {
                                         ($passwd_id, $return_passwd, @msgs_passwd)  = $self->create_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
-                                        $return = $return_passwd unless $return_passwd;
+                                        $return = 0 unless $return_passwd;
                                         push @msgs, @msgs_passwd;
                                     };
                                     if($@){
                                         $return = 0;
                                         push @msgs, "Error: falied to create passwd: $@";
+                                    }
+                                    if($passwd_id && @group_id_add){
+                                        for my $group_id (@group_id_add){
+                                            $sql  = "INSERT INTO groups(group_id, passwd_id)\n";
+                                            $sql .= "VALUES(?, ?)\n";
+                                            $sql .= "RETURNING id\n";
+                                            $query  = $db->prepare($sql);
+                                            eval {
+                                                $result = $query->execute($group_id, $passwd_id);
+                                            };
+                                            if($@){
+                                                push @msgs, "Error: could not INSERT INTO groups please contact your webmaster: $@";
+                                                $return = 0;
+                                            }
+                                            if($result){
+                                                my $r      = $query->fetchrow_hashref();
+                                                my $id     = $r->{id};
+                                                push @msgs, "INSERTED INTO groups Success";
+                                            }else{
+                                                push @msgs, "Error: could not INSERT INTO groups please contact your webmaster";
+                                                $return = 0;
+                                            }
+                                        }
                                     }
                                 }
                             }else{
