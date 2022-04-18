@@ -2859,6 +2859,7 @@ use HTML::Entities;
             $phone_number         = '' unless defined $phone_number;
             my $groupname         = $user->{groupname};
             my $additional_groups = $user->{additional_groups};
+            $additional_groups    = join ', ', @{$additional_groups};
             my $_admin_checked;
             if($_admin){
                 $_admin_checked = '&radic;';
