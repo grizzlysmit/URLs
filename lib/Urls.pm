@@ -5535,7 +5535,7 @@ use HTML::Entities;
             #                                                                              #
             ################################################################################
             for my $group_id (@groups){
-                my ($n, $m) == (-1, -1);
+                my ($n, $m) = (-1, -1);
                 $sql  = "SELECT COUNT(*) n FROM groups gs\n";
                 $sql .= "WHERE gs.group_id = ?\n";
                 $query  = $db->prepare($sql);
@@ -5661,7 +5661,7 @@ use HTML::Entities;
             #                                                                              #
             ################################################################################
             for my $address_id (@addresses){
-                my ($n, $m) == (-1, -1);
+                my ($n, $m) = (-1, -1);
                 $sql  = "SELECT COUNT(*) n FROM addresses a\n";
                 $sql .= "WHERE p.address_id = ?\n";
                 $query  = $db->prepare($sql);
@@ -5792,7 +5792,7 @@ use HTML::Entities;
             #                                                                              #
             ################################################################################
             for my $email_id (@emails){
-                my ($n, $m) == (-1, -1);
+                my ($n, $m) = (-1, -1);
                 $sql  = "SELECT COUNT(*) n FROM emails e  WHERE e.email_id = ?\n";
                 $query  = $db->prepare($sql);
                 eval {
