@@ -4569,8 +4569,9 @@ use HTML::Entities;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
 
-        $sql  = "SELECT g.id, g._name FROM _group g;\n";
-        $query       = $db->prepare($sql);
+        my $sql  = "SELECT g.id, g._name FROM _group g;\n";
+        my $query       = $db->prepare($sql);
+        my $result;
         eval {
             $result     = $query->execute();
         };
