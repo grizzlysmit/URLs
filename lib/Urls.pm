@@ -4877,7 +4877,7 @@ use HTML::Entities;
             say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
             say "                                var td    = document.getElementById(\"td[\" + n + ']');";
             say "                                var val   = hdd.value;";
-            say "                                var name  = btn.innerHTML;";
+            say "                                var name  = btn.value;";
             say "                                alert(\"val == \" + val + \"\\nname == \" + name);";
             say "                                td.remove();";
             say "                                var groupSelect = document.getElementById(\"groupSelect\");";
