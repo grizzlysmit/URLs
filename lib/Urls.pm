@@ -2780,7 +2780,7 @@ use HTML::Entities;
 
         my @user_details;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
-        $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
+        $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
