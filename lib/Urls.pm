@@ -2839,11 +2839,11 @@ use HTML::Entities;
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "                        </label>";
         say "                    </td>";
-        say "                    <td colspan=\"5\">";
+        say "                    <td colspan=\"6\">";
         say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th><th>Eitt Button</th></tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Eitt Button</th></tr>";
         my $cnt = 0;
         for my $user (@user_details){
             $cnt++;
@@ -2907,7 +2907,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>selected</th><th>Eitt Button</th></tr>";
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Eitt Button</th></tr>";
             }
         }
         say "                <tr>";
@@ -2927,7 +2927,7 @@ use HTML::Entities;
         say "                    <td colspan=\"3\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
         say "                    </td>";
-        say "                    <td colspan=\"5\">";
+        say "                    <td colspan=\"6\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
         say "                    </td>";
         say "                </tr>";
