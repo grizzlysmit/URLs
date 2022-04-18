@@ -5510,7 +5510,7 @@ use HTML::Entities;
             return ($return, @msgs);
         }
         $sql  = "DELETE FROM _group\n";
-        $sql    .= "WHERE id = ? RETURNING address_id;\n";
+        $sql    .= "WHERE id = ? RETURNING id, _name;\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute($group_id);
@@ -5518,6 +5518,20 @@ use HTML::Entities;
         if($@){
             $return = 0;
             push @msgs, "Error: could not delete record from table email: $@";
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            my $ok = ($group_id == $r->{id});
+            my $name = $r->{_name};
+            if($ok){
+                push @msgs, "_group $name deleted ";
+            }else{
+                $return = 0;
+                push @msgs, "Error _group failed to delete record: $group_id";
+            }
+        }else{
+            $return = 0;
+            push @msgs, "Error: could not delete record from table email";
         }
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
