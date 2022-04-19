@@ -3466,16 +3466,22 @@ use HTML::Entities;
         $display_name       = '' unless defined $display_name;
         my $group_ids_joinned = "$user_id";
         my $sep               = ', ';
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
         for my $row (@additional_groups){
             my $_group_id = $row->{_group_id};
             $group_ids_joinned .= $sep . $_group_id;
             $sep = ', ';
         }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
         my @groups;
         my ($return, @msgs);
         $return = 1;
         my $sql  = "SELECT g.id, g._name FROM _group g\n";
         $sql    .= "WHERE g.id NOT IN ($group_ids_joinned);\n" if $group_ids_joinned;
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $sql, $line], [qw(group_ids_joinned sep sql line)]));
         my $query  = $db->prepare($sql);
         my $result;
         eval {
