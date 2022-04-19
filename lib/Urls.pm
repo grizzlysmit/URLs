@@ -3069,7 +3069,7 @@ use HTML::Entities;
             $primary_group_id       = $req->param('primary_group_id');
             $primary_phone_id       = $req->param('primary_phone_id');
             $secondary_phone_id     = $req->param('secondary_phone_id');
-            $params                 = $req->param;
+            my @params                 = $req->param;
             for (@params){
                 if(m/^group_id_add\[(\d+)\]$/){
                     my $_group_id = $req->param($_);
@@ -3432,7 +3432,7 @@ use HTML::Entities;
             push @msgs, "SELECT _group failed: $@", "\$sql == $sql";
             $return = 0;
         }
-        unless($result){
+        unless(defined $result){
             push @msgs, "SELECT _group failed \$sql == $sql";
             return $return;
         }
@@ -3908,6 +3908,35 @@ use HTML::Entities;
         }
         return ($_group_id, $return, @msgs);
     } ## --- end sub getgroup_id
+
+    sub getgroup_name {
+        my ($self, $_group_id, $db) = @_;
+        my ($group_name, $return, @msgs);
+        $return = 1;
+        my $sql  = "SELECT g._name FROM _group g WHERE g.id = ?;\n";
+        my $query           = $db->prepare($sql);
+        my $result;
+        eval {
+            $result         = $query->execute($_group_id);
+        };
+        if($@){
+            push @msgs,  "Error: SELECT $_group_id FROM _group failed: $@";
+            $return = 0;
+            $query->finish();
+            next;
+        }
+        if($result){
+            my $r          = $query->fetchrow_hashref();
+            $group_name     = $r->{_name};
+            push @msgs,  "SELECT FROM _group Succeeded:";
+            $query->finish();
+        }else{
+            $return = 0;
+            push @msgs,  "Error: SELECT $_group_id FROM _group failed: $sql";
+            $query->finish();
+        }
+        return ($group_name, $return, @msgs);
+    } ## --- end sub getgroup_name
 
 
     sub delete_orphaned_links_sections {
