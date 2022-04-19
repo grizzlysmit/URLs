@@ -3432,7 +3432,7 @@ use HTML::Entities;
             push @msgs, "SELECT _group failed: $@", "\$sql == $sql";
             $return = 0;
         }
-        unless(defined $result){
+        unless($result){
             push @msgs, "SELECT _group failed \$sql == $sql";
             return $return;
         }
