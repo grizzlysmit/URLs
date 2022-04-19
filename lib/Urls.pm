@@ -6613,6 +6613,7 @@ use HTML::Entities;
 
     sub update_passwd {
         my ($self, $username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $db) = @_;
+        $admin = 0 unless $admin;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $line],
                 [qw(username hashed_password email_id passwd_details_id primary_group_id admin passwd_id line)]));
