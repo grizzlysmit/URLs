@@ -6560,7 +6560,7 @@ use HTML::Entities;
                 [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id passwd_details_id line)]));
         my ($return, @msgs);
         $return = 1;
-        my $sql    = "UPDATE passwd_details pa SET pd.display_name = ?, pd.given = ?, pd._family = ?,\n";
+        my $sql    = "UPDATE passwd_details AS pa SET pd.display_name = ?, pd.given = ?, pd._family = ?,\n";
         $sql      .= "pd.residential_address_id = ?, pd.postal_address_id = ?, pd.primary_phone_id = ?,\n";
         $sql      .= "pd.secondary_phone_id = ?\n";
         $sql      .= "WHERE pa.id = ?\n";
