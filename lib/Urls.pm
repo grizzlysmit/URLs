@@ -3421,8 +3421,8 @@ use HTML::Entities;
         my @groups;
         my ($return, @msgs);
         $return = 1;
-        $sql  = "SELECT g.id, g._name FROM _group g\n";
-        $sql .= "WHERE g.id NOT IN ($group_ids_joinned);\n" if $group_ids_joinned;
+        my $sql  = "SELECT g.id, g._name FROM _group g\n";
+        $sql    .= "WHERE g.id NOT IN ($group_ids_joinned);\n" if $group_ids_joinned;
         my $query  = $db->prepare($sql);
         my $result;
         eval {
