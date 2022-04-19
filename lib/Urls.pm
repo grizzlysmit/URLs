@@ -6570,7 +6570,7 @@ use HTML::Entities;
         }
         if($result){
             my $r      = $query->fetchrow_hashref();
-            unless($email_id == $r->{id}){
+            unless($passwd_details_id == $r->{id}){
                 push @msgs, "UPDATE passwd_details failed: $sql";
                 $return = 0;
             }
