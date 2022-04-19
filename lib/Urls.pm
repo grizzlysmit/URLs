@@ -6564,7 +6564,7 @@ use HTML::Entities;
         $sql      .= "pd.residential_address_id = ?, pd.postal_address_id = ?, pd.primary_phone_id = ?,\n";
         $sql      .= "pd.secondary_phone_id = ?\n";
         $sql      .= "WHERE pd.id = ?\n";
-        $sql      .= "RETURNING pa.id;\n";
+        $sql      .= "RETURNING pd.id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
