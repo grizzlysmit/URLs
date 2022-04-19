@@ -6571,7 +6571,7 @@ use HTML::Entities;
             $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id);
         };
         if($@){
-            push @msgs, "UPDATE passwd_details failed: $@";
+            push @msgs, "UPDATE passwd_details failed: $@", "\$sql == $sql";
             $return = 0;
         }
         if($result){
