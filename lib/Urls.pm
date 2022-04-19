@@ -3337,7 +3337,7 @@ use HTML::Entities;
                                     $return = $return_res unless $return_res;
                                     push @msgs, @msgs_res_address;
                                 }else{
-                                    ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                    ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
                                     $return = $return_res unless $return_res;
                                     push @msgs, @msgs_res_address;
                                 }
@@ -4605,7 +4605,7 @@ use HTML::Entities;
         my $postal_same        = $req->param('postal_same');
         my $postal_unit        = $req->param('postal_unit');
         my $postal_street      = $req->param('postal_street');
-        my $postal_city_suberb = $req->param('postal_city_suberb');
+        my $postal_city_suburb = $req->param('postal_city_suburb');
         my $postal_postcode    = $req->param('postal_postcode');
         my $postal_region      = $req->param('postal_region');
         my $postal_country     = $req->param('postal_country');
@@ -4668,11 +4668,11 @@ use HTML::Entities;
 
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
                     $unit, $street, $city_suberb, $postcode, $region, $country, $postal_unit,
-                    $postal_street, $postal_city_suberb, $postal_postcode, $postal_region,
+                    $postal_street, $postal_city_suburb, $postal_postcode, $postal_region,
                     $postal_country, $postal_same, $loggedin, $loggedin_id, $loggedin_username, $isadmin, $admin],
                     [qw(username email password repeat given family display_name
                     mobile phone unit street city_suberb postcode region country postal_unit postal_street
-                    postal_city_suberb postal_postcode postal_region postal_country postal_same loggedin
+                    postal_city_suburb postal_postcode postal_region postal_country postal_same loggedin
                     loggedin_id loggedin_username isadmin admin)]));
 
         $unit                = encode_entities($unit)               if defined $unit;
@@ -4684,13 +4684,13 @@ use HTML::Entities;
         $display_name        = encode_entities($display_name)       if defined $display_name;
         $postal_unit         = encode_entities($postal_unit)        if defined $postal_unit;
         $postal_street       = encode_entities($postal_street)      if defined $postal_street;
-        $postal_city_suberb  = encode_entities($postal_city_suberb) if defined $postal_city_suberb;
+        $postal_city_suburb  = encode_entities($postal_city_suburb) if defined $postal_city_suburb;
         $postal_country      = encode_entities($postal_country)     if defined $postal_country;
 
         my $cond = defined $postal_street && defined $postal_country
-                    && (!$postal_city_suberb || $postal_city_suberb =~ m/^[^\'\"]+$/)
+                    && (!$postal_city_suburb || $postal_city_suburb =~ m/^[^\'\"]+$/)
                     && (!$postal_unit || $postal_unit =~ m/^[^\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
-                    && $postal_city_suberb =~ m/^[^\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
+                    && $postal_city_suburb =~ m/^[^\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
                     && (!$postal_region || $postal_region =~ m/^[^\'\"]+$/) && $postal_country =~ m/^[^\'\"]+$/;
 
         my $line = __LINE__;
@@ -4770,7 +4770,7 @@ use HTML::Entities;
                             push @msgs, @msgs_res_address;
                             my $postal_address_id = $residential_address_id;
                             if(!$postal_same){
-                                ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
                                 $return = $return_res unless $return_res;
                                 push @msgs, @msgs_res_address;
                             }
@@ -4878,7 +4878,7 @@ use HTML::Entities;
         $postal_same        = 1  unless defined $postal_same;
         $postal_unit        = '' unless defined $postal_unit;
         $postal_street      = '' unless defined $postal_street;
-        $postal_city_suberb = '' unless defined $postal_city_suberb;
+        $postal_city_suburb = '' unless defined $postal_city_suburb;
         $postal_postcode    = '' unless defined $postal_postcode;
         $postal_region      = '' unless defined $postal_region;
         $postal_country     = '' unless defined $postal_country;
@@ -5135,10 +5135,10 @@ use HTML::Entities;
         $pattern = "[^;'\\x22]+";
         say "                <tr $hidden class=\"postal\">";
         say "                    <td>";
-        say "                        <label for=\"postal_city_suberb\">City/Suberb</label>";
+        say "                        <label for=\"postal_city_suburb\">City/Suberb</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"postal_city_suberb\" id=\"postal_city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_city_suberb\" class=\"require\" $required/>";
+        say "                        <input type=\"text\" name=\"postal_city_suburb\" id=\"postal_city_suburb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_city_suburb\" class=\"require\" $required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -6516,8 +6516,8 @@ use HTML::Entities;
     sub update_email {
         my ($self, $email_id, $email, $db) = @_;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$phone, $line],
-                [qw(phone line)]));
+        $self->log(Data::Dumper->Dump([$email_id, $email, $line],
+                [qw(email_id email line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql    = "UPDATE email SET _email = ?\"";
