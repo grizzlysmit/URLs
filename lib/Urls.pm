@@ -3033,6 +3033,9 @@ use HTML::Entities;
         my $primary_group_id;
         my $primary_phone_id;
         my $secondary_phone_id;
+        my @additional_groups;
+        my @group_id_add;
+        my @group_id_delete;
         
         if($submit eq 'Save Changes'){
             $user_id                = $req->param('user_id');
@@ -3065,7 +3068,22 @@ use HTML::Entities;
             $postal_address_id      = $req->param('postal_address_id');
             $primary_group_id       = $req->param('primary_group_id');
             $primary_phone_id       = $req->param('primary_phone_id');
-            $secondary_phone_id      = $req->param('secondary_phone_id');
+            $secondary_phone_id     = $req->param('secondary_phone_id');
+            $params                 = $req->param;
+            for (@params){
+                if(m/^group_id_add\[(\d+)\]$/){
+                    my $_group_id = $req->param($_);
+                    my ($group_name, $return_group, @msgs_group) = $self->getgroup_name($_group_id, $db);
+                    unless($return_group){
+                        $self->message($debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                    }
+                    push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
+                    push @group_id_add, $_group_id;
+                }elsif(m/^group_id_delete\[(\d+)\]$/){
+                    my $_group_id = $req->param($_);
+                    push @group_id_delete, $_group_id;
+                }
+            }
         }else{
             my @msgs;
             my $return = 1;
@@ -3079,7 +3097,8 @@ use HTML::Entities;
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
-            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id\n";
+            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id,\n";
+            $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
             $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id\n";
@@ -3145,7 +3164,16 @@ use HTML::Entities;
             $postal_address_id      = $r->{postal_address_id};
             $primary_group_id       = $r->{primary_group_id};
             $primary_phone_id       = $r->{primary_phone_id};
-            $secondary_phone_id      = $r->{secondary_phone_id};
+            $secondary_phone_id     = $r->{secondary_phone_id};
+            my @_groups             = @{$r->{additional_groups}};
+            for my $group_name (@_groups){
+                my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
+                unless($return_group){
+                    $self->message($debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                    next;
+                }
+                push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
+            }
         }
 
         if($loggedin && $loggedin_id && $loggedin_username){
@@ -3159,7 +3187,7 @@ use HTML::Entities;
                 $result = $query->execute($loggedin_id);
             };
             if($@){
-                push @msgs, "SELECT _group failed: $@";
+                push @msgs, "SELECT passwd failed: $@";
                 $return = 0;
             }
             $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
@@ -3383,6 +3411,39 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
+        my $group_ids_joinned = '';
+        my $sep               = '';
+        for my $row (@additional_groups){
+            my $_group_id = $row->{_group_id};
+            $group_ids_joinned .= $sep . $_group_id;
+            $sep = ', ';
+        }
+        my @groups;
+        my ($return, @msgs);
+        $return = 1;
+        $sql  = "SELECT g.id, g._name FROM _group g\n";
+        $sql .= "WHERE g.id NOT IN ($group_ids_joinned);\n" if $group_ids_joinned;
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT _group failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT _group failed \$sql == $sql";
+            return $return;
+        }
+        unless($return){
+            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'login' : undef), !$return, @msgs);
+        }
+        my $r      = $query->fetchrow_hashref();
+        while($r){
+            push @groups, $r;
+            $r      = $query->fetchrow_hashref();
+        }
 
         untie %session;
         $db->disconnect;
@@ -3687,6 +3748,113 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
         }
+        say "                <tr class=\"admin\">";
+        say "                    <td colspan=\"2\">";
+        say "                        <script>";
+        my $size = @additional_groups;
+        say "                            let cnt = $size;";
+        say "                            let lower_limit = $size;";
+        say "                            function groupOnclick(n){";
+        say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
+        say "                                var cross = document.getElementById(\"cross[\" + n + ']');";
+        say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
+        say "                                var td    = document.getElementById(\"td[\" + n + ']');";
+        say "                                var val   = hdd.value;";
+        say "                                var name  = btn.value;";
+        say "                                //alert(\"val == \" + val + \"\\nname == \" + name);";
+        say "                                td.remove();";
+        say "                                if(n < lower_limit){";
+        say "                                    var base = document.getElementById(\"base\");";
+        say "                                    var deleter = document.createElement(\"INPUT\");";
+        say "                                    deleter.setAttribute(\"type\", \"hidden\");";
+        say "                                    deleter.setAttribute(\"value\", \"\" + val);";
+        say "                                    deleter.name = \"group_id_delete[\" + val + ']';";
+        say "                                    deleter.id   = \"hdd[\" + n + ']';";
+        say "                                    base.appendChild(deleter);";
+        say "                                }else{";
+        say "                                    var groupSelect = document.getElementById(\"groupSelect\");";
+        say "                                    var opt = document.createElement(\"OPTION\");";
+        say "                                    opt.setAttribute(\"value\", \"\" + val);";
+        say "                                    opt.setAttribute(\"id\", \"row_id[\" + val + \"]\");";
+        say "                                    opt.innerHTML = name;";
+        say "                                    groupSelect.appendChild(opt);";
+        say "                                }";
+        say "                            }";
+        say "                            function group_selected() {";
+        say "                                var groupSelect = document.getElementById(\"groupSelect\");";
+        say "                                var val = groupSelect.value;";
+        say "                                if(val == 0) return";
+        say "                                var opt = document.getElementById(\"row_id[\" + val + \"]\");";
+        say "                                var name = opt.innerHTML;";
+        say "                                opt.remove();";
+        say "                                var btn = document.createElement(\"INPUT\");";
+        say "                                btn.setAttribute(\"type\", \"button\");";
+        say "                                btn.setAttribute(\"value\", name);";
+        say "                                btn.name = \"btn[\" + cnt + ']';";
+        say "                                btn.id   = \"btn[\" + cnt + ']';";
+        say "                                var cross = document.createElement(\"button\");";
+        say "                                cross.setAttribute(\"type\", \"button\");";
+        say "                                cross.setAttribute(\"value\", \"\" + cnt);";
+        say "                                cross.setAttribute(\"class\", \"inner\");";
+        #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
+        say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
+        say "                                cross.innerHTML = \"&otimes;\";";
+        say "                                cross.name = \"cross[\" + cnt + ']';";
+        say "                                cross.id   = \"cross[\" + cnt + ']';";
+        say "                                var hdn = document.createElement(\"INPUT\");";
+        say "                                hdn.setAttribute(\"type\", \"hidden\");";
+        say "                                hdn.setAttribute(\"value\", \"\" + val);";
+        say "                                hdn.name = \"group_id_add[\" + val + ']';";
+        say "                                hdn.id   = \"hdd[\" + cnt + ']';";
+        say "                                var row = document.getElementById(\"row\");";
+        say "                                var elt = document.createElement(\"TD\");";
+        say "                                elt.setAttribute(\"id\", \"td[\" + cnt + ']');";
+        say "                                elt.setAttribute(\"class\", \"elts\");";
+        say "                                elt.appendChild(btn);";
+        say "                                elt.appendChild(cross);";
+        say "                                elt.appendChild(hdn);";
+        say "                                row.appendChild(elt);";
+        say "                                cnt++;";
+        say "                            }";
+        say "                        </script>";
+        say "                        <table class=\"outter\">";
+        say "                           <tr class=\"outter\">";
+        say "                              <td class=\"outter\">";
+        say "                                  <table id=\"tbl\" class=\"elts inner\">";
+        say "                                      <tr id=\"row\" class=\"elts\">";
+        say "                                          <td class=\"elts inner\" id=\"base\">";
+        say "                                               elts:";
+        say "                                          </td>";
+        my $cnt = 0;
+        for my $row (@additional_groups){
+            my $group_name = $row->{group_name};
+            my $_group_id  = $row->{_group_id};
+            say "                                          <td class=\"elts\" id=\"td[$cnt]\">";
+            say "                                              <input type=\"button\" id=\"btn[$cnt]\" name=\"btn[$cnt]\" value=\"$group_name\">";
+            say "                                              <input type=\"hidden\" id=\"hdd[$cnt]\" name=\"group_id_add[$_group_id]\" value=\"$_group_id\">";
+            say "                                              <button type=\"button\" id=\"cross[$cnt]\" name=\"cross[$cnt]\" class=\"inner\" onclick=\"groupOnclick($cnt)\" value=\"$cnt\">&otimes;</button>";
+            say "                                          </td>";
+            $cnt++;
+        }
+        say "                                      </tr>";
+        say "                                  </table>";
+        say "                              </td>";
+        say "                           </tr>";
+        say "                        </table>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <select id=\"groupSelect\" onchange=\"group_selected()\">";
+        say "                            <option id=\"row_id[0]\" value=\"0\" selected>-- nothinng selected --</option>";
+        for my $row (@groups){
+            my $available_group_id = $row->{id};
+            my $_name = $row->{_name};
+            say "                            <option id=\"row_id[$available_group_id]\" value=\"$available_group_id\">$_name</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         if($debug){
@@ -3710,6 +3878,36 @@ use HTML::Entities;
 
         return 1;
     } ## --- end sub user_details
+
+
+    sub getgroup_id {
+        my ($self, $group_name, $db) = @_;
+        my ($_group_id, $return, @msgs);
+        $return = 1;
+        my $sql  = "SELECT g.id FROM _group g WHERE g._name = ?;\n";
+        my $query           = $db->prepare($sql);
+        my $result;
+        eval {
+            $result         = $query->execute($group_name);
+        };
+        if($@){
+            push @msgs,  "Error: SELECT $group_name FROM _group failed: $@";
+            $return = 0;
+            $query->finish();
+            next;
+        }
+        if($result){
+            my $r          = $query->fetchrow_hashref();
+            $_group_id     = $r->{id};
+            push @msgs,  "SELECT FROM _group Succeeded:";
+            $query->finish();
+        }else{
+            $return = 0;
+            push @msgs,  "Error: SELECT $group_name FROM _group failed";
+            $query->finish();
+        }
+        return ($_group_id, $return, @msgs);
+    } ## --- end sub getgroup_id
 
 
     sub delete_orphaned_links_sections {
