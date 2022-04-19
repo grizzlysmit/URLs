@@ -2843,7 +2843,7 @@ use HTML::Entities;
         say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Eitt Button</th></tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
         my $cnt = 0;
         for my $user (@user_details){
             $cnt++;
@@ -2907,7 +2907,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Eitt Button</th></tr>";
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
             }
         }
         say "                <tr>";
@@ -3033,6 +3033,7 @@ use HTML::Entities;
         my $primary_group_id;
         my $primary_phone_id;
         my $secondary_phone_id;
+        my $passwd_details_id;
         my @additional_groups;
         my @group_id_add;
         my @group_id_delete;
@@ -3069,7 +3070,8 @@ use HTML::Entities;
             $primary_group_id       = $req->param('primary_group_id');
             $primary_phone_id       = $req->param('primary_phone_id');
             $secondary_phone_id     = $req->param('secondary_phone_id');
-            my @params                 = $req->param;
+            $passwd_details_id      = $req->param('passwd_details_id');
+            my @params              = $req->param;
             for (@params){
                 if(m/^group_id_add\[(\d+)\]$/){
                     my $_group_id = $req->param($_);
@@ -3097,7 +3099,7 @@ use HTML::Entities;
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
-            $sql               .= "pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id,\n";
+            $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id,\n";
             $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
@@ -3165,6 +3167,7 @@ use HTML::Entities;
             $primary_group_id       = $r->{primary_group_id};
             $primary_phone_id       = $r->{primary_phone_id};
             $secondary_phone_id     = $r->{secondary_phone_id};
+            $passwd_details_id      = $r->{passwd_details_id};
             my @_groups             = @{$r->{additional_groups}};
             for my $group_name (@_groups){
                 my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
@@ -3305,7 +3308,6 @@ use HTML::Entities;
                         }
                         $line = __LINE__;
                         $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
-                        $query->finish();
                         if($result){
                             my ($r,  $primary_group_id);
                             unless($group_id == 1){
@@ -3321,56 +3323,106 @@ use HTML::Entities;
                             my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
                             $return = $return_res unless $return_res;
                             push @msgs, @msgs_res_address;
-                            my $new_postal_address_id = $new_residential_address_id;
-                            if(!$postal_same){
-                                ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
-                                $return = $return_res unless $return_res;
-                                push @msgs, @msgs_res_address;
+                            if($postal_same){
+                                if($residential_address_id != $postal_address_id){
+                                    my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
+                                    $return = 0 unless $return_post_address;
+                                    push @msgs, @msgs_post_address;
+                                    $postal_address_id = $residential_address_id;
+                                }
+                            }else{
+                                if($residential_address_id != $postal_address_id){
+                                    ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
+                                    $return = $return_res unless $return_res;
+                                    push @msgs, @msgs_res_address;
+                                }else{
+                                    ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suberb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                    $return = $return_res unless $return_res;
+                                    push @msgs, @msgs_res_address;
+                                }
                             }
                             $line = __LINE__;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
-                            my ($mobile_id, $phone_id);
                             my ($return_phone, @msgs_phone);
                             if($mobile){
-                                ($mobile_id, $return_phone, @msgs_phone) = $self->update_phone($mobile, $db);
+                                ($return_phone, @msgs_phone) = $self->update_phone($primary_phone_id, $mobile, $db);
                                 $return = $return_phone unless $return_phone;
                                 push @msgs, @msgs_phone;
                             }
                             if($phone){
-                                ($phone_id, $return_phone, @msgs_phone) = $self->update_phone($phone, $db);
+                                ($return_phone, @msgs_phone) = $self->update_phone($secondary_phone_id, $phone, $db);
                                 $return = $return_phone unless $return_phone;
                                 push @msgs, @msgs_phone;
                             }
-                            my $primary_phone_id = $phone_id;
-                            my $secondary_phone_id;
-                            if($mobile_id){
-                                $secondary_phone_id = $primary_phone_id;
-                                $primary_phone_id = $mobile_id;
-                            }
-                            my ($return_email, $primary_email_id, @msgs_email);
-                            ($primary_email_id, $return_email, @msgs_email) = $self->update_email($email, $db);
+                            my ($return_email, @msgs_email);
+                            ($return_email, @msgs_email) = $self->update_email($email_id, $email, $db);
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $primary_email_id, $db);
+                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
                                     my ($passwd_id, $return_passwd, @msgs_passwd);
+                                    $passwd_id = $user_id;
                                     eval {
-                                        ($passwd_id, $return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $primary_email_id, $passwd_details_id, $primary_group_id, $admin, $db);
+                                        ($return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $db);
                                         $return = $return_passwd unless $return_passwd;
                                         push @msgs, @msgs_passwd;
+                                        for my $group_id (@group_id_add){
+                                            $sql  = "INSERT INTO groups(group_id, passwd_id)\n";
+                                            $sql .= "VALUES(?, ?)\n";
+                                            $sql .= "ON CONFLICT DO NOTHING\n";
+                                            $sql .= "RETURNING id;\n";
+                                            $query  = $db->prepare($sql);
+                                            eval {
+                                                $result = $query->execute($group_id, $passwd_id);
+                                            };
+                                            if($@){
+                                                push @msgs, "INSERT INTO groups failed: $@";
+                                                $return = 0;
+                                            }
+                                            if($result){
+                                                $r      = $query->fetchrow_hashref();
+                                                my $groups_id = $r->{id};
+                                            }else{
+                                                push @msgs, "INSERT INTO groups failed: $sql";
+                                                $return = 0;
+                                            }
+                                            $query->finish();
+                                        }
+                                        for my $group_id (@group_id_delete){
+                                            $sql  = "DELETE FROM groups\n";
+                                            $sql .= "WHERE group_id = ? AND passwd_id = ?\n";
+                                            $sql .= "RETURNING id;\n";
+                                            $query  = $db->prepare($sql);
+                                            eval {
+                                                $result = $query->execute($group_id, $passwd_id);
+                                            };
+                                            if($@){
+                                                push @msgs, "DELETE FROM groups failed: $@";
+                                                $return = 0;
+                                            }
+                                            if($result){
+                                                $r      = $query->fetchrow_hashref();
+                                                my $groups_id = $r->{id};
+                                            }else{
+                                                push @msgs, "DELETE FROM groups failed: $sql";
+                                                $return = 0;
+                                            }
+                                            $query->finish();
+                                        }
                                     };
                                     if($@){
                                         $return = 0;
-                                        push @msgs, "Error: falied to update passwd: $@";
+                                        push @msgs, "Error: falied to DELETE user: $@";
                                     }
                                 }
                             }else{
                                 push @msgs, "one of the dependencies failed.", "see above.";
                             }
                         }else{
+                            $query->finish();
                             $return = 0;
                             push @msgs, "Failed to insert primary _group.";
                         }
@@ -3411,8 +3463,8 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
-        my $group_ids_joinned = '';
-        my $sep               = '';
+        my $group_ids_joinned = "$user_id";
+        my $sep               = ', ';
         for my $row (@additional_groups){
             my $_group_id = $row->{_group_id};
             $group_ids_joinned .= $sep . $_group_id;
@@ -3466,6 +3518,7 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"postal_address_id\" value=\"$postal_address_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>";
+        say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>";
         say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>";
         if($user_id == 1){
             say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" disabled/>";
@@ -3489,13 +3542,13 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
-        $pattern = '(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}';
+        $pattern = '(?:(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100})?';
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"password\">password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" required/>";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" />";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -3503,7 +3556,7 @@ use HTML::Entities;
         say "                        <label for=\"repeat\">Repeat Password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  required/>";
+        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  />";
         say "                    </td>";
         say "                </tr>";
         # given,  family annd dispaly name
@@ -5508,37 +5561,6 @@ use HTML::Entities;
     } ## --- end sub create_address
 
 
-    sub update_address {
-        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $address_id, $db) = @_;
-        my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
-                [qw(unit street city_suberb postcode region country line)]));
-        my ($returning_address_id, $return, @msgs);
-        $returning_address_id = $default_id;
-        $return = 1;
-        my $sql    = "UPDATE address SET unit = ?, street = ?, city_suburb = ?, postcode = ?, region = ?, country = ?, userid = ?, groupid = ?\"";
-        $sql      .= "WHERE id = ?\n";
-        $sql      .= "RETURNING id;\n";
-        my $query  = $db->prepare($sql);
-        my $result;
-        eval {
-            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country, $address_id);
-        };
-        if($@){
-            push @msgs, "Insert into address failed: $@";
-            $return = 0;
-        }
-        if($result){
-            my $r      = $query->fetchrow_hashref();
-            $returning_address_id = $r->{id};
-        }else{
-            push @msgs, "Insert into address failed";
-            $return = 0;
-        }
-        $query->finish();
-        return ($returning_address_id, $return, @msgs);
-    } ## --- end sub update_address
-
     sub create_phone {
         my ($self, $phone, $db) = @_;
         my $line = __LINE__;
@@ -6423,6 +6445,184 @@ use HTML::Entities;
         $self->log(Data::Dumper->Dump([$result, $return, \@msgs, $line], [qw(result return @msgs line)]));
         return ($return, @msgs);
     } ## --- end sub move_ownnership_of_all_urls_etc
+
+    sub update_address {
+        my ($self, $unit, $street, $city_suberb, $postcode, $region, $country, $default_id, $address_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$unit, $street, $city_suberb, $postcode, $region, $country, $line],
+                [qw(unit street city_suberb postcode region country line)]));
+        my ($returning_address_id, $return, @msgs);
+        $returning_address_id = $default_id;
+        $return = 1;
+        my $sql    = "UPDATE address SET unit = ?, street = ?, city_suburb = ?, postcode = ?, region = ?, country = ?, userid = ?, groupid = ?\"";
+        $sql      .= "WHERE id = ?\n";
+        $sql      .= "RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($unit, $street, $city_suberb, $postcode, $region, $country, $address_id);
+        };
+        if($@){
+            push @msgs, "UPDATE address failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            $returning_address_id = $r->{id};
+        }else{
+            push @msgs, "UPDATE address failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($returning_address_id, $return, @msgs);
+    } ## --- end sub update_address
+
+
+    sub update_phone {
+        my ($self, $phone_id, $phone, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$phone, $line],
+                [qw(phone line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql    = "UPDATE phone SET _number = ?\"";
+        $sql      .= "WHERE id = ?\n";
+        $sql      .= "RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($phone, $phone_id);
+        };
+        if($@){
+            push @msgs, "UPDATE phone failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            unless($phone_id == $r->{id}){
+                push @msgs, "UPDATE phone failed: $sql";
+                $return = 0;
+            }
+        }else{
+            push @msgs, "UPDATE phone failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($return, @msgs);
+    } ## --- end sub update_phone
+
+
+    sub update_email {
+        my ($self, $email_id, $email, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$phone, $line],
+                [qw(phone line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql    = "UPDATE email SET _email = ?\"";
+        $sql      .= "WHERE id = ?\n";
+        $sql      .= "RETURNING id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($email, $email_id);
+        };
+        if($@){
+            push @msgs, "UPDATE email failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            unless($email_id == $r->{id}){
+                push @msgs, "UPDATE email failed: $sql";
+                $return = 0;
+            }
+        }else{
+            push @msgs, "UPDATE email failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($return, @msgs);
+    } ## --- end sub update_email
+
+
+    sub update_passwd_details {
+        my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
+                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id passwd_details_id line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql    = "UPDATE passwd_details pa SET pd.display_name = ?, pd.given = ?, pd._family = ?,\n";
+        $sql      .= "pd.residential_address_id = ?, pd.postal_address_id = ?, pd.primary_phone_id = ?,\n";
+        $sql      .= "pd.secondary_phone_id = ?\"";
+        $sql      .= "WHERE pa.id = ?\n";
+        $sql      .= "RETURNING pa.id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id);
+        };
+        if($@){
+            push @msgs, "UPDATE passwd_details failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            unless($email_id == $r->{id}){
+                push @msgs, "UPDATE passwd_details failed: $sql";
+                $return = 0;
+            }
+        }else{
+            push @msgs, "UPDATE passwd_details failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($return, @msgs);
+    } ## --- end sub update_passwd_details
+
+
+    sub update_passwd {
+        my ($self, $username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $db) = @_;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $line],
+                [qw(username hashed_password email_id passwd_details_id primary_group_id admin passwd_id line)]));
+        my ($return, @msgs);
+        $return = 1;
+        my $sql    = "UPDATE passwd p SET p.username = ?, p.passwd_details_id = ?, p.primary_group_id = ?, p._admin = ?, p.email_id = ?";
+        if($hashed_password){
+            $sql .= ", p.password = ?\n";
+        }else{
+            $sql .= "\n";
+        }
+        $sql      .= "WHERE p.id = ?\n";
+        $sql      .= "RETURNING p.id;\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            if($hashed_password){
+                $result = $query->execute($username, $email_id, $passwd_details_id, $primary_group_id, $admin, $hashed_password, $passwd_id);
+            }else{
+                $result = $query->execute($username, $passwd_details_id, $primary_group_id, $admin, $email_id, $passwd_id);
+            }
+        };
+        if($@){
+            push @msgs, "UPDATE passwd failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            unless($passwd_id == $r->{id}){
+                push @msgs, "UPDATE passwd failed: $sql";
+                $return = 0;
+            }
+        }else{
+            push @msgs, "UPDATE passwd failed";
+            $return = 0;
+        }
+        $query->finish();
+        return ($return, @msgs);
+    } ## --- end sub update_passwd
 
 }
 
