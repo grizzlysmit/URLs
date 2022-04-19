@@ -6555,6 +6555,8 @@ use HTML::Entities;
 
     sub update_passwd_details {
         my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db) = @_;
+        $primary_phone_id   = undef unless $primary_phone_id;
+        $secondary_phone_id = undef unless $secondary_phone_id;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
                 [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id passwd_details_id line)]));
