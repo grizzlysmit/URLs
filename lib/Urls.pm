@@ -3464,7 +3464,7 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
-        my $group_ids_joinned = "$user_id";
+        my $group_ids_joinned = "$group_id";
         my $sep               = ', ';
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
