@@ -2780,10 +2780,11 @@ use HTML::Entities;
 
         my @user_details;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
-        $sql    .= "e._email, ph._number phone_number, g._name groupname, g.id group_id,\n";
+        $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
-        $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+        $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
+        $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id\n";
         $sql    .= "ORDER BY p.username, pd.given, pd._family\n";
         my $query  = $db->prepare($sql);
         my $result;
@@ -2839,11 +2840,11 @@ use HTML::Entities;
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "                        </label>";
         say "                    </td>";
-        say "                    <td colspan=\"6\">";
+        say "                    <td colspan=\"7\">";
         say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>secondary_phone</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
         my $cnt = 0;
         for my $user (@user_details){
             $cnt++;
@@ -2857,6 +2858,8 @@ use HTML::Entities;
             my $email             = $user->{_email};
             my $phone_number      = $user->{phone_number};
             $phone_number         = '' unless defined $phone_number;
+            my $secondary_phone   = $user->{secondary_phone};
+            $secondary_phone      = '' unless defined $secondary_phone;
             my $groupname         = $user->{groupname};
             my $additional_groups = $user->{additional_groups};
             $additional_groups    = join ', ', @{$additional_groups};
@@ -2887,6 +2890,10 @@ use HTML::Entities;
             say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$phone_number</div></label>";
             say "                    </td>";
             say "                    <td>";
+            $secondary_phone = '&nbsp;' unless $secondary_phone;
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$secondary_phone</div></label>";
+            say "                    </td>";
+            say "                    <td>";
             say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$groupname</div></label>";
             say "                    </td>";
             say "                    <td>";
@@ -2907,7 +2914,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>phone_number</th><th>secondary_phone</th><th>group</th><th>admin</th><th>additional_groups</th><th>selected</th><th>Edit Button</th></tr>";
             }
         }
         say "                <tr>";
@@ -2924,7 +2931,7 @@ use HTML::Entities;
             say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
-        say "                    <td colspan=\"3\">";
+        say "                    <td colspan=\"4\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
         say "                    </td>";
         say "                    <td colspan=\"6\">";
