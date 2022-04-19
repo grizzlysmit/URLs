@@ -3346,14 +3346,26 @@ use HTML::Entities;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($return_phone, @msgs_phone);
                             if($mobile){
-                                ($return_phone, @msgs_phone) = $self->update_phone($primary_phone_id, $mobile, $db);
-                                $return = $return_phone unless $return_phone;
-                                push @msgs, @msgs_phone;
+                                if($primary_phone_id){
+                                    ($return_phone, @msgs_phone) = $self->update_phone($primary_phone_id, $mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }else{
+                                    ($primary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
                             }
                             if($phone){
-                                ($return_phone, @msgs_phone) = $self->update_phone($secondary_phone_id, $phone, $db);
-                                $return = $return_phone unless $return_phone;
-                                push @msgs, @msgs_phone;
+                                if($secondary_phone_id){
+                                    ($return_phone, @msgs_phone) = $self->update_phone($secondary_phone_id, $phone, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }else{
+                                    ($secondary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
                             }
                             my ($return_email, @msgs_email);
                             ($return_email, @msgs_email) = $self->update_email($email_id, $email, $db);
