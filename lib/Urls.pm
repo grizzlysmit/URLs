@@ -6599,14 +6599,14 @@ use HTML::Entities;
                 [qw(username hashed_password email_id passwd_details_id primary_group_id admin passwd_id line)]));
         my ($return, @msgs);
         $return = 1;
-        my $sql    = "UPDATE passwd p SET p.username = ?, p.passwd_details_id = ?, p.primary_group_id = ?, p._admin = ?, p.email_id = ?";
+        my $sql    = "UPDATE passwd  SET username = ?, passwd_details_id = ?, primary_group_id = ?, _admin = ?, email_id = ?";
         if($hashed_password){
-            $sql .= ", p.password = ?\n";
+            $sql .= ", password = ?\n";
         }else{
             $sql .= "\n";
         }
-        $sql      .= "WHERE p.id = ?\n";
-        $sql      .= "RETURNING p.id;\n";
+        $sql      .= "WHERE id = ?\n";
+        $sql      .= "RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
