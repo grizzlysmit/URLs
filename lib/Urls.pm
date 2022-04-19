@@ -3360,7 +3360,7 @@ use HTML::Entities;
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db);
+                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -6571,7 +6571,8 @@ use HTML::Entities;
             $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id);
         };
         if($@){
-            push @msgs, "UPDATE passwd_details failed: $@", "\$sql == $sql";
+            push @msgs, "UPDATE passwd_details failed: $@", "\$sql == $sql", Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
+                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id passwd_details_id line)]);
             $return = 0;
         }
         if($result){
