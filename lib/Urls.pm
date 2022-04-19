@@ -3323,6 +3323,7 @@ use HTML::Entities;
                             my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
                             $return = $return_res unless $return_res;
                             push @msgs, @msgs_res_address;
+                            my ($new_postal_address_id, $return_res, @msgs_res_address);
                             if($postal_same){
                                 if($residential_address_id != $postal_address_id){
                                     my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
