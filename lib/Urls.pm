@@ -2944,6 +2944,43 @@ use HTML::Entities;
         return 1;
     } ## --- end sub user
 
+    
+    sub normalise_mobile {
+        my ($self, $mobile, $cc, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+        return $mobile;
+    } ## --- end sub normalise_mobile
+    
+    sub normalise_landline {
+        my ($self, $phone, $cc, $_session, $db) = @_;
+        my %session = %{$_session};
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+        return $phone;
+    } ## --- end sub normalise_landline
+
 
     sub user_details {
         my ($self, $req, $cfg, $rec) = @_;
@@ -3569,12 +3606,25 @@ use HTML::Entities;
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
         $pattern = '(?:(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100})?';
+        say "                <script>";
+        say "                    function togglepasswd(){";
+        say "                        var pws = document.getElementsByClassName(\"passwd\");";
+        say "                        var chk = document.getElementById(\"chkpasswd\");";
+        say "                        for(let pw of pws){";
+        say "                            if(chk.checked){;";
+        say "                                pw.type = \"text\";";
+        say "                            }else{";
+        say "                                pw.type = \"password\";";
+        say "                            }";
+        say "                        }";
+        say "                    }";
+        say "                </script>";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"password\">password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"password\" id=\"password\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" />";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" class=\"passwd\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" />";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -3582,7 +3632,15 @@ use HTML::Entities;
         say "                        <label for=\"repeat\">Repeat Password</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  />";
+        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" class=\"passwd\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"chkpasswd\">Show Password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"checkbox\" id=\"chkpasswd\" onclick=\"togglepasswd()\"  />";
         say "                    </td>";
         say "                </tr>";
         # given,  family annd dispaly name
@@ -4959,6 +5017,19 @@ use HTML::Entities;
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
         $pattern = '(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}';
+        say "                <script>";
+        say "                    function togglepasswd(){";
+        say "                        var pws = document.getElementsByClassName(\"passwd\");";
+        say "                        var chk = document.getElementById(\"chkpasswd\");";
+        say "                        for(let pw of pws){";
+        say "                            if(chk.checked){;";
+        say "                                pw.type = \"text\";";
+        say "                            }else{";
+        say "                                pw.type = \"password\";";
+        say "                            }";
+        say "                        }";
+        say "                    }";
+        say "                </script>";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"password\">password</label>";
@@ -4973,6 +5044,14 @@ use HTML::Entities;
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"chkpasswd\">Show Password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"checkbox\" id=\"chkpasswd\" onclick=\"togglepasswd()\"  />";
         say "                    </td>";
         say "                </tr>";
         # given,  family annd dispaly name
