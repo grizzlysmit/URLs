@@ -3406,7 +3406,7 @@ use HTML::Entities;
                                     $return = $return_phone unless $return_phone;
                                     push @msgs, @msgs_phone;
                                 }else{
-                                    ($secondary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
+                                    ($secondary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($phone, $db);
                                     $return = $return_phone unless $return_phone;
                                     push @msgs, @msgs_phone;
                                 }
