@@ -3849,7 +3849,7 @@ use HTML::Entities;
         say "                                input_country.value        = name;";
         say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
         say "                                input_postal_country.value = name;";
-        say "                                alert(\"cc == \" + cc);";
+        #say "                                alert(\"cc == \" + cc);";
         say "                            }";
         say "                        </script>";
         say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
