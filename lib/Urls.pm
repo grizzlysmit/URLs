@@ -3820,6 +3820,7 @@ use HTML::Entities;
         say "                                                };";
         say "                                var slct                   = document.getElementById(\"countries_id\");";
         say "                                var countries_id           = slct.value;";
+        say "                                alert(\"countries_id == \" + countries_id);";
         say "                                if(countries_id == 0) return; // should never happen //"; 
         say "                                // values to match countries_id //";
         say "                                var cc                     = countries[countries_id][cc];";
