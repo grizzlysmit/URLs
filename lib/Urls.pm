@@ -3007,7 +3007,7 @@ use HTML::Entities;
             push @msgs, "SELECT FROM countries failed: $@";
             $return = 0;
         }
-        $self->log(Data::Dumper->Dump([$debug, $query, $result, \@msgs, $sql], [qw(debug query result @msgs sql)]));
+        $self->log(Data::Dumper->Dump([$query, $result, \@msgs, $sql], [qw(query result @msgs sql)]));
         my $r;
         if($return){
             $r      = $query->fetchrow_hashref();
@@ -3643,7 +3643,7 @@ use HTML::Entities;
             push @msgs, "SELECT FROM countries failed: \$sql == $sql";
             return $return;
         }
-        my $r      = $query->fetchrow_hashref();
+        $r      = $query->fetchrow_hashref();
         while($r){
             push @countries, $r;
             $r      = $query->fetchrow_hashref();
@@ -3775,8 +3775,15 @@ use HTML::Entities;
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
+
+        my $mobile_title;
+        my $mobile_pattern;
+        my $mobile_placeholder;
+        my $landline_title;
+        my $landline_pattern;
+        my $landline_placeholder;
+
         say "                        <script>";
-        my $size = @additional_groups;
         say "                            function countries_onchange() {";
         say "                                var countries = {";
         for my $row (@countries){
@@ -3791,6 +3798,14 @@ use HTML::Entities;
             my $mob_title        = $row->{mobile_title};
             my $lndl_placeholder = $row->{landline_placeholder};
             my $mob_placeholder  = $row->{mobile_placeholder};
+            if($countries_id == $cc_id){
+                $mobile_title = $mob_title;
+                $mobile_pattern = $mob_pattern;
+                $mobile_placeholder = $mob_placeholder;
+                $landline_title     =$lndl_title;
+                $landline_pattern   = $lndl_pattern;
+                $landline_placeholder = $lndl_placeholder;
+            }
             say "                                            \"$cc_id\": { \"_name\": \"$name\",";
             say "                                                          \"cc\": \"$_cc\",";
             say "                                                          \"prefix\": \"$_prefix\",";
