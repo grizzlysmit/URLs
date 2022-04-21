@@ -2931,10 +2931,10 @@ use HTML::Entities;
             say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
-        say "                    <td colspan=\"4\">";
+        say "                    <td colspan=\"3\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
         say "                    </td>";
-        say "                    <td colspan=\"6\">";
+        say "                    <td colspan=\"7\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
         say "                    </td>";
         say "                </tr>";
@@ -2946,7 +2946,7 @@ use HTML::Entities;
 
     
     sub normalise_mobile {
-        my ($self, $mobile, $cc, $_session, $db) = @_;
+        my ($self, $mobile, $cc, $prefix, $_escape, $pattern, $_session, $db) = @_;
         my %session = %{$_session};
 
         my $loggedin                  = $session{loggedin};
@@ -2960,11 +2960,16 @@ use HTML::Entities;
         my $loggedin_phone_number     = $session{loggedin_phone_number};
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+        if($mobile !~ m/^$pattern$/){
+            die("$mobile does not match pattern: $pattern");
+        }
+        $mobile =~ s/[ -]//g;
+        $mobile =~ s/^$_escape/$prefix/g;
         return $mobile;
     } ## --- end sub normalise_mobile
     
     sub normalise_landline {
-        my ($self, $phone, $cc, $_session, $db) = @_;
+        my ($self, $phone, $cc, $prefix, $_escape, $pattern, $_session, $db) = @_;
         my %session = %{$_session};
 
         my $loggedin                  = $session{loggedin};
@@ -2978,8 +2983,43 @@ use HTML::Entities;
         my $loggedin_phone_number     = $session{loggedin_phone_number};
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+        if($phone !~ m/^$pattern$/){
+            die("$phone does not match pattern: $pattern");
+        }
+        $phone =~ s/[ -()]//g;
+        $phone =~ s/^$_escape/$prefix/g;
         return $phone;
     } ## --- end sub normalise_landline
+
+
+    sub getphonedetails {
+        my ($self, $cc, $prefix, $db) = @_;
+        my ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
+        $return = 1;
+        my $sql  = "SELECT c.landline_pattern, c.mobile_pattern, c._escape FROM countries c\n";
+        $sql    .= "WHERE c.cc = ? AND c.prefix = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result = $query->execute($cc, $prefix);
+        };
+        if($@){
+            push @msgs, "SELECT FROM countries failed: $@";
+            $return = 0;
+        }
+        $self->log(Data::Dumper->Dump([$debug, $query, $result, \@msgs, $sql], [qw(debug query result @msgs sql)]));
+        my $r;
+        if($return){
+            $r      = $query->fetchrow_hashref();
+            $_escape           = $r->{_escape};
+            $mobile_pattern   = $r->{mobile_pattern};
+            $landline_pattern = $r->{landline_pattern};
+        }else{
+            push @msgs, "SELECT FROM countries failed: $sql";
+            $return = 0;
+        }
+        return ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
+    } ## --- end sub getphonedetails
 
 
     sub user_details {
@@ -3070,6 +3110,9 @@ use HTML::Entities;
         my $display_name;
         my $admin;
         my $isadmin;
+        my $cc;
+        my $prefix;
+        my $countries_id;
         my $group_id;
         my $email_id;
         my $residential_address_id;
@@ -3107,6 +3150,9 @@ use HTML::Entities;
             $family                 = $req->param('family');
             $display_name           = $req->param('display_name');
             $admin                  = $req->param('admin');
+            $cc                     = $req->param('cc');
+            $prefix                 = $req->param('prefix');
+            $countries_id           = $req->param('countries_id');
             $group_id               = $req->param('group_id');
             $email_id               = $req->param('email_id');
             $residential_address_id = $req->param('residential_address_id');
@@ -3143,11 +3189,12 @@ use HTML::Entities;
             $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
-            $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id,\n";
+            $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id, pd.countries_id\n";
+            $sql               .= "c.cc, c.prefix\n";
             $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN countries c ON pd.countries_id = c.id\n";
             $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
             $sql               .= "WHERE p.id = ?\n";
             my $query  = $db->prepare($sql);
@@ -3203,6 +3250,9 @@ use HTML::Entities;
             $given                  = $r->{given};
             $family                 = $r->{_family};
             $display_name           = $r->{display_name};
+            $cc                     = $r->{cc};
+            $prefix                 = $r->{prefix};
+            $countries_id           = $r->{countries_id};
             $admin                  = $r->{_admin};
             $group_id               = $r->{group_id};
             $email_id               = $r->{email_id};
@@ -3389,7 +3439,17 @@ use HTML::Entities;
                             $line = __LINE__;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($return_phone, @msgs_phone);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($cc, $prefix, $db);
+                            $return = 0 unless $return_phonedetails;
+                            push @msgs, @msgs_phonedetails;
                             if($mobile){
+                                eval {
+                                    $mobile = $self->normalise_mobile($mobile, $cc, $prefix, $_escape, $mobile_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
                                 if($primary_phone_id){
                                     ($return_phone, @msgs_phone) = $self->update_phone($primary_phone_id, $mobile, $db);
                                     $return = $return_phone unless $return_phone;
@@ -3401,6 +3461,13 @@ use HTML::Entities;
                                 }
                             }
                             if($phone){
+                                eval {
+                                    $phone = $self->normalise_landline($phone, $cc, $prefix, $_escape, $landline_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
                                 if($secondary_phone_id){
                                     ($return_phone, @msgs_phone) = $self->update_phone($secondary_phone_id, $phone, $db);
                                     $return = $return_phone unless $return_phone;
@@ -3544,20 +3611,46 @@ use HTML::Entities;
             $result = $query->execute();
         };
         if($@){
-            push @msgs, "SELECT _group failed: $@", "\$sql == $sql";
+            push @msgs, "SELECT FROM _group failed: $@", "\$sql == $sql";
             $return = 0;
         }
         unless($result){
-            push @msgs, "SELECT _group failed \$sql == $sql";
+            push @msgs, "SELECT FROM _group failed: \$sql == $sql";
             return $return;
-        }
-        unless($return){
-            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'login' : undef), !$return, @msgs);
         }
         my $r      = $query->fetchrow_hashref();
         while($r){
             push @groups, $r;
             $r      = $query->fetchrow_hashref();
+        }
+        $query->finish();
+
+        my @countries;
+
+        $sql  = "SELECT\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, c._escape, c.landline_pattern, c.mobile_pattern,\n";
+        $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
+        $sql .= "FROM countries c\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            return $return;
+        }
+        my $r      = $query->fetchrow_hashref();
+        while($r){
+            push @countries, $r;
+            $r      = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        unless($return){
+            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
         }
 
         untie %session;
@@ -3677,9 +3770,92 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         # phones 
-        $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
-        $pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
-        my $placeholder = '+61438-567-876|0438 567 876|0438567876';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <script>";
+        my $size = @additional_groups;
+        say "                            function countries_onchange() {";
+        say "                                var countries = {";
+        for my $row (@countries){
+            my $cc_id            = $row->{id};
+            my $_cc              = $row->{cc};
+            my $name             = $row->{_name};
+            my $_prefix          = $row->{prefix};
+            my $_escape           = $row->{_escape};
+            my $lndl_pattern     = $row->{landline_pattern};
+            my $mob_pattern      = $row->{mobile_pattern};
+            my $lndl_title       = $row->{landline_title};
+            my $mob_title        = $row->{mobile_title};
+            my $lndl_placeholder = $row->{landline_placeholder};
+            my $mob_placeholder  = $row->{mobile_placeholder};
+            say "                                            \"$cc_id\": { \"_name\": \"$name\",";
+            say "                                                          \"cc\": \"$_cc\",";
+            say "                                                          \"prefix\": \"$_prefix\",";
+            say "                                                          \"_escape\": \"$_escape\",";
+            say "                                                          \"landline_pattern\": \"$lndl_pattern\",";
+            say "                                                          \"mobile_pattern\": \"$mob_pattern\",";
+            say "                                                          \"landline_title\": \"$lndl_title\",";
+            say "                                                          \"mobile_title\": \"$mob_title\",";
+            say "                                                          \"landline_placeholder\": \"$lndl_placeholder\",";
+            say "                                                          \"mobile_placeholder\": \"$mob_placeholder\" },";
+        }
+        say "                                                };";
+        say "                                var slct                   = document.getElementById(\"countries_id\");";
+        say "                                var countries_id           = slct.value;";
+        say "                                if(countries_id == 0) return; // should never happen //"; 
+        say "                                // values to match countries_id //";
+        say "                                var cc                     = countries[countries_id][cc];";
+        say "                                var prefix                 = countries[countries_id][prefix];";
+        say "                                var name                   = countries[countries_id][_name];";
+        say "                                var _escape                = countries[countries_id][_escape];";
+        say "                                var landline_pattern       = countries[countries_id][landline_pattern];";
+        say "                                var mobile_pattern         = countries[countries_id][mobile_pattern];";
+        say "                                var landline_title         = countries[countries_id][landline_title];";
+        say "                                var mobile_title           = countries[countries_id][mobile_title];";
+        say "                                var landline_placeholder   = countries[countries_id][landline_placeholder];";
+        say "                                var mobile_placeholder     = countries[countries_id][mobile_placeholder];";
+        say "                                // The objects to change //";
+        say "                                var hdn_cc                 = document.getElementById(\"cc\");";
+        say "                                hdn_cc.value               = cc;";
+        say "                                var hdn_prefix             = document.getElementById(\"prefix\");";
+        say "                                hdn_prefix.value           = prefix;";
+        say "                                var input_mobile           = document.getElementById(\"mobile\");";
+        say "                                input_mobile.placeholder   = mobile_placeholder;";
+        say "                                input_mobile.pattern       = mobile_pattern;";
+        say "                                input_mobile.title         = mobile_title;";
+        say "                                var input_phone            = document.getElementById(\"phone\");";
+        say "                                input_phone.placeholder    = landline_placeholder;";
+        say "                                input_phone.pattern        = landline_pattern;";
+        say "                                input_phone.title          = landline_title;";
+        say "                                var input_country          = document.getElementById(\"country\");";
+        say "                                input_country.value        = name;";
+        say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
+        say "                                input_postal_country.value = name;";
+        say "                            }";
+        say "                        </script>";
+        say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
+        say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
+        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\">";
+        for my $row (@countries){
+            my $cc_id   = $row->{id};
+            my $name    = $row->{_name};
+            my $_cc      = $row->{cc};
+            my $_prefix = $row->{prefix};
+            if($cc_id == $countries_id){
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" selected>$name $_cc $_prefix</option>";
+            }else{
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\">$name $_cc ($_prefix)</option>";
+            }
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = $mobile_title;
+        $pattern = $mobile_pattern;
+        my $placeholder = $mobile_placeholder;
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"mobile\">mobile</label>";
@@ -3688,9 +3864,9 @@ use HTML::Entities;
         say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
         say "                    </td>";
         say "                </tr>";
-        $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
-        $pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
-        $placeholder = '+612-9567-2876|(02) 9567 2876|0295672876';
+        $title   = $landline_title;
+        $pattern = $landline_pattern;
+        $placeholder = $landline_placeholder;
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"phone\">land line</label>";
