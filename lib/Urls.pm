@@ -2964,7 +2964,7 @@ use HTML::Entities;
             die("$mobile does not match pattern: $pattern");
         }
         $mobile =~ s/[ -]//g;
-        $mobile =~ s/^$_escape/$prefix/g;
+        $mobile =~ s/^$_escape/$prefix/g if defined $_escape;
         return $mobile;
     } ## --- end sub normalise_mobile
     
@@ -2994,14 +2994,16 @@ use HTML::Entities;
 
     sub getphonedetails {
         my ($self, $cc, $prefix, $db) = @_;
-        my ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
+        my ($countries_id, $_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
         $return = 1;
         my $sql  = "SELECT c.landline_pattern, c.mobile_pattern, c._escape FROM countries c\n";
-        $sql    .= "WHERE c.cc = ? AND c.prefix = ?\n";
+        #$sql    .= "WHERE c.cc = ? AND c.prefix = ?\n";
+        $sql    .= "WHERE c.id = ?;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($cc, $prefix);
+            #$result = $query->execute($cc, $prefix);
+            $result = $query->execute($countries_id);
         };
         if($@){
             push @msgs, "SELECT FROM countries failed: $@";
@@ -3018,6 +3020,7 @@ use HTML::Entities;
             push @msgs, "SELECT FROM countries failed: $sql";
             $return = 0;
         }
+        $query->finish();
         return ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
     } ## --- end sub getphonedetails
 
@@ -3439,7 +3442,7 @@ use HTML::Entities;
                             $line = __LINE__;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($return_phone, @msgs_phone);
-                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($cc, $prefix, $db);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($countries_id, $cc, $prefix, $db);
                             $return = 0 unless $return_phonedetails;
                             push @msgs, @msgs_phonedetails;
                             if($mobile){
