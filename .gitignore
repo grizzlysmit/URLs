@@ -1,3 +1,6 @@
 .*.swp
 *.backup
 scratch/*
+.idea/*
+cde-package/*
+cde.options
