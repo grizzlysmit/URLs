@@ -2993,8 +2993,8 @@ use HTML::Entities;
 
 
     sub getphonedetails {
-        my ($self, $cc, $prefix, $db) = @_;
-        my ($countries_id, $_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
+        my ($self, $countries_id, $cc, $prefix, $db) = @_;
+        my ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
         $return = 1;
         my $sql  = "SELECT c.landline_pattern, c.mobile_pattern, c._escape FROM countries c\n";
         #$sql    .= "WHERE c.cc = ? AND c.prefix = ?\n";
