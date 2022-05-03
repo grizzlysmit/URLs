@@ -18,7 +18,7 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP DATABASE "urls";
+-- DROP DATABASE "urls";
 --
 -- TOC entry 3870 (class 1262 OID 21160)
 -- Name: urls; Type: DATABASE; Schema: -; Owner: grizzlysmit
