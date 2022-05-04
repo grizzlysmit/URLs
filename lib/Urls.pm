@@ -3559,7 +3559,7 @@ use HTML::Entities;
                         $return = 0;
                         push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                     }
-                    $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'login' : undef), !$return, @msgs);
+                    $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'back to users' : undef), !$return, @msgs);
                     return $return if $return;
                 }
             }else{
