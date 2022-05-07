@@ -3868,9 +3868,9 @@ use HTML::Entities;
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" selected>$name $_cc $_prefix<img src=\"$_flag\" witdth=\"10\" height=\"5\"/></option>";
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" style=\"background-image:url($_flag);\" selected>$name $_cc $_prefix</option>";
             }else{
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\">$name $_cc ($_prefix)<img src=\"$_flag\" witdth=\"10\" height=\"5\"/></option>";
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id] style=\"background-image:url($_flag);\"\">$name $_cc ($_prefix)</option>";
             }
         }
         say "                        </select>";
