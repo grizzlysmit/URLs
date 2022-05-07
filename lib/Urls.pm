@@ -3802,6 +3802,7 @@ use HTML::Entities;
             my $mob_title        = $row->{mobile_title};
             my $lndl_placeholder = $row->{landline_placeholder};
             my $mob_placeholder  = $row->{mobile_placeholder};
+            $_escape = '' unless defined $_escape;
             if($countries_id == $cc_id){
                 $mobile_title = $mob_title;
                 $mobile_pattern = $mob_pattern;
