@@ -3631,7 +3631,7 @@ use HTML::Entities;
         my @countries;
 
         $sql  = "SELECT\n";
-        $sql .= "c.id, c.cc, c.prefix, c._name, c._escape, c.landline_pattern, c.mobile_pattern,\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.landline_pattern, c.mobile_pattern,\n";
         $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql .= "FROM countries c\n";
         $query  = $db->prepare($sql);
@@ -3793,8 +3793,9 @@ use HTML::Entities;
             my $cc_id            = $row->{id};
             my $_cc              = $row->{cc};
             my $name             = $row->{_name};
+            my $_flag            = $row->{_flag};
             my $_prefix          = $row->{prefix};
-            my $_escape           = $row->{_escape};
+            my $_escape          = $row->{_escape};
             my $lndl_pattern     = $row->{landline_pattern};
             my $mob_pattern      = $row->{mobile_pattern};
             my $lndl_title       = $row->{landline_title};
@@ -3812,6 +3813,7 @@ use HTML::Entities;
             say "                                            \"$cc_id\": { \"_name\": \"$name\",";
             say "                                                          \"cc\": \"$_cc\",";
             say "                                                          \"prefix\": \"$_prefix\",";
+            say "                                                          \"_flag\": \"$_flag\",";
             say "                                                          \"_escape\": \"$_escape\",";
             say "                                                          \"landline_pattern\": \"$lndl_pattern\",";
             say "                                                          \"mobile_pattern\": \"$mob_pattern\",";
@@ -3861,12 +3863,13 @@ use HTML::Entities;
         for my $row (@countries){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
-            my $_cc      = $row->{cc};
+            my $_cc     = $row->{cc};
+            my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" selected>$name $_cc $_prefix</option>";
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" selected>$name $_cc $_prefix<img src=\"$_flag\" witdth=\"10\" height=\"5\"/></option>";
             }else{
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\">$name $_cc ($_prefix)</option>";
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\">$name $_cc ($_prefix)<img src=\"$_flag\" witdth=\"10\" height=\"5\"/></option>";
             }
         }
         say "                        </select>";
