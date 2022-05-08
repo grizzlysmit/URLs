@@ -51,8 +51,8 @@
                     $(".dropdown dd ul").hide();
                     $("#result").html("Selected value is: " + getSelectedValue("sample"));
                     $("#cc").val(getSelectedValue("sample"));
-                    var src = document.querySelector('#cc_flag > img').getAttribute('src');
-                    src.setAttribute('src', getSelectedValue("sample"));
+                    var cc_flag = document.getElementById('cc_flag');
+                    cc_flag.setAttribute('src', getSelectedValue("sample"));
                 });
                             
                 function getSelectedFlag(id) {
