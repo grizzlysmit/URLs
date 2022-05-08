@@ -50,7 +50,7 @@
                     $(".dropdown dt a span").html(text);
                     $(".dropdown dd ul").hide();
                     $("#result").html("Selected value is: " + getSelectedValue("sample"));
-                    $("#cc").value("Selected value is: " + getSelectedValue("sample"));
+                    $("#cc").value = "Selected value is: " + getSelectedValue("sample");
                 });
                             
                 function getSelectedValue(id) {
@@ -66,7 +66,7 @@
 
 
                 $(".dropdown img.flag").toggleClass("flagvisibility");
-            </script>
+            </script><br/>
             <input type="button" name="cc" id="cc" value="AU">
         </form>
     </body>
