@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width"><title>https://jqueryui.com/resources/demos/selectmenu/default.html</title><link rel="stylesheet" type="text/css" href="resource://content-accessible/viewsource.css"></head><body id="viewsource" class="highlight" style="tab-size: 4"><pre id="line1"><span></span><span class="doctype">&lt;!doctype html&gt;</span><span>
+<span id="line2"></span></span><span>&lt;<span class="start-tag">html</span> <span class="attribute-name">lang</span>="<a class="attribute-value">en</a>"&gt;</span><span>
+<span id="line3"></span></span><span>&lt;<span class="start-tag">head</span>&gt;</span><span>
+<span id="line4"></span>	</span><span>&lt;<span class="start-tag">meta</span> <span class="attribute-name">charset</span>="<a class="attribute-value">utf-8</a>"&gt;</span><span>
+<span id="line5"></span>	</span><span>&lt;<span class="start-tag">meta</span> <span class="attribute-name">name</span>="<a class="attribute-value">viewport</a>" <span class="attribute-name">content</span>="<a class="attribute-value">width=device-width, initial-scale=1</a>"&gt;</span><span>
+<span id="line6"></span>	</span><span>&lt;<span class="start-tag">title</span>&gt;</span><span>jQuery UI Selectmenu - Default functionality</span><span>&lt;/<span class="end-tag">title</span>&gt;</span><span>
+<span id="line7"></span>	</span><span>&lt;<span class="start-tag">link</span> <span class="attribute-name">rel</span>="<a class="attribute-value">stylesheet</a>" <span class="attribute-name">href</span>="<a class="attribute-value" href="view-source:https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css</a>"&gt;</span><span>
+<span id="line8"></span>	</span><span>&lt;<span class="start-tag">link</span> <span class="attribute-name">rel</span>="<a class="attribute-value">stylesheet</a>" <span class="attribute-name">href</span>="<a class="attribute-value" href="view-source:https://jqueryui.com/resources/demos/style.css">/resources/demos/style.css</a>"&gt;</span><span>
+<span id="line9"></span>	</span><span>&lt;<span class="start-tag">style</span>&gt;</span><span>
+<span id="line10"></span>		fieldset {
+<span id="line11"></span>			border: 0;
+<span id="line12"></span>		}
+<span id="line13"></span>		label {
+<span id="line14"></span>			display: block;
+<span id="line15"></span>			margin: 30px 0 0 0;
+<span id="line16"></span>		}
+<span id="line17"></span>		.overflow {
+<span id="line18"></span>			height: 200px;
+<span id="line19"></span>		}
+<span id="line20"></span>	</span><span>&lt;/<span class="end-tag">style</span>&gt;</span><span>
+<span id="line21"></span>	</span><span>&lt;<span class="start-tag">script</span> <span class="attribute-name">src</span>="<a class="attribute-value" href="view-source:https://code.jquery.com/jquery-3.6.0.js">https://code.jquery.com/jquery-3.6.0.js</a>"&gt;</span><span></span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
+<span id="line22"></span>	</span><span>&lt;<span class="start-tag">script</span> <span class="attribute-name">src</span>="<a class="attribute-value" href="view-source:https://code.jquery.com/ui/1.13.1/jquery-ui.js">https://code.jquery.com/ui/1.13.1/jquery-ui.js</a>"&gt;</span><span></span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
+<span id="line23"></span>	</span><span>&lt;<span class="start-tag">script</span>&gt;</span><span>
+<span id="line24"></span>	$( function() {
+<span id="line25"></span>		$( "#speed" ).selectmenu();
+<span id="line26"></span>
+<span id="line27"></span>		$( "#files" ).selectmenu();
+<span id="line28"></span>
+<span id="line29"></span>		$( "#number" )
+<span id="line30"></span>			.selectmenu()
+<span id="line31"></span>			.selectmenu( "menuWidget" )
+<span id="line32"></span>				.addClass( "overflow" );
+<span id="line33"></span>
+<span id="line34"></span>		$( "#salutation" ).selectmenu();
+<span id="line35"></span>	} );
+<span id="line36"></span>	</span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
+<span id="line37"></span></span><span>&lt;/<span class="end-tag">head</span>&gt;</span><span>
+<span id="line38"></span></span><span>&lt;<span class="start-tag">body</span>&gt;</span><span>
+<span id="line39"></span>
+<span id="line40"></span></span><span>&lt;<span class="start-tag">div</span> <span class="attribute-name">class</span>="<a class="attribute-value">demo</a>"&gt;</span><span>
+<span id="line41"></span>
+<span id="line42"></span></span><span>&lt;<span class="start-tag">form</span> <span class="attribute-name">action</span>="<a class="attribute-value" href="view-source:https://jqueryui.com/resources/demos/selectmenu/default.html#">#</a>"&gt;</span><span>
+<span id="line43"></span>
+<span id="line44"></span>	</span><span>&lt;<span class="start-tag">fieldset</span>&gt;</span><span>
+<span id="line45"></span>		</span><span>&lt;<span class="start-tag">label</span> <span class="attribute-name">for</span>="<a class="attribute-value">speed</a>"&gt;</span><span>Select a speed</span><span>&lt;/<span class="end-tag">label</span>&gt;</span><span>
+<span id="line46"></span>		</span><span>&lt;<span class="start-tag">select</span> <span class="attribute-name">name</span>="<a class="attribute-value">speed</a>" <span class="attribute-name">id</span>="<a class="attribute-value">speed</a>"&gt;</span><span>
+<span id="line47"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Slower</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line48"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Slow</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line49"></span>			</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">selected</span>="<a class="attribute-value">selected</a>"&gt;</span><span>Medium</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line50"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Fast</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line51"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Faster</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line52"></span>		</span><span>&lt;/<span class="end-tag">select</span>&gt;</span><span>
+<span id="line53"></span>
+<span id="line54"></span>		</span><span>&lt;<span class="start-tag">label</span> <span class="attribute-name">for</span>="<a class="attribute-value">files</a>"&gt;</span><span>Select a file</span><span>&lt;/<span class="end-tag">label</span>&gt;</span><span>
+<span id="line55"></span>		</span><span>&lt;<span class="start-tag">select</span> <span class="attribute-name">name</span>="<a class="attribute-value">files</a>" <span class="attribute-name">id</span>="<a class="attribute-value">files</a>"&gt;</span><span>
+<span id="line56"></span>			</span><span>&lt;<span class="start-tag">optgroup</span> <span class="attribute-name">label</span>="<a class="attribute-value">Scripts</a>"&gt;</span><span>
+<span id="line57"></span>				</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">value</span>="<a class="attribute-value">jquery</a>"&gt;</span><span>jQuery.js</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line58"></span>				</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">value</span>="<a class="attribute-value">jqueryui</a>"&gt;</span><span>ui.jQuery.js</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line59"></span>			</span><span>&lt;/<span class="end-tag">optgroup</span>&gt;</span><span>
+<span id="line60"></span>			</span><span>&lt;<span class="start-tag">optgroup</span> <span class="attribute-name">label</span>="<a class="attribute-value">Other files</a>"&gt;</span><span>
+<span id="line61"></span>				</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">value</span>="<a class="attribute-value">somefile</a>"&gt;</span><span>Some unknown file</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line62"></span>				</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">value</span>="<a class="attribute-value">someotherfile</a>"&gt;</span><span>Some other file with a very long option text</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line63"></span>			</span><span>&lt;/<span class="end-tag">optgroup</span>&gt;</span><span>
+<span id="line64"></span>		</span><span>&lt;/<span class="end-tag">select</span>&gt;</span><span>
+<span id="line65"></span>
+<span id="line66"></span>		</span><span>&lt;<span class="start-tag">label</span> <span class="attribute-name">for</span>="<a class="attribute-value">number</a>"&gt;</span><span>Select a number</span><span>&lt;/<span class="end-tag">label</span>&gt;</span><span>
+<span id="line67"></span>		</span><span>&lt;<span class="start-tag">select</span> <span class="attribute-name">name</span>="<a class="attribute-value">number</a>" <span class="attribute-name">id</span>="<a class="attribute-value">number</a>"&gt;</span><span>
+<span id="line68"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>1</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line69"></span>			</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">selected</span>="<a class="attribute-value">selected</a>"&gt;</span><span>2</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line70"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>3</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line71"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>4</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line72"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>5</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line73"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>6</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line74"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>7</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line75"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>8</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line76"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>9</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line77"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>10</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line78"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>11</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line79"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>12</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line80"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>13</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line81"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>14</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line82"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>15</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line83"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>16</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line84"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>17</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line85"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>18</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line86"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>19</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line87"></span>		</span><span>&lt;/<span class="end-tag">select</span>&gt;</span><span>
+<span id="line88"></span>
+<span id="line89"></span>		</span><span>&lt;<span class="start-tag">label</span> <span class="attribute-name">for</span>="<a class="attribute-value">salutation</a>"&gt;</span><span>Select a title</span><span>&lt;/<span class="end-tag">label</span>&gt;</span><span>
+<span id="line90"></span>		</span><span>&lt;<span class="start-tag">select</span> <span class="attribute-name">name</span>="<a class="attribute-value">salutation</a>" <span class="attribute-name">id</span>="<a class="attribute-value">salutation</a>"&gt;</span><span>
+<span id="line91"></span>			</span><span>&lt;<span class="start-tag">option</span> <span class="attribute-name">disabled</span> <span class="attribute-name">selected</span>&gt;</span><span>Please pick one</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line92"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Mr.</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line93"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Mrs.</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line94"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Dr.</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line95"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Prof.</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line96"></span>			</span><span>&lt;<span class="start-tag">option</span>&gt;</span><span>Other</span><span>&lt;/<span class="end-tag">option</span>&gt;</span><span>
+<span id="line97"></span>		</span><span>&lt;/<span class="end-tag">select</span>&gt;</span><span>
+<span id="line98"></span>	</span><span>&lt;/<span class="end-tag">fieldset</span>&gt;</span><span>
+<span id="line99"></span>
+<span id="line100"></span></span><span>&lt;/<span class="end-tag">form</span>&gt;</span><span>
+<span id="line101"></span>
+<span id="line102"></span></span><span>&lt;/<span class="end-tag">div</span>&gt;</span><span>
+<span id="line103"></span>
+<span id="line104"></span>
+<span id="line105"></span></span><span>&lt;/<span class="end-tag">body</span>&gt;</span><span>
+<span id="line106"></span></span><span>&lt;/<span class="end-tag">html</span>&gt;</span><span>
+<span id="line107"></span></span></pre></body></html>
