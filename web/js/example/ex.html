@@ -52,7 +52,9 @@
                     $("#result").html("Selected value is: " + getSelectedValue("sample"));
                     $("#cc").val(getSelectedValue("sample"));
                     var cc_flag = document.getElementById('cc_flag');
-                    cc_flag.setAttribute('src', getSelectedFlag("sample"));
+                    var cur_flag = getSelectedFlag("sample");
+                    alert('cur_flag == ' + cur_flag);
+                    cc_flag.setAttribute('src', cur_flag);
                 });
                             
                 function getSelectedFlag(id) {
