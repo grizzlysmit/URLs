@@ -51,7 +51,12 @@
                     $(".dropdown dd ul").hide();
                     $("#result").html("Selected value is: " + getSelectedValue("sample"));
                     $("#cc").val(getSelectedValue("sample"));
+                    $("#cc_flag").src(getSelectedValue("sample"));
                 });
+                            
+                function getSelectedFlag(id) {
+                    return $("#" + id).find("dt a img.src").val();
+                }
                             
                 function getSelectedValue(id) {
                     return $("#" + id).find("dt a span.value").html();
@@ -68,6 +73,7 @@
                 $(".dropdown img.flag").toggleClass("flagvisibility");
             </script><br/>
             <input type="button" name="cc" id="cc" value="AU">
+            <img id="cc_flag" src="/image/faviconn.ico" alt="" />
         </form>
     </body>
 </html>
