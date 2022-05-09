@@ -53,8 +53,9 @@ label {
 .desc { color:#6b6b6b;}
 .desc a {color:#0092dd;}
 
-.dropdown td {
+.dropdowntd td {
     background-color lightgrey !important;
+    text-align: center !important;
 }
 .dropdown td, .dropdown dd, .dropdown dt, .dropdown ul { margin:0px !important; padding:0px !important; }
 .dropdown td dd { position:relative; }
