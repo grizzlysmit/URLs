@@ -76,8 +76,21 @@
 
 
                 $(".dropdown img.flag").toggleClass("flagvisibility");
+
+                function toggleHidden(){
+                    var chk = document.getElementById('togghid');
+                    var hdd = document.getElementById('cc');
+                    if(chk.checked){
+                        hdd.type = "button";
+                    }else{
+                        hdd.type = 'hidden';
+                    }
+                }
             </script><br/>
             <input type="button" name="cc" id="cc" value="AU">
+            <label for="togghid">visable
+            <input type="checkbox" id="togghid" onclick="toggleHidden()" checked />
+            </label>
         </form>
     </body>
 </html>
