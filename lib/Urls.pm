@@ -3785,6 +3785,25 @@ use HTML::Entities;
         my $landline_title;
         my $landline_pattern;
         my $landline_placeholder;
+        say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
+        say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
+        say "                        <script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js\" type=\"text/javascript\"></script>";
+        say "                        <dl id=\"cc_prefix\" class=\"dropdown\">";
+        say "                            <dt><a href=\"#\"><span>Please select the country</span></a></dt>";
+        say "                            <dd>";
+        say "                                <ul>";
+        for my $row (@countries){
+            my $cc_id   = $row->{id};
+            my $name    = $row->{_name};
+            my $_cc     = $row->{cc};
+            my $_flag   = $row->{_flag};
+            my $_prefix = $row->{prefix};
+            say "                                    <li><a href=\"#\">$name $_cc ($_prefix)<img class=\"flag\" src=\"$_flag\" width=\"19\" height=\"11\" alt=\"\" /><span class=\"value\">$cc_id</span></a></li>";
+        }
+        say "                                </ul>";
+        say "                            </dd>";
+        say "                        </dl>";
+        say "                        <input type=\"hidden\" name=\"cc_id\" id=\"cc_id\" value=\"$countries_id\">";
 
         say "                        <script>";
         say "                            function countries_onchange(countries_id) {";
@@ -3905,25 +3924,6 @@ use HTML::Entities;
         #say "                            }";
         say "                            ";
         say "                        </script>";
-        say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
-        say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
-        say "                        <script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js\" type=\"text/javascript\"></script>";
-        say "                        <dl id=\"cc_prefix\" class=\"dropdown\">";
-        say "                            <dt><a href=\"#\"><span>Please select the country</span></a></dt>";
-        say "                            <dd>";
-        say "                                <ul>";
-        for my $row (@countries){
-            my $cc_id   = $row->{id};
-            my $name    = $row->{_name};
-            my $_cc     = $row->{cc};
-            my $_flag   = $row->{_flag};
-            my $_prefix = $row->{prefix};
-            say "                                    <li><a href=\"#\">$name $_cc ($_prefix)<img class=\"flag\" src=\"$_flag\" width=\"19\" height=\"11\" alt=\"\" /><span class=\"value\">$cc_id</span></a></li>";
-        }
-        say "                                </ul>";
-        say "                            </dd>";
-        say "                        </dl>";
-        say "                        <input type=\"hidden\" name=\"cc_id\" id=\"cc_id\" value=\"$countries_id\">";
         say "                    </td>";
         say "                </tr>";
         $title   = $mobile_title;
