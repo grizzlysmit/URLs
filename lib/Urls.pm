@@ -3923,7 +3923,7 @@ use HTML::Entities;
         say "                                </ul>";
         say "                            </dd>";
         say "                        </dl>";
-        say "                        <input type=\"button\" name=\"cc_id\" id=\"cc_id\" value=\"$countries_id\">";
+        say "                        <input type=\"hidden\" name=\"cc_id\" id=\"cc_id\" value=\"$countries_id\">";
         say "                    </td>";
         say "                </tr>";
         $title   = $mobile_title;
