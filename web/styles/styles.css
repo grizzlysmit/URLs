@@ -49,20 +49,23 @@ label {
     width: -moz-fit-content !important;
     width: fit-content !important;
 }
-.dropdowndiv div { font-family:Arial, Helvetica, Sans-Serif; font-size:0.75em; color:#000;}
+.dropdowndiv div { font-family:Arial !important, Helvetica !important, Sans-Serif !important; font-size:0.75em !important; color:#000 !important;}
 .desc { color:#6b6b6b;}
 .desc a {color:#0092dd;}
 
+.dropdown td {
+    background-color lightgrey !important;
+}
 .dropdown td, .dropdown dd, .dropdown dt, .dropdown ul { margin:0px !important; padding:0px !important; }
-.dropdown dd { position:relative; }
+.dropdown td dd { position:relative; }
 .dropdown a, .dropdown a:visited { color: green !important; text-decoration:none !important; outline:none !important;}
 .dropdown a:hover { color: red !important;}
-.dropdown dt a:hover { color: red !important; border: 1px solid grey !important;}
+.dropdown td dt a:hover { color: red !important; border: 1px solid grey !important;}
 .dropdown td .dropdown dt a {background: lightgrey url('/images/downward-triangle.png') no-repeat scroll right center !important; display:block !important; padding-right:20px !important;
                 border:1px solid grey !important; width:150px !important;}
 .dropdown td .dropdown dt a:hover {background: grey url('/images/downward-triangle.png') no-repeat scroll right center; display:block !important; padding-right:20px !important;
                 border:1px solid grey !important; width:150px !important;}
-.dropdown dt a span {cursor:pointer !important; display:block !important; padding:5px !important;}
+.dropdown td dt a span {cursor:pointer !important; display:block !important; padding:5px !important;}
 .dropdown td dd ul { background: lightgrey none repeat scroll 0 0 !important; border:1px solid #d4ca9a !important; color: green !important; display:none !important;
                   left:0px !important; padding:5px 0px !important; position:absolute !important; top:2px !important; width:auto !important; min-width:170px !important; list-style:none !important;}
 .dropdown span.value { display:none !important;}
