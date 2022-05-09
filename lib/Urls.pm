@@ -3857,10 +3857,35 @@ use HTML::Entities;
         say "                                input_postal_country.value = name;";
         #say "                                alert(\"cc == \" + cc);";
         say "                            }";
+        say "                            ";
+        say "                            $(\".dropdown img.flag\").addClass(\"flagvisibility\");";
+        say "                            ";
+        say "                            $(\".dropdown dt a\").click(function() {";
+        say "                                $(\".dropdown dd ul\").toggle();";
+        say "                            });";
+        say "                            ";
+        say "                            $(".dropdown dd ul li a").click(function() {";
+        say "                                var text = $(this).html();";
+        say "                                $(\".dropdown dt a span\").html(text);";
+        say "                                $(\".dropdown dd ul\").hide();";
+        say "                                //$(\"#result\").html(\"Selected value is: \" + getSelectedValue(\"cc_prefix\"));";
+        say "                                $(\"#cc\").val(getSelectedValue(\"cc_prefix\"));";
+        say "                                var cc_flag = document.getElementById('cc_flag');";
+        say "                                //var cur_flag = getSelectedFlag(\"cc_prefix\");";
+        say "                                //alert('cur_flag == ' + cur_flag);";
+        say "                                //cc_flag.setAttribute('src', cur_flag);";
+        say "                                countries_onchange()";
+        say "                            ";
+        say "                            ";
+        say "                            ";
         say "                        </script>";
         say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
-        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\">";
+        say "                        <script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js\" type=\"text/javascript\"></script>";
+        say "                        <dl id=\"cc_prefix\" class=\"dropdown\">";
+        say "                            <dt><a href=\"#\"><span>Please select the country</span></a></dt>";
+        say "                            <dd>";
+        say "                                <ul>";
         for my $row (@countries){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
@@ -3868,12 +3893,15 @@ use HTML::Entities;
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" style=\"background-image:url($_flag);\" selected>$name $_cc $_prefix</option>";
+                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\" selected>$name $_cc $_prefix</option>";
             }else{
-                say "                            <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id] style=\"background-image:url($_flag);\"\">$name $_cc ($_prefix)</option>";
+                say "                                    <option value=\"$cc_id\" id=\"opt_countries_id[$cc_id]\">$name $_cc ($_prefix)</option>";
+                say "                                    <li><a href=\"#\">$name<img class=\"flag\" src=\"$_flag\" width=\"19\" height=\"11\" alt=\"\" /><span class=\"value\">$cc_id</span></a></li>";
             }
         }
-        say "                        </select>";
+        say "                                </ul>";
+        say "                            </dd>";
+        say "                        </dl>";
         say "                    </td>";
         say "                </tr>";
         $title   = $mobile_title;
