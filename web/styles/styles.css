@@ -49,7 +49,7 @@ label {
     width: -moz-fit-content !important;
     width: fit-content !important;
 }
-body { font-family:Arial, Helvetica, Sans-Serif; font-size:0.75em; color:#000;}
+.dropdowndiv div { font-family:Arial, Helvetica, Sans-Serif; font-size:0.75em; color:#000;}
 .desc { color:#6b6b6b;}
 .desc a {color:#0092dd;}
 
