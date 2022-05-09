@@ -52,7 +52,7 @@
                     $(".dropdown dt a span").html(text);
                     $(".dropdown dd ul").hide();
                     $("#result").html("Selected value is: " + getSelectedValue("cc_prefix"));
-                    $("#cc").val(getSelectedValue("cc_prefix"));
+                    $("#prefix").val(getSelectedValue("cc_prefix"));
                     var cc_flag = document.getElementById('cc_flag');
                     //var cur_flag = getSelectedFlag("cc_prefix");
                     //alert('cur_flag == ' + cur_flag);
@@ -79,7 +79,7 @@
 
                 function toggleHidden(){
                     var chk = document.getElementById('togghid');
-                    var hdd = document.getElementById('cc');
+                    var hdd = document.getElementById('prefix');
                     if(chk.checked){
                         hdd.type = "button";
                     }else{
@@ -87,7 +87,7 @@
                     }
                 }
             </script><br/>
-            <input type="button" name="cc" id="cc" value="AU">
+            <input type="button" name="prefix" id="prefix" value="AU">
             <label for="togghid">visable
             <input type="checkbox" id="togghid" onclick="toggleHidden()" checked />
             </label>
