@@ -3777,7 +3777,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"2\" class=\"dropdown\">";
         say "                        <div class=\"dropdowndiv\">";
 
         my $mobile_title;
