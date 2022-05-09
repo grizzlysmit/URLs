@@ -54,7 +54,8 @@ label {
 .desc a {color:#0092dd;}
 
 .dropdowntd td {
-    background-color lightgrey !important;
+    background-color: lightgrey !important;
+    color: green !important;
     text-align: center !important;
     margin:0px !important;
     padding:0px !important;
