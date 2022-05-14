@@ -76,6 +76,7 @@ $urls->user_details($req, $cfg, $r);
 
 
 say <<"DONE";
+        <!-- <script src="https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js"></script> -->
     </body>
 </html>
 DONE

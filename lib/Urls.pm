@@ -3803,6 +3803,7 @@ use HTML::Entities;
         }
         say "                            </select>";
 
+        say "                            <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                            <script>";
         say "                                function countries_onchange() {";
         say "                                    var countries = {";
@@ -3879,7 +3880,6 @@ use HTML::Entities;
         say "                                ";
         say "                                ";
         say "                            </script>";
-        say "                            <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                        </div>";
         say "                    </td>";
         say "                </tr>";
