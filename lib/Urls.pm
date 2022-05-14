@@ -3879,6 +3879,7 @@ use HTML::Entities;
         say "                                ";
         say "                                ";
         say "                            </script>";
+        say "                            <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                        </div>";
         say "                    </td>";
         say "                </tr>";
@@ -4216,7 +4217,6 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         say "            </table>";
-        say "            <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "        </form>";
 
         return 1;
