@@ -5,3 +5,5 @@ scratch/*
 cde-package/*
 cde.options
 flags/*.zip
+flags/old/*
+flags/new/*
