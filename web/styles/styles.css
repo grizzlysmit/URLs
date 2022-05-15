@@ -1,24 +1,24 @@
 /* Urls stylesheet */
-.spread input[type="submit"] {
+input[type="submit"] {
     width: 100%;
 }            
-.spread input[type="text"] {
+input[type="text"] {
     width: 100%;
 }            
-.spread input[type="url"] {
+input[type="url"] {
     width: 100%;
 }            
-.spread button[type="button"] {
+button[type="button"] {
     width: 100%;
 } 
 .spread select {
     width: 100%;
 }
-.general table, th, td {
+table, th, td {
     border: 1px solid black;
     text-align: left;
 }
-.general table {
+table {
     margin-left: auto;
     margin-right: auto;
     text-align: left;
@@ -26,7 +26,7 @@
 body {
     text-align: center;
 }
-.general label {
+label {
     width: 100%;
     display: flex;
 }            
