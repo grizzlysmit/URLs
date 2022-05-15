@@ -3778,7 +3778,7 @@ use HTML::Entities;
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\" class=\"dropdowntd\">";
-        say "                        <div class=\"dropdowndiv\">";
+        say "                        <div class=\"clean\">";
         say "                            <table class=\"clean\">";
         say "                                <tr class=\"clean\">";
         say "                                    <td class=\"clean\">";
