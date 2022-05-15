@@ -70,6 +70,6 @@ label {
     width: initial;
     display: initial;
     */
-    all: unset;
+    all: unset !important;
 }
 
