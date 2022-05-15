@@ -60,4 +60,16 @@ label {
     margin:0px !important;
     padding:0px !important;
 }
+.clean {
+    /*
+    border: initial !important;
+    text-align: initial !important;
+    margin-left: initial !important;
+    margin-right: initial !important;
+    text-align: initial !important;
+    width: initial;
+    display: initial;
+    */
+    all: unset;
+}
 
