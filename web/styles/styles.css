@@ -51,17 +51,16 @@ label {
     width: -moz-fit-content !important;
     width: fit-content !important;
 }
-.dropdowndiv div { font-family:Arial !important, Helvetica !important, Sans-Serif !important; font-size:0.75em !important; color:#000 !important;}
+.dropdowndiv div { font-family: initial !important,  initial !important,  initial !important; font-size: initial !important; color: initial !important;}
 
 .dropdowntd td {
-    background-color: lightgrey !important;
-    color: green !important;
-    text-align: center !important;
-    margin:0px !important;
-    padding:0px !important;
+    background-color: initial !important;
+    color: initial !important;
+    text-align: initial !important;
+    margin: initial !important;
+    padding: initial !important;
 }
-.clean {
-    /*
+.clean table, .clean tr, .clean td {
     border: initial !important;
     text-align: initial !important;
     margin-left: initial !important;
@@ -69,7 +68,8 @@ label {
     text-align: initial !important;
     width: initial;
     display: initial;
-    */
+    /*
     all: unset !important;
+    */
 }
 
