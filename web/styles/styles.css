@@ -11,11 +11,9 @@ input[type="url"] {
 button[type="button"] {
     width: 100%;
 } 
-/*
-select {
+.spread select {
     width: 100%;
 }
-*/
 table, th, td {
     border: 1px solid black;
     text-align: left;
