@@ -3789,7 +3789,7 @@ use HTML::Entities;
         say "                            <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "                            <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
         #say "                            <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
-        say "                            <select name=\"countries_id\" id=\"countries_id\" is=\"ms-dropdown\">";
+        say "                            <select name=\"countries_id\" is=\"ms-dropdown\">";
         for my $row (@countries){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
