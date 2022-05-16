@@ -3777,11 +3777,14 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\" class=\"dropdowntd\">";
+        say "                    <td colspan=\"2\" class=\"ms-dd ms-pr\">";
+        say "                                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
+        say "                                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
+        #say "                                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
         #say "                        <div class=\"clean\">";
         say "                            <table class=\"clean\">";
         say "                                <tr class=\"clean\">";
-        say "                                    <td class=\"clean\">";
+        say "                                    <td class=\"ms-dd ms-pr\">";
 
         my $mobile_title;
         my $mobile_pattern;
@@ -3789,9 +3792,6 @@ use HTML::Entities;
         my $landline_title;
         my $landline_pattern;
         my $landline_placeholder;
-        say "                                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
-        say "                                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
-        #say "                                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
         say "                                        <select name=\"countries_id\" is=\"ms-dropdown\">";
         for my $row (@countries){
             my $cc_id   = $row->{id};
