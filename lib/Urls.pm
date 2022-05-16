@@ -3783,7 +3783,7 @@ use HTML::Entities;
         #say "                        <div class=\"clean\">";
         say "                            <table class=\"clean\">";
         say "                                <tr class=\"clean\">";
-        say "                                    <td class=\"ms-dd ms-pr\">";
+        say "                                    <td class=\"clean\">";
 
         my $mobile_title;
         my $mobile_pattern;
@@ -3791,8 +3791,8 @@ use HTML::Entities;
         my $landline_title;
         my $landline_pattern;
         my $landline_placeholder;
-        #say "                                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
-        say "                                        <select name=\"countries_id\" is=\"ms-dropdown\">";
+        say "                                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\">";
+        #say "                                        <select name=\"countries_id\" is=\"ms-dropdown\">";
         for my $row (@countries){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
@@ -3800,9 +3800,9 @@ use HTML::Entities;
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
-                say "                                            <option value=\"calendar\" data-image=\"$_flag\" value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
+                say "                                            <option value=\"calendar\" value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
-                say "                                            <option value=\"calendar\" data-image=\"$_flag\" value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
+                say "                                            <option value=\"calendar\" value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
             }
         }
         say "                                        </select>";
@@ -3878,6 +3878,9 @@ use HTML::Entities;
         say "                                                input_country.value        = name;";
         say "                                                var input_postal_country   = document.getElementById(\"postal_country\");";
         say "                                                input_postal_country.value = name;";
+        say "                                                var imag                   = document.getElementById(\"flag\");";
+        say "                                                img.src                    = _flag;";
+        say "                                                img.alt                    = _flag;";
         #say "                                                alert(\"cc == \" + cc);";
         say "                                            }";
         say "                                            ";
@@ -3888,6 +3891,11 @@ use HTML::Entities;
         say "                                </tr>";
         say "                            </table>";
         #say "                        </div>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <img src=\"$flag\" id=\"flag\" alt=\"$flag\"/>";
         say "                    </td>";
         say "                </tr>";
         $title   = $mobile_title;
@@ -4225,7 +4233,7 @@ use HTML::Entities;
         say "                </tr>";
         say "            </table>";
         say "        </form>";
-        say "        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
+        #say "        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
 
         return 1;
     } ## --- end sub user_details
