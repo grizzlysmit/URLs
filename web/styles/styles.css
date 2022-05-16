@@ -64,8 +64,8 @@ label {
     margin-left: reset;
     margin-right: reset;
     text-align: reset;
-    width: initial;
-    display: initial;
+    width: reset;
+    display: reset;
     /*
     all: unset !important;
     */
