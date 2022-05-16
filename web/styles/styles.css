@@ -49,21 +49,21 @@ label {
     width: -moz-fit-content !important;
     width: fit-content !important;
 }
-.dropdowndiv div { font-family: initial !important,  initial !important,  initial !important; font-size: initial !important; color: initial !important;}
+.dropdowndiv div { font-family: reset,  reset,  reset; font-size: reset; color: reset;}
 
 .dropdowntd td {
-    background-color: initial !important;
-    color: initial !important;
-    text-align: initial !important;
-    margin: initial !important;
-    padding: initial !important;
+    background-color: reset;
+    color: reset;
+    text-align: reset;
+    margin: reset;
+    padding: reset;
 }
 .clean table, .clean tr, .clean td {
-    border: initial !important;
-    text-align: initial !important;
-    margin-left: initial !important;
-    margin-right: initial !important;
-    text-align: initial !important;
+    border: reset;
+    text-align: reset;
+    margin-left: reset;
+    margin-right: reset;
+    text-align: reset;
     width: initial;
     display: initial;
     /*
