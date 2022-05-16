@@ -49,23 +49,23 @@ label {
     width: -moz-fit-content !important;
     width: fit-content !important;
 }
-.dropdowndiv div { font-family: reset,  reset,  reset; font-size: reset; color: reset;}
+.dropdowndiv div { font-family: unset,  unset,  unset; font-size: unset; color: unset;}
 
 .dropdowntd td {
-    background-color: reset;
-    color: reset;
-    text-align: reset;
-    margin: reset;
-    padding: reset;
+    background-color: unset;
+    color: unset;
+    text-align: unset;
+    margin: unset;
+    padding: unset;
 }
 .clean table, .clean tr, .clean td {
-    border: reset;
-    text-align: reset;
-    margin-left: reset;
-    margin-right: reset;
-    text-align: reset;
-    width: reset;
-    display: reset;
+    border: unset;
+    text-align: unset;
+    margin-left: unset;
+    margin-right: unset;
+    text-align: unset;
+    width: unset;
+    display: unset;
     /*
     all: unset !important;
     */
