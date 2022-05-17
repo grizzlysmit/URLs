@@ -3788,7 +3788,7 @@ use HTML::Entities;
         my $landline_pattern;
         my $landline_placeholder;
         my $flag;
-        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\">";
+        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
         #say "                            <select name=\"countries_id\" is=\"ms-dropdown\">";
         for my $row (@countries){
             my $cc_id   = $row->{id};
@@ -3798,9 +3798,9 @@ use HTML::Entities;
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
                 $flag   = $_flag;
-                say "                                <option value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
+                say "                                <option value=\"$cc_id\" data-image=\"/flags/NL.png\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
-                say "                                <option value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
+                say "                                <option value=\"$cc_id\" data-image=\"/flags/NL.png\">$name: $_cc ($_prefix)</option>";
             }
         }
         say "                        </select>";
@@ -4227,7 +4227,7 @@ use HTML::Entities;
         say "                </tr>";
         say "            </table>";
         say "        </form>";
-        #say "        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
+        say "        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
 
         return 1;
     } ## --- end sub user_details
