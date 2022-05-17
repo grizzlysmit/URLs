@@ -4221,7 +4221,7 @@ use HTML::Entities;
             say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
         }
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td span=\"2\">";
         say "                        <input name=\"submit\" type=\"submit\" value=\"Save Changes\">";
         say "                    </td>";
         say "                </tr>";
