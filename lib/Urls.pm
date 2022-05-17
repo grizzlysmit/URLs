@@ -5040,7 +5040,7 @@ use HTML::Entities;
                 push @msgs, "SELECT FROM countries failed: $_sql";
                 $return = 0;
             }
-            $query->finish();
+            $_query->finish();
             $self->message($debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
         }
 
