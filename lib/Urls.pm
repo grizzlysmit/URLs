@@ -3823,13 +3823,13 @@ use HTML::Entities;
             my $mob_placeholder  = $row->{mobile_placeholder};
             $_escape = '' unless defined $_escape;
             if($countries_id == $cc_id){
-                $mobile_title = $mob_title;
-                $mobile_pattern = $mob_pattern;
-                $mobile_pattern =~ s/\\/\\\\/g;
+                $mobile_title       = $mob_title;
+                $mobile_pattern     = $mob_pattern;
+                $mobile_pattern     =~ s/\\/\\\\\\\\/g;
                 $mobile_placeholder = $mob_placeholder;
                 $landline_title     =$lndl_title;
                 $landline_pattern   = $lndl_pattern;
-                $landline_pattern   =~ s/\\/\\\\/g;
+                $landline_pattern   =~ s/\\/\\\\\\\\/g;
                 $landline_placeholder = $lndl_placeholder;
             }
             say "                                            \"$cc_id\": { \"_name\": \"$name\",";
