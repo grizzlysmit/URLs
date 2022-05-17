@@ -2840,7 +2840,7 @@ use HTML::Entities;
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "                        </label>";
         say "                    </td>";
-        say "                    <td colspan=\"7\">";
+        say "                    <td colspan=\"8\">";
         say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
         say "                    </td>";
         say "                </tr>";
