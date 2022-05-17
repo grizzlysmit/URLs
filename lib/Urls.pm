@@ -3892,7 +3892,7 @@ use HTML::Entities;
         say "                            ";
         say "                            ";
         say "                        </script>";
-        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
+        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
         say "                    </td>";
         say "                    <td>";
         say "                        <img src=\"$flag\" id=\"flag\" alt=\"$flag\"/>";
