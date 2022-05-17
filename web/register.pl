@@ -60,12 +60,13 @@ $urls->debug_init($debug, $log);
 #print "Content-type:text/plain\r\n\r\n";
 print "content-type:text/html; charset=utf-8\n\n";
 
-say <<"END";
+say <<'END';
 <!DOCTYPE html>
 <html>
     <head>
         <title>Grizzly&apos;s links page</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/css/dd.min.css" />
         <link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>

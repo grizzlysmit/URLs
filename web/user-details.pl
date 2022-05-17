@@ -60,7 +60,7 @@ $urls->debug_init($debug, $log);
 #print "Content-type:text/plain\r\n\r\n";
 print "content-type:text/html; charset=utf-8\n\n";
 
-say <<"END";
+say <<'END';
 <!DOCTYPE html>
 <html>
     <head>
