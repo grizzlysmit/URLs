@@ -3777,7 +3777,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\" class=\"ms-dd ms-pr\">";
+        say "                    <td colspan=\"1\" class=\"ms-dd ms-pr\">";
         say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
 
@@ -3798,9 +3798,9 @@ use HTML::Entities;
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
                 $flag   = $_flag;
-                say "                                <option value=\"calendar\" value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
+                say "                                <option value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
-                say "                                <option value=\"calendar\" value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
+                say "                                <option value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
             }
         }
         say "                        </select>";
