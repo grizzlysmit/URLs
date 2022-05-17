@@ -5542,7 +5542,7 @@ use HTML::Entities;
         say "                            h.hidden = chbx.checked";
         say "                        }";
         say "                        var requiredstuff = document.getElementsByClassName(\"require\");";
-        ay "                        for(let r of requiredstuff){";
+        say "                        for(let r of requiredstuff){";
         say "                            r.required = !chbx.checked";
         say "                        }";
         say "                        var psame = document.getElementById(\"postal_same\");";
