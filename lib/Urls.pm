@@ -5021,7 +5021,7 @@ use HTML::Entities;
             my $return = 1;
             my $_sql  = "SELECT landline_pattern, mobile_pattern FROM countries c\n";
             $_sql    .= "WHERE c.id = ?\n";
-            my $_query  = $db->prepare($sql);
+            my $_query  = $db->prepare($_sql);
             my $_result;
             eval {
                 $_result = $_query->execute($countries_id);
@@ -5033,8 +5033,9 @@ use HTML::Entities;
             my $line = __LINE__;
             $self->log(Data::Dumper->Dump([$return, $_sql, $_query, $_result, $line], [qw(return sql query result line)]));
             if($_result){
-                $_mobile_pattern = $r->{mobile_pattern};
-                $_landline_pattern = $r->{landline_pattern};
+                my $_r      = $_query->fetchrow_hashref();
+                $_mobile_pattern = $_r->{mobile_pattern};
+                $_landline_pattern = $_r->{landline_pattern};
             }else{
                 push @msgs, "SELECT FROM countries failed: $_sql";
                 $return = 0;
