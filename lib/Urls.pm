@@ -5214,9 +5214,12 @@ use HTML::Entities;
                 }
                 my $button_name = 'login';
                 my $back_to     = 'login';
-                if($submit eq 'Register a new user'){
+                if($isadmin){
                     $button_name = 'Back to Users';
                     $back_to     = 'user';
+                }elsif($loggedin){
+                    $button_name = 'Back to Home';
+                    $back_to     = 'main';
                 }
                 $self->message($debug, \%session, $db, ($return?$back_to:'register'), ($return ? $button_name : undef), !$return, @msgs);
                 return $return if $return;
