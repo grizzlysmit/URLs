@@ -3805,7 +3805,6 @@ use HTML::Entities;
         }
         say "                        </select>";
 
-        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                        <script>";
         say "                            function countries_onchange() {";
         say "                                var countries = {";
@@ -3826,9 +3825,11 @@ use HTML::Entities;
             if($countries_id == $cc_id){
                 $mobile_title = $mob_title;
                 $mobile_pattern = $mob_pattern;
+                $mobile_pattern =~ s/\\/\\\\/g;
                 $mobile_placeholder = $mob_placeholder;
                 $landline_title     =$lndl_title;
                 $landline_pattern   = $lndl_pattern;
+                $landline_pattern   =~ s/\\/\\\\/g;
                 $landline_placeholder = $lndl_placeholder;
             }
             say "                                            \"$cc_id\": { \"_name\": \"$name\",";
@@ -3888,6 +3889,7 @@ use HTML::Entities;
         say "                            ";
         say "                            ";
         say "                        </script>";
+        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                    </td>";
         say "                    <td>";
         say "                        <img src=\"$flag\" id=\"flag\" alt=\"$flag\"/>";
