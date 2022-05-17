@@ -3805,6 +3805,7 @@ use HTML::Entities;
         }
         say "                        </select>";
 
+        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
         say "                        <script>";
         say "                            function countries_onchange() {";
         say "                                var countries = {";
@@ -4227,7 +4228,6 @@ use HTML::Entities;
         say "                </tr>";
         say "            </table>";
         say "        </form>";
-        say "        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/js/dd.min.js\"></script>";
 
         return 1;
     } ## --- end sub user_details
