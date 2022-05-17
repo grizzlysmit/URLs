@@ -66,7 +66,6 @@ say <<"END";
     <head>
         <title>Grizzly&apos;s links page</title>
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/ms-dropdown@4.0.3/dist/css/dd.min.css" />
         <link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>
