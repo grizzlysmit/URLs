@@ -1904,7 +1904,7 @@ use HTML::Entities;
             say "                    </td>";
             if($button_msg){
                 say "                    <td>";
-                say "                        <input name=\"delete\" type=\"submit\" value=\"$button_msg\">";
+                say "                        <input name=\"submit\" type=\"submit\" value=\"$button_msg\">";
                 say "                    </td>";
             }else{
                 say "                    <td>";
@@ -5187,7 +5187,13 @@ use HTML::Entities;
                     $return = 0;
                     push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                 }
-                $self->message($debug, \%session, $db, ($return?'login':'register'), ($return ? 'login' : undef), !$return, @msgs);
+                my $button_name = 'login';
+                my $back_to     = 'login';
+                if($submit eq 'Register a new user'){
+                    $button_name = 'Back to Users';
+                    $back_to     = 'user';
+                }
+                $self->message($debug, \%session, $db, ($return?$back_to:'register'), ($return ? $button_name : undef), !$return, @msgs);
                 return $return if $return;
             }
         }else{
