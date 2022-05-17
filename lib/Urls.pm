@@ -4943,6 +4943,9 @@ use HTML::Entities;
         my $display_name       = $req->param('display_name');
         my $admin              = $req->param('admin');
         my @params             = $req->param;
+        $cc                    = 'AU' unless defined $cc;
+        $prefix                = '+61' unless defined $prefix;
+        $countries_id          = '2' unless defined $countries_id;
         my @group_id_add;
         for (@params){
             if(m/^group_id_add\[(\d+)\]$/){
