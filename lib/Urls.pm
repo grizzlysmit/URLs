@@ -5235,6 +5235,8 @@ use HTML::Entities;
         }
         $query->finish();
 
+        my @msgs;
+        my $return = 1;
         my @countries;
 
         $sql  = "SELECT\n";
