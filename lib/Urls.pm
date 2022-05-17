@@ -5219,9 +5219,13 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $countries_id], [qw(line cc prefix countries_id)]));
         $cc                 = 'AU' unless defined $cc;
         $prefix             = '+61' unless defined $prefix;
         $countries_id       = '2' unless defined $countries_id;
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $countries_id], [qw(line cc prefix countries_id)]));
 
         my $sql  = "SELECT g.id, g._name FROM _group g;\n";
         my $query       = $db->prepare($sql);
