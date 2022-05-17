@@ -3827,15 +3827,15 @@ use HTML::Entities;
             my $mob_placeholder  = $row->{mobile_placeholder};
             $_escape = '' unless defined $_escape;
             if($countries_id == $cc_id){
-                $mobile_title       = $mob_title;
-                $mobile_pattern     = $mob_pattern;
-                $mobile_placeholder = $mob_placeholder;
-                $landline_title     = $lndl_title;
-                $landline_pattern   = $lndl_pattern;
+                $mobile_title         = $mob_title;
+                $mobile_pattern       = $mob_pattern;
+                $mobile_placeholder   = $mob_placeholder;
+                $landline_title       = $lndl_title;
+                $landline_pattern     = $lndl_pattern;
                 $landline_placeholder = $lndl_placeholder;
             }
-            $lndl_pattern        =~ s/\\/\\\\/g;
-            $mob_pattern         =~ s/\\/\\\\/g;
+            $lndl_pattern             =~ s/\\/\\\\/g;
+            $mob_pattern              =~ s/\\/\\\\/g;
             say "                                            \"$cc_id\": { \"_name\": \"$name\",";
             say "                                                          \"cc\": \"$_cc\",";
             say "                                                          \"prefix\": \"$_prefix\",";
@@ -4943,9 +4943,6 @@ use HTML::Entities;
         my $display_name       = $req->param('display_name');
         my $admin              = $req->param('admin');
         my @params             = $req->param;
-        $cc                    = 'AU' unless defined $cc;
-        $prefix                = '+61' unless defined $prefix;
-        $countries_id          = '2' unless defined $countries_id;
         my @group_id_add;
         for (@params){
             if(m/^group_id_add\[(\d+)\]$/){
@@ -5223,6 +5220,9 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
+        $cc                 = 'AU' unless defined $cc;
+        $prefix             = '+61' unless defined $prefix;
+        $countries_id       = '2' unless defined $countries_id;
 
         my $sql  = "SELECT g.id, g._name FROM _group g;\n";
         my $query       = $db->prepare($sql);
