@@ -3791,6 +3791,7 @@ use HTML::Entities;
         my $landline_title;
         my $landline_pattern;
         my $landline_placeholder;
+        my $flag;
         say "                                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\">";
         #say "                                        <select name=\"countries_id\" is=\"ms-dropdown\">";
         for my $row (@countries){
@@ -3800,6 +3801,7 @@ use HTML::Entities;
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             if($cc_id == $countries_id){
+                $flag   = $_flag;
                 say "                                            <option value=\"calendar\" value=\"$cc_id\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
                 say "                                            <option value=\"calendar\" value=\"$cc_id\">$name: $_cc ($_prefix)</option>";
