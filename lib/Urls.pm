@@ -4928,6 +4928,9 @@ use HTML::Entities;
         my $postcode           = $req->param('postcode');
         my $region             = $req->param('region');
         my $country            = $req->param('country');
+        my $cc                 = $req->param('cc');
+        my $prefix             = $req->param('prefix');
+        my $countries_id       = $req->param('countries_id');
         my $postal_same        = $req->param('postal_same');
         my $postal_unit        = $req->param('postal_unit');
         my $postal_street      = $req->param('postal_street');
@@ -5231,6 +5234,34 @@ use HTML::Entities;
             $r          = $query->fetchrow_hashref();
         }
         $query->finish();
+
+        my @countries;
+
+        $sql  = "SELECT\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.landline_pattern, c.mobile_pattern,\n";
+        $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
+        $sql .= "FROM countries c\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            return $return;
+        }
+        $r      = $query->fetchrow_hashref();
+        while($r){
+            push @countries, $r;
+            $r      = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        unless($return){
+            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
+        }
 
         untie %session;
         $db->disconnect;
