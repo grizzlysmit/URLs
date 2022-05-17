@@ -5247,7 +5247,7 @@ use HTML::Entities;
         $given              = '' unless defined $given;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
-        my $line = __LINE__;
+        $line = __LINE__;
         $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $countries_id], [qw(line cc prefix countries_id)]));
         $cc                 = 'AU' unless defined $cc;
         $prefix             = '+61' unless defined $prefix;
