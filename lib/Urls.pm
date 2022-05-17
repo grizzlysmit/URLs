@@ -3692,7 +3692,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"email\">email</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"3\">";
         if($user_id == 1){
             say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
         }else{
@@ -3719,7 +3719,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"password\">password</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"3\">";
         say "                        <input type=\"password\" name=\"password\" id=\"password\" class=\"passwd\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" />";
         say "                    </td>";
         say "                </tr>";
@@ -3727,7 +3727,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"repeat\">Repeat Password</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"3\">";
         say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" class=\"passwd\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  />";
         say "                    </td>";
         say "                </tr>";
