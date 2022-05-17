@@ -11,6 +11,12 @@ input[type="url"] {
 button[type="button"] {
     width: 100%;
 } 
+button[type="password"] {
+    width: 100%;
+} 
+button[type="email"] {
+    width: 100%;
+} 
 select {
     width: 100%;
 }
