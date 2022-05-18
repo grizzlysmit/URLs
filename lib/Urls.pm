@@ -5164,9 +5164,12 @@ use HTML::Entities;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($mobile_id, $phone_id);
                             my ($return_phone, @msgs_phone);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($countries_id, $cc, $prefix, $db);
+                            $return = 0 unless $return_phonedetails;
+                            push @msgs, @msgs_phonedetails;
                             if($mobile){
                                 eval {
-                                    $mobile = $self->normalise_mobile($mobile, $cc, $prefix, $_escape, $_mobile_pattern, \%session, $db);
+                                    $mobile = $self->normalise_mobile($mobile, $cc, $prefix, $_escape, $mobile_pattern, \%session, $db);
                                 };
                                 if($@){
                                     $return = 0;
@@ -5178,7 +5181,7 @@ use HTML::Entities;
                             }
                             if($phone){
                                 eval {
-                                    $phone = $self->normalise_landline($phone, $cc, $prefix, $_escape, $_landline_pattern, \%session, $db);
+                                    $phone = $self->normalise_landline($phone, $cc, $prefix, $_escape, $landline_pattern, \%session, $db);
                                 };
                                 if($@){
                                     $return = 0;
