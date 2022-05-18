@@ -3354,6 +3354,35 @@ use HTML::Entities;
 
             my $line = __LINE__;
             $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
+            my $_mobile_pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
+            my $_landline_pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
+            if(defined $countries_id){
+                my @msgs;
+                my $return = 1;
+                my $_sql  = "SELECT landline_pattern, mobile_pattern FROM countries c\n";
+                $_sql    .= "WHERE c.id = ?\n";
+                my $_query  = $db->prepare($_sql);
+                my $_result;
+                eval {
+                    $_result = $_query->execute($countries_id);
+                };
+                if($@){
+                    push @msgs, "SELECT FROM countries failed: $@";
+                    $return = 0;
+                }
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$return, $_sql, $_query, $_result, $line], [qw(return sql query result line)]));
+                if($_result){
+                    my $_r      = $_query->fetchrow_hashref();
+                    $_mobile_pattern = $_r->{mobile_pattern};
+                    $_landline_pattern = $_r->{landline_pattern};
+                }else{
+                    push @msgs, "SELECT FROM countries failed: $_sql";
+                    $return = 0;
+                }
+                $_query->finish();
+                $self->message($debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
+            }
 
             if($password && $repeat
                 && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
@@ -3365,8 +3394,8 @@ use HTML::Entities;
             }elsif(defined $username && defined $email && defined $street && defined $country
                 && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
                 && (!$city_suburb || $city_suburb =~ m/^[^\'\"]+$/) 
-                && (!$mobile || $mobile =~ m/^(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}$/) 
-                && (!$phone || $phone =~ m/^(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}$/)
+                && (!$mobile || $mobile =~ m/^$_mobile_pattern$/) 
+                && (!$phone || $phone =~ m/^$_landline_pattern$/)
                 && (!$unit || $unit =~ m/^[^\'\"]+$/) && $street =~ m/^[^\'\"]+$/
                 && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
                 && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
