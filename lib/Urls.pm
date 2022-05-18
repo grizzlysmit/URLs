@@ -7166,7 +7166,7 @@ use HTML::Entities;
         $return = 1;
         my $sql    = "UPDATE passwd  SET username = ?, passwd_details_id = ?, primary_group_id = ?, _admin = ?, email_id = ?";
         if($hashed_password){
-            $sql .= ", password = ?\n";
+            $sql .= ", _password = ?\n";
         }else{
             $sql .= "\n";
         }
