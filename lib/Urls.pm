@@ -3708,9 +3708,9 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"residential_address_id\" value=\"$residential_address_id\"/>";
         say "                        <input type=\"hidden\" name=\"postal_address_id\" value=\"$postal_address_id\"/>";
         say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
-        say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>";
-        say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>";
-        say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>";
+        say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>" if $primary_phone_id;
+        say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>"; 
+        say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>" if $secondary_phone_id;
         if($user_id == 1){
             say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
         }else{
@@ -5165,11 +5165,25 @@ use HTML::Entities;
                             my ($mobile_id, $phone_id);
                             my ($return_phone, @msgs_phone);
                             if($mobile){
+                                eval {
+                                    $mobile = $self->normalise_mobile($mobile, $cc, $prefix, $_escape, $_mobile_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
                                 ($mobile_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
                                 $return = $return_phone unless $return_phone;
                                 push @msgs, @msgs_phone;
                             }
                             if($phone){
+                                eval {
+                                    $phone = $self->normalise_landline($phone, $cc, $prefix, $_escape, $_landline_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
                                 ($phone_id, $return_phone, @msgs_phone) = $self->create_phone($phone, $db);
                                 $return = $return_phone unless $return_phone;
                                 push @msgs, @msgs_phone;
@@ -5757,7 +5771,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             say "                <tr class=\"admin\">";
-            say "                    <td colspan=\"2\">";
+            say "                    <td colspan=\"3\">";
             say "                        <script>";
             say "                            function groupOnclick(n){";
             say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
