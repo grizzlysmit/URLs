@@ -23,7 +23,7 @@ button[type="button"] {
 select {
     width: 100%;
 }
-div {
+.ms-dd-header {
     width: 100%;
 }
 table, th, td {
