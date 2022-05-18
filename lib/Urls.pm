@@ -3829,12 +3829,12 @@ use HTML::Entities;
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
-            $name       =~ s/\s/&nbsp;/g;
+            #$name       =~ s/\s/&nbsp;/g;
             if($cc_id == $countries_id){
                 $flag   = $_flag;
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name:&nbsp;$_cc&nbsp;($_prefix)</option>";
+                say "                                <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\">$name:&nbsp;$_cc&nbsp;($_prefix)</option>";
+                say "                                <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
             }
         }
         say "                        </select>";
