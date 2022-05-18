@@ -3490,7 +3490,7 @@ use HTML::Entities;
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db);
+                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -5155,8 +5155,9 @@ use HTML::Entities;
                             ($primary_email_id, $return_email, @msgs_email) = $self->create_email($email, $db);
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
+                            $countries_id = 2 unless defined $countries_id;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $db);
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -6159,17 +6160,17 @@ use HTML::Entities;
 
 
     sub create_passwd_details {
-        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $line],
                 [qw(display_name given family residential_address_id postal_address_id primary_phone_id secondary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id)VALUES(?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id, countries_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id);
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id);
         };
         if($@){
             push @msgs, "Insert into passwd_details failed: $@";
@@ -7088,23 +7089,23 @@ use HTML::Entities;
 
 
     sub update_passwd_details {
-        my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $db) = @_;
         $primary_phone_id   = undef unless $primary_phone_id;
         $secondary_phone_id = undef unless $secondary_phone_id;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
-                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id passwd_details_id line)]));
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $line],
+                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id countries_id passwd_details_id line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql    = "UPDATE passwd_details SET display_name = ?, given = ?, _family = ?,\n";
         $sql      .= "residential_address_id = ?, postal_address_id = ?, primary_phone_id = ?,\n";
-        $sql      .= "secondary_phone_id = ?\n";
+        $sql      .= "secondary_phone_id = ?, countries_id = ?\n";
         $sql      .= "WHERE id = ?\n";
         $sql      .= "RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id);
+            $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id);
         };
         if($@){
             push @msgs, "UPDATE passwd_details failed: $@", "\$sql == $sql", Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
