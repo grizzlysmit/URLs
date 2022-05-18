@@ -17,6 +17,9 @@ input[type="email"] {
 input[type="tel"] {
     width: 100%;
 } 
+input[class="ms-value-input"] {
+    width: 100%;
+} 
 button[type="button"] {
     width: 100%;
 } 
