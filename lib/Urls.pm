@@ -7182,7 +7182,7 @@ use HTML::Entities;
             }
         };
         if($@){
-            push @msgs, "UPDATE passwd failed: $@";
+            push @msgs, "\$sql == $sql", "UPDATE passwd failed: $@";
             $return = 0;
         }
         if($result){
