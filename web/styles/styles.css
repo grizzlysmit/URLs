@@ -26,7 +26,7 @@ button[type="button"] {
 select {
     width: 100%;
 }
-.spread  {
+.ms-Button-flexContainer  {
     width: 100%;
 }
 table, th, td {
