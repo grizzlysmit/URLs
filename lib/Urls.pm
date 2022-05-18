@@ -2991,7 +2991,7 @@ use HTML::Entities;
             die("$phone does not match pattern: $pattern");
         }
         $phone =~ s/[ -()]//g;
-        $phone =~ s/^$_escape/$prefix/g;
+        $phone =~ s/^$_escape/$prefix/g if defined $_escape;
         return $phone;
     } ## --- end sub normalise_landline
 
