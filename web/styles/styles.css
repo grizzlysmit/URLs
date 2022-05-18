@@ -28,6 +28,7 @@ select {
 }
 .ms-Button-flexContainer  {
     width: 100%;
+    /*dropdownWidth: 100%;*/
 }
 table, th, td {
     border: 1px solid black;
