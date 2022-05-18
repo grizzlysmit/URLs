@@ -3712,7 +3712,7 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>";
         say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>";
         if($user_id == 1){
-            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" disabled/>";
+            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
         }else{
             say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
         }
