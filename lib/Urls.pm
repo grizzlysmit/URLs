@@ -2967,7 +2967,7 @@ use HTML::Entities;
         if($mobile !~ m/^$pattern$/){
             die("$mobile does not match pattern: $pattern");
         }
-        $mobile =~ s/[ -]//g;
+        $mobile =~ s/[ -()]//g;
         $mobile =~ s/^$_escape/$prefix/g if defined $_escape;
         return $mobile;
     } ## --- end sub normalise_mobile
