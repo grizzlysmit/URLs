@@ -4212,7 +4212,7 @@ use HTML::Entities;
         say "                                  <table id=\"tbl\" class=\"elts inner\">";
         say "                                      <tr id=\"row\" class=\"elts\">";
         say "                                          <td class=\"elts inner\" id=\"base\">";
-        say "                                               elts:";
+        say "                                               Groups:";
         say "                                          </td>";
         my $cnt = 0;
         for my $row (@additional_groups){
@@ -5821,7 +5821,7 @@ use HTML::Entities;
             say "                                  <table id=\"tbl\" class=\"elts inner\">";
             say "                                      <tr id=\"row\" class=\"elts\">";
             say "                                          <td class=\"elts inner\">";
-            say "                                               elts:";
+            say "                                               Groups:";
             say "                                          </td>";
             say "                                      </tr>";
             say "                                  </table>";
