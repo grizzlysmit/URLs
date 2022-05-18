@@ -2967,7 +2967,7 @@ use HTML::Entities;
         if($mobile !~ m/^$pattern$/){
             die("$mobile does not match pattern: $pattern");
         }
-        $mobile =~ s/[ -()]//g;
+        $mobile =~ s/[ ()-]//g;
         $mobile =~ s/^$_escape/$prefix/g if defined $_escape;
         return $mobile;
     } ## --- end sub normalise_mobile
@@ -2990,7 +2990,7 @@ use HTML::Entities;
         if($phone !~ m/^$pattern$/){
             die("$phone does not match pattern: $pattern");
         }
-        $phone =~ s/[ -()]//g;
+        $phone =~ s/[ ()-]//g;
         $phone =~ s/^$_escape/$prefix/g if defined $_escape;
         return $phone;
     } ## --- end sub normalise_landline
@@ -3001,12 +3001,10 @@ use HTML::Entities;
         my ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
         $return = 1;
         my $sql  = "SELECT c.landline_pattern, c.mobile_pattern, c._escape FROM countries c\n";
-        #$sql    .= "WHERE c.cc = ? AND c.prefix = ?\n";
         $sql    .= "WHERE c.id = ?;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            #$result = $query->execute($cc, $prefix);
             $result = $query->execute($countries_id);
         };
         if($@){
