@@ -3811,7 +3811,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"3\">";
         say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
 
