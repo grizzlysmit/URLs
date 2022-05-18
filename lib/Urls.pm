@@ -7176,7 +7176,7 @@ use HTML::Entities;
         my $result;
         eval {
             if($hashed_password){
-                $result = $query->execute($username, $email_id, $passwd_details_id, $primary_group_id, $admin, $hashed_password, $passwd_id);
+                $result = $query->execute($username, $passwd_details_id, $primary_group_id, $admin, $email_id, $hashed_password, $passwd_id);
             }else{
                 $result = $query->execute($username, $passwd_details_id, $primary_group_id, $admin, $email_id, $passwd_id);
             }
