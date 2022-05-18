@@ -3822,7 +3822,8 @@ use HTML::Entities;
         my $landline_pattern;
         my $landline_placeholder;
         my $flag;
-        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" style=\"{ width: 100%; }\" is=\"ms-dropdown\">";
+        say "                        <div class=\"spread\"/>";
+        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
         for my $row (@countries){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
@@ -3837,6 +3838,7 @@ use HTML::Entities;
             }
         }
         say "                        </select>";
+        say "                        </div>";
 
         say "                        <script>";
         say "                            function countries_onchange() {";
