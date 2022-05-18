@@ -3667,6 +3667,7 @@ use HTML::Entities;
         $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.landline_pattern, c.mobile_pattern,\n";
         $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql .= "FROM countries c\n";
+        $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute();
@@ -5317,6 +5318,7 @@ use HTML::Entities;
         $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.landline_pattern, c.mobile_pattern,\n";
         $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql .= "FROM countries c\n";
+        $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute();
