@@ -5,8 +5,6 @@
 -- Dumped from database version 14.2 (Ubuntu 14.2-1ubuntu1)
 -- Dumped by pg_dump version 14.3 (Ubuntu 14.3-1.pgdg21.10+1)
 
--- Started on 2022-05-18 06:27:20 AEST
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -18,8 +16,130 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE IF EXISTS ONLY public.secure DROP CONSTRAINT IF EXISTS secure_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.secure DROP CONSTRAINT IF EXISTS secure_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.links DROP CONSTRAINT IF EXISTS section_fkey;
+ALTER TABLE IF EXISTS ONLY public.pseudo_pages DROP CONSTRAINT IF EXISTS pseudo_pages_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.pseudo_pages DROP CONSTRAINT IF EXISTS pseudo_pages_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.phones DROP CONSTRAINT IF EXISTS phones_phone_fkey;
+ALTER TABLE IF EXISTS ONLY public.phones DROP CONSTRAINT IF EXISTS phones_address_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd DROP CONSTRAINT IF EXISTS passwd_primary_email_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd DROP CONSTRAINT IF EXISTS passwd_group_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_sec_phone_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_res_foreign_key;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_post_foreign_key;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_p_phone_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd DROP CONSTRAINT IF EXISTS passwd_details_connection_fkey;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_cc_fkey;
+ALTER TABLE IF EXISTS ONLY public.pages DROP CONSTRAINT IF EXISTS pages_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.pages DROP CONSTRAINT IF EXISTS pages_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS pages_fkey;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS page_section_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS page_section_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.links DROP CONSTRAINT IF EXISTS links_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.links_sections DROP CONSTRAINT IF EXISTS links_sections_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.links_sections DROP CONSTRAINT IF EXISTS links_sections_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS links_section_fkey;
+ALTER TABLE IF EXISTS ONLY public.links DROP CONSTRAINT IF EXISTS links_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.groups DROP CONSTRAINT IF EXISTS groups_foreign_key;
+ALTER TABLE IF EXISTS ONLY public.groups DROP CONSTRAINT IF EXISTS groups_address_foreign_key;
+ALTER TABLE IF EXISTS ONLY public.emails DROP CONSTRAINT IF EXISTS emails_email_fkey;
+ALTER TABLE IF EXISTS ONLY public.emails DROP CONSTRAINT IF EXISTS emails_address_fkey;
+ALTER TABLE IF EXISTS ONLY public.alias DROP CONSTRAINT IF EXISTS alias_userid_fkey;
+ALTER TABLE IF EXISTS ONLY public.alias DROP CONSTRAINT IF EXISTS alias_groupid_fkey;
+ALTER TABLE IF EXISTS ONLY public.alias DROP CONSTRAINT IF EXISTS alias_foriegn_key;
+ALTER TABLE IF EXISTS ONLY public.addresses DROP CONSTRAINT IF EXISTS addresses_passwd_id_fkey;
+ALTER TABLE IF EXISTS ONLY public.addresses DROP CONSTRAINT IF EXISTS addresses_address_id_fkey;
+DROP INDEX IF EXISTS public.links_unique_key;
+DROP INDEX IF EXISTS public.links_sections_unique_key;
+DROP INDEX IF EXISTS public.fki_section_fkey;
+ALTER TABLE IF EXISTS ONLY public.sessions DROP CONSTRAINT IF EXISTS sessions_pkey;
+ALTER TABLE IF EXISTS ONLY public.pseudo_pages DROP CONSTRAINT IF EXISTS psudo_pages_pkey;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS psge_section_pkey;
+ALTER TABLE IF EXISTS ONLY public.pseudo_pages DROP CONSTRAINT IF EXISTS pseudo_pages_unique_key;
+ALTER TABLE IF EXISTS ONLY public.pages DROP CONSTRAINT IF EXISTS pkey;
+ALTER TABLE IF EXISTS ONLY public.phones DROP CONSTRAINT IF EXISTS phones_pkey;
+ALTER TABLE IF EXISTS ONLY public.phone DROP CONSTRAINT IF EXISTS phone_pkey;
+ALTER TABLE IF EXISTS ONLY public.passwd DROP CONSTRAINT IF EXISTS passwd_unique_key;
+ALTER TABLE IF EXISTS ONLY public.passwd DROP CONSTRAINT IF EXISTS passwd_pkey;
+ALTER TABLE IF EXISTS ONLY public.passwd_details DROP CONSTRAINT IF EXISTS passwd_details_pkey;
+ALTER TABLE IF EXISTS ONLY public.pages DROP CONSTRAINT IF EXISTS page_unique_key;
+ALTER TABLE IF EXISTS ONLY public.page_section DROP CONSTRAINT IF EXISTS page_section_unique;
+ALTER TABLE IF EXISTS ONLY public.links DROP CONSTRAINT IF EXISTS links_unique_contraint_name;
+ALTER TABLE IF EXISTS ONLY public.links_sections DROP CONSTRAINT IF EXISTS links_sections_unnique_key;
+ALTER TABLE IF EXISTS ONLY public.links DROP CONSTRAINT IF EXISTS links_pkey1;
+ALTER TABLE IF EXISTS ONLY public.links_sections DROP CONSTRAINT IF EXISTS links_pkey;
+ALTER TABLE IF EXISTS ONLY public.groups DROP CONSTRAINT IF EXISTS groups_unique_key;
+ALTER TABLE IF EXISTS ONLY public.groups DROP CONSTRAINT IF EXISTS groups_pkey;
+ALTER TABLE IF EXISTS ONLY public._group DROP CONSTRAINT IF EXISTS group_unique_key;
+ALTER TABLE IF EXISTS ONLY public.emails DROP CONSTRAINT IF EXISTS emails_pkey;
+ALTER TABLE IF EXISTS ONLY public.email DROP CONSTRAINT IF EXISTS email_pkey;
+ALTER TABLE IF EXISTS ONLY public.countries DROP CONSTRAINT IF EXISTS countries_prefix_ukey;
+ALTER TABLE IF EXISTS ONLY public.countries DROP CONSTRAINT IF EXISTS countries_pk;
+ALTER TABLE IF EXISTS ONLY public.codes_prefixes DROP CONSTRAINT IF EXISTS codes_prefixes_pk;
+ALTER TABLE IF EXISTS ONLY public.alias DROP CONSTRAINT IF EXISTS alias_unique_contraint_name;
+ALTER TABLE IF EXISTS ONLY public.alias DROP CONSTRAINT IF EXISTS alias_pkey;
+ALTER TABLE IF EXISTS ONLY public.addresses DROP CONSTRAINT IF EXISTS addresses_pkey;
+ALTER TABLE IF EXISTS ONLY public.address DROP CONSTRAINT IF EXISTS address_pkey;
+ALTER TABLE IF EXISTS ONLY public._group DROP CONSTRAINT IF EXISTS _group_pkey;
+ALTER TABLE IF EXISTS public.pseudo_pages ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.pages ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.page_section ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.links ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.countries ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.alias ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE IF EXISTS public.addresses ALTER COLUMN id DROP DEFAULT;
+DROP VIEW IF EXISTS public.vlinks;
+DROP TABLE IF EXISTS public.sessions;
+DROP VIEW IF EXISTS public.sections;
+DROP SEQUENCE IF EXISTS public.psudo_pages_id_seq;
+DROP TABLE IF EXISTS public.phones;
+DROP SEQUENCE IF EXISTS public.phones_id_seq;
+DROP TABLE IF EXISTS public.phone;
+DROP SEQUENCE IF EXISTS public.phone_id_seq;
+DROP TABLE IF EXISTS public.passwd_details;
+DROP SEQUENCE IF EXISTS public.passwd_details_id_seq;
+DROP TABLE IF EXISTS public.passwd;
+DROP SEQUENCE IF EXISTS public.passwd_id_seq;
+DROP SEQUENCE IF EXISTS public.pages_id_seq;
+DROP VIEW IF EXISTS public.pagelike;
+DROP TABLE IF EXISTS public.pseudo_pages;
+DROP VIEW IF EXISTS public.page_view;
+DROP SEQUENCE IF EXISTS public.page_section_id_seq;
+DROP VIEW IF EXISTS public.page_link_view;
+DROP TABLE IF EXISTS public.pages;
+DROP TABLE IF EXISTS public.page_section;
+DROP VIEW IF EXISTS public.links_sections_join_links;
+DROP SEQUENCE IF EXISTS public.links_id_seq1;
+DROP TABLE IF EXISTS public.groups;
+DROP SEQUENCE IF EXISTS public.groups_id_seq;
+DROP TABLE IF EXISTS public.emails;
+DROP SEQUENCE IF EXISTS public.emails_id_seq;
+DROP TABLE IF EXISTS public.email;
+DROP SEQUENCE IF EXISTS public.email_id_seq;
+DROP SEQUENCE IF EXISTS public.countries_id_seq;
+DROP TABLE IF EXISTS public.countries;
+DROP TABLE IF EXISTS public.codes_prefixes;
+DROP VIEW IF EXISTS public.aliases;
+DROP VIEW IF EXISTS public.alias_union_links_sections;
+DROP VIEW IF EXISTS public.alias_union_links;
+DROP TABLE IF EXISTS public.links;
+DROP VIEW IF EXISTS public.alias_links;
+DROP TABLE IF EXISTS public.links_sections;
+DROP SEQUENCE IF EXISTS public.links_id_seq;
+DROP SEQUENCE IF EXISTS public.alias_id_seq;
+DROP TABLE IF EXISTS public.alias;
+DROP TABLE IF EXISTS public.secure;
+DROP SEQUENCE IF EXISTS public.addresses_id_seq;
+DROP TABLE IF EXISTS public.addresses;
+DROP TABLE IF EXISTS public.address;
+DROP SEQUENCE IF EXISTS public.address_id_seq;
+DROP TABLE IF EXISTS public._group;
+DROP SEQUENCE IF EXISTS public._group_id_seq;
+DROP TYPE IF EXISTS public.status;
+DROP TYPE IF EXISTS public.perms;
+DROP TYPE IF EXISTS public.perm_set;
 --
--- TOC entry 962 (class 1247 OID 16390)
 -- Name: perm_set; Type: TYPE; Schema: public; Owner: grizzlysmit
 --
 
@@ -33,7 +153,6 @@ CREATE TYPE public.perm_set AS (
 ALTER TYPE public.perm_set OWNER TO grizzlysmit;
 
 --
--- TOC entry 963 (class 1247 OID 16393)
 -- Name: perms; Type: TYPE; Schema: public; Owner: grizzlysmit
 --
 
@@ -47,7 +166,6 @@ CREATE TYPE public.perms AS (
 ALTER TYPE public.perms OWNER TO grizzlysmit;
 
 --
--- TOC entry 872 (class 1247 OID 16395)
 -- Name: status; Type: TYPE; Schema: public; Owner: grizzlysmit
 --
 
@@ -62,7 +180,6 @@ CREATE TYPE public.status AS ENUM (
 ALTER TYPE public.status OWNER TO grizzlysmit;
 
 --
--- TOC entry 211 (class 1259 OID 16403)
 -- Name: _group_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -81,7 +198,6 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 212 (class 1259 OID 16404)
 -- Name: _group; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -94,7 +210,6 @@ CREATE TABLE public._group (
 ALTER TABLE public._group OWNER TO grizzlysmit;
 
 --
--- TOC entry 213 (class 1259 OID 16408)
 -- Name: address_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -109,7 +224,6 @@ CREATE SEQUENCE public.address_id_seq
 ALTER TABLE public.address_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 214 (class 1259 OID 16409)
 -- Name: address; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -127,7 +241,40 @@ CREATE TABLE public.address (
 ALTER TABLE public.address OWNER TO grizzlysmit;
 
 --
--- TOC entry 215 (class 1259 OID 16415)
+-- Name: addresses; Type: TABLE; Schema: public; Owner: grizzlysmit
+--
+
+CREATE TABLE public.addresses (
+    id bigint NOT NULL,
+    passwd_id bigint NOT NULL,
+    address_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.addresses OWNER TO grizzlysmit;
+
+--
+-- Name: addresses_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
+--
+
+CREATE SEQUENCE public.addresses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.addresses_id_seq OWNER TO grizzlysmit;
+
+--
+-- Name: addresses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
+--
+
+ALTER SEQUENCE public.addresses_id_seq OWNED BY public.addresses.id;
+
+
+--
 -- Name: secure; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -141,7 +288,6 @@ CREATE TABLE public.secure (
 ALTER TABLE public.secure OWNER TO grizzlysmit;
 
 --
--- TOC entry 216 (class 1259 OID 16423)
 -- Name: alias; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -159,7 +305,6 @@ INHERITS (public.secure);
 ALTER TABLE public.alias OWNER TO grizzlysmit;
 
 --
--- TOC entry 217 (class 1259 OID 16431)
 -- Name: alias_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -174,8 +319,6 @@ CREATE SEQUENCE public.alias_id_seq
 ALTER TABLE public.alias_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 3674 (class 0 OID 0)
--- Dependencies: 217
 -- Name: alias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -183,7 +326,6 @@ ALTER SEQUENCE public.alias_id_seq OWNED BY public.alias.id;
 
 
 --
--- TOC entry 218 (class 1259 OID 16432)
 -- Name: links_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -198,7 +340,6 @@ CREATE SEQUENCE public.links_id_seq
 ALTER TABLE public.links_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 219 (class 1259 OID 16433)
 -- Name: links_sections; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -215,7 +356,6 @@ INHERITS (public.secure);
 ALTER TABLE public.links_sections OWNER TO grizzlysmit;
 
 --
--- TOC entry 220 (class 1259 OID 16442)
 -- Name: alias_links; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -240,7 +380,6 @@ UNION
 ALTER TABLE public.alias_links OWNER TO grizzlysmit;
 
 --
--- TOC entry 221 (class 1259 OID 16446)
 -- Name: links; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -259,7 +398,6 @@ INHERITS (public.secure);
 ALTER TABLE public.links OWNER TO grizzlysmit;
 
 --
--- TOC entry 222 (class 1259 OID 16454)
 -- Name: alias_union_links; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -293,7 +431,6 @@ UNION
 ALTER TABLE public.alias_union_links OWNER TO grizzlysmit;
 
 --
--- TOC entry 223 (class 1259 OID 16459)
 -- Name: alias_union_links_sections; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -321,7 +458,6 @@ UNION
 ALTER TABLE public.alias_union_links_sections OWNER TO grizzlysmit;
 
 --
--- TOC entry 224 (class 1259 OID 16464)
 -- Name: aliases; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -340,7 +476,6 @@ CREATE VIEW public.aliases AS
 ALTER TABLE public.aliases OWNER TO grizzlysmit;
 
 --
--- TOC entry 225 (class 1259 OID 16468)
 -- Name: codes_prefixes; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -354,7 +489,6 @@ CREATE TABLE public.codes_prefixes (
 ALTER TABLE public.codes_prefixes OWNER TO grizzlysmit;
 
 --
--- TOC entry 226 (class 1259 OID 16471)
 -- Name: countries; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -375,7 +509,6 @@ INHERITS (public.codes_prefixes);
 ALTER TABLE public.countries OWNER TO grizzlysmit;
 
 --
--- TOC entry 227 (class 1259 OID 16476)
 -- Name: countries_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -390,8 +523,6 @@ CREATE SEQUENCE public.countries_id_seq
 ALTER TABLE public.countries_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 3685 (class 0 OID 0)
--- Dependencies: 227
 -- Name: countries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -399,7 +530,6 @@ ALTER SEQUENCE public.countries_id_seq OWNED BY public.countries.id;
 
 
 --
--- TOC entry 228 (class 1259 OID 16477)
 -- Name: email_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -414,7 +544,6 @@ CREATE SEQUENCE public.email_id_seq
 ALTER TABLE public.email_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 229 (class 1259 OID 16478)
 -- Name: email; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -428,7 +557,6 @@ CREATE TABLE public.email (
 ALTER TABLE public.email OWNER TO grizzlysmit;
 
 --
--- TOC entry 230 (class 1259 OID 16483)
 -- Name: emails_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -443,7 +571,6 @@ CREATE SEQUENCE public.emails_id_seq
 ALTER TABLE public.emails_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 231 (class 1259 OID 16484)
 -- Name: emails; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -457,7 +584,6 @@ CREATE TABLE public.emails (
 ALTER TABLE public.emails OWNER TO grizzlysmit;
 
 --
--- TOC entry 232 (class 1259 OID 16488)
 -- Name: groups_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -472,7 +598,6 @@ CREATE SEQUENCE public.groups_id_seq
 ALTER TABLE public.groups_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 233 (class 1259 OID 16489)
 -- Name: groups; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -486,7 +611,6 @@ CREATE TABLE public.groups (
 ALTER TABLE public.groups OWNER TO grizzlysmit;
 
 --
--- TOC entry 234 (class 1259 OID 16493)
 -- Name: links_id_seq1; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -501,8 +625,6 @@ CREATE SEQUENCE public.links_id_seq1
 ALTER TABLE public.links_id_seq1 OWNER TO grizzlysmit;
 
 --
--- TOC entry 3692 (class 0 OID 0)
--- Dependencies: 234
 -- Name: links_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -510,7 +632,6 @@ ALTER SEQUENCE public.links_id_seq1 OWNED BY public.links.id;
 
 
 --
--- TOC entry 235 (class 1259 OID 16494)
 -- Name: links_sections_join_links; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -529,7 +650,6 @@ CREATE VIEW public.links_sections_join_links AS
 ALTER TABLE public.links_sections_join_links OWNER TO grizzlysmit;
 
 --
--- TOC entry 236 (class 1259 OID 16498)
 -- Name: page_section; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -547,7 +667,6 @@ INHERITS (public.secure);
 ALTER TABLE public.page_section OWNER TO grizzlysmit;
 
 --
--- TOC entry 237 (class 1259 OID 16506)
 -- Name: pages; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -565,7 +684,6 @@ INHERITS (public.secure);
 ALTER TABLE public.pages OWNER TO grizzlysmit;
 
 --
--- TOC entry 238 (class 1259 OID 16514)
 -- Name: page_link_view; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -588,7 +706,6 @@ CREATE VIEW public.page_link_view AS
 ALTER TABLE public.page_link_view OWNER TO grizzlysmit;
 
 --
--- TOC entry 239 (class 1259 OID 16519)
 -- Name: page_section_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -603,8 +720,6 @@ CREATE SEQUENCE public.page_section_id_seq
 ALTER TABLE public.page_section_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 3698 (class 0 OID 0)
--- Dependencies: 239
 -- Name: page_section_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -612,7 +727,6 @@ ALTER SEQUENCE public.page_section_id_seq OWNED BY public.page_section.id;
 
 
 --
--- TOC entry 240 (class 1259 OID 16520)
 -- Name: page_view; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -632,7 +746,6 @@ CREATE VIEW public.page_view AS
 ALTER TABLE public.page_view OWNER TO grizzlysmit;
 
 --
--- TOC entry 241 (class 1259 OID 16524)
 -- Name: pseudo_pages; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -652,7 +765,6 @@ INHERITS (public.secure);
 ALTER TABLE public.pseudo_pages OWNER TO grizzlysmit;
 
 --
--- TOC entry 242 (class 1259 OID 16533)
 -- Name: pagelike; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -677,7 +789,6 @@ UNION
 ALTER TABLE public.pagelike OWNER TO grizzlysmit;
 
 --
--- TOC entry 243 (class 1259 OID 16537)
 -- Name: pages_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -692,8 +803,6 @@ CREATE SEQUENCE public.pages_id_seq
 ALTER TABLE public.pages_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 3703 (class 0 OID 0)
--- Dependencies: 243
 -- Name: pages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -701,7 +810,6 @@ ALTER SEQUENCE public.pages_id_seq OWNED BY public.pages.id;
 
 
 --
--- TOC entry 244 (class 1259 OID 16538)
 -- Name: passwd_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -716,7 +824,6 @@ CREATE SEQUENCE public.passwd_id_seq
 ALTER TABLE public.passwd_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 245 (class 1259 OID 16539)
 -- Name: passwd; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -734,7 +841,6 @@ CREATE TABLE public.passwd (
 ALTER TABLE public.passwd OWNER TO grizzlysmit;
 
 --
--- TOC entry 246 (class 1259 OID 16544)
 -- Name: passwd_details_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -749,7 +855,6 @@ CREATE SEQUENCE public.passwd_details_id_seq
 ALTER TABLE public.passwd_details_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 247 (class 1259 OID 16545)
 -- Name: passwd_details; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -762,14 +867,13 @@ CREATE TABLE public.passwd_details (
     postal_address_id bigint NOT NULL,
     primary_phone_id bigint,
     secondary_phone_id bigint,
-    countries_id bigint DEFAULT 2 NOT NULL
+    countries_id bigint NOT NULL
 );
 
 
 ALTER TABLE public.passwd_details OWNER TO grizzlysmit;
 
 --
--- TOC entry 248 (class 1259 OID 16551)
 -- Name: phone_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -784,7 +888,6 @@ CREATE SEQUENCE public.phone_id_seq
 ALTER TABLE public.phone_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 249 (class 1259 OID 16552)
 -- Name: phone; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -798,7 +901,6 @@ CREATE TABLE public.phone (
 ALTER TABLE public.phone OWNER TO grizzlysmit;
 
 --
--- TOC entry 250 (class 1259 OID 16557)
 -- Name: phones_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -813,7 +915,6 @@ CREATE SEQUENCE public.phones_id_seq
 ALTER TABLE public.phones_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 251 (class 1259 OID 16558)
 -- Name: phones; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -827,7 +928,6 @@ CREATE TABLE public.phones (
 ALTER TABLE public.phones OWNER TO grizzlysmit;
 
 --
--- TOC entry 252 (class 1259 OID 16562)
 -- Name: psudo_pages_id_seq; Type: SEQUENCE; Schema: public; Owner: grizzlysmit
 --
 
@@ -842,8 +942,6 @@ CREATE SEQUENCE public.psudo_pages_id_seq
 ALTER TABLE public.psudo_pages_id_seq OWNER TO grizzlysmit;
 
 --
--- TOC entry 3713 (class 0 OID 0)
--- Dependencies: 252
 -- Name: psudo_pages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: grizzlysmit
 --
 
@@ -851,7 +949,6 @@ ALTER SEQUENCE public.psudo_pages_id_seq OWNED BY public.pseudo_pages.id;
 
 
 --
--- TOC entry 253 (class 1259 OID 16563)
 -- Name: sections; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -892,7 +989,6 @@ UNION
 ALTER TABLE public.sections OWNER TO grizzlysmit;
 
 --
--- TOC entry 254 (class 1259 OID 16568)
 -- Name: sessions; Type: TABLE; Schema: public; Owner: grizzlysmit
 --
 
@@ -905,7 +1001,6 @@ CREATE TABLE public.sessions (
 ALTER TABLE public.sessions OWNER TO grizzlysmit;
 
 --
--- TOC entry 255 (class 1259 OID 16573)
 -- Name: vlinks; Type: VIEW; Schema: public; Owner: grizzlysmit
 --
 
@@ -923,7 +1018,13 @@ CREATE VIEW public.vlinks AS
 ALTER TABLE public.vlinks OWNER TO grizzlysmit;
 
 --
--- TOC entry 3352 (class 2604 OID 16577)
+-- Name: addresses id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
+--
+
+ALTER TABLE ONLY public.addresses ALTER COLUMN id SET DEFAULT nextval('public.addresses_id_seq'::regclass);
+
+
+--
 -- Name: alias id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -931,7 +1032,6 @@ ALTER TABLE ONLY public.alias ALTER COLUMN id SET DEFAULT nextval('public.alias_
 
 
 --
--- TOC entry 3361 (class 2604 OID 16578)
 -- Name: countries id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -939,7 +1039,6 @@ ALTER TABLE ONLY public.countries ALTER COLUMN id SET DEFAULT nextval('public.co
 
 
 --
--- TOC entry 3360 (class 2604 OID 16579)
 -- Name: links id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -947,7 +1046,6 @@ ALTER TABLE ONLY public.links ALTER COLUMN id SET DEFAULT nextval('public.links_
 
 
 --
--- TOC entry 3369 (class 2604 OID 16580)
 -- Name: page_section id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -955,7 +1053,6 @@ ALTER TABLE ONLY public.page_section ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 3373 (class 2604 OID 16581)
 -- Name: pages id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -963,7 +1060,6 @@ ALTER TABLE ONLY public.pages ALTER COLUMN id SET DEFAULT nextval('public.pages_
 
 
 --
--- TOC entry 3378 (class 2604 OID 16582)
 -- Name: pseudo_pages id; Type: DEFAULT; Schema: public; Owner: grizzlysmit
 --
 
@@ -971,506 +1067,536 @@ ALTER TABLE ONLY public.pseudo_pages ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 3627 (class 0 OID 16404)
--- Dependencies: 212
 -- Data for Name: _group; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public._group (id, _name) FROM stdin;
-1	admin
-8	frodo
-5	grizz
-4	grizzly
-3	grizzlysmit
-9	doctor
-10	fredie
-11	fred
-12	romanna
-\.
+INSERT INTO public._group VALUES (1, 'admin') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (5, 'grizz') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (4, 'grizzly') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (3, 'grizzlysmit') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (9, 'doctor') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (10, 'fredie') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (12, 'romanna') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (11, 'fred') ON CONFLICT DO NOTHING;
+INSERT INTO public._group VALUES (8, 'frodo') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3629 (class 0 OID 16409)
--- Dependencies: 214
 -- Data for Name: address; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.address (id, unit, street, city_suburb, postcode, region, country) FROM stdin;
-1	2	76-84 Karne Street north	Riverwood	2210	NSW	Australia
-2	2	76-84 Karne Street north	Riverwood	2210	NSW	Australia
-3	2	76-84 Karne Street north	Riverwood	2210	NSW	Australia
-10		Baggsend	hobbiton		the shire	LOTR
-7	2	76-84 Karne Street north	Riverwood	2209	NSW	Australia
-6	2	76-84 Karne Street north	Narwee	2210	NSW	Australia
-5	2	76-84 Karnee Street north	Riveerwood	2210	NSW	Australia
-11	2	76-84 Karnee Street north	Riveerwood	2210	NSW	Australia
-4	2	76-84 Karne Street north	Riverwood	2210	NSW	Australia
-12	unit 2	Tardis 	The universe	9999	Galefray	Australia
-13	2	76-84 Karne Street North	Riverwood	2210	NSW	Australia
-14		2 bedrock lane	Bedropck	45567	stone age	United States Virgin Islands
-15		The Tardis	Tardis	345667	universe	Cayman Islands
-\.
+INSERT INTO public.address VALUES (1, '2', '76-84 Karne Street north', 'Riverwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (2, '2', '76-84 Karne Street north', 'Riverwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (3, '2', '76-84 Karne Street north', 'Riverwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (7, '2', '76-84 Karne Street north', 'Riverwood', '2209', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (6, '2', '76-84 Karne Street north', 'Narwee', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (5, '2', '76-84 Karnee Street north', 'Riveerwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (11, '2', '76-84 Karnee Street north', 'Riveerwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (4, '2', '76-84 Karne Street north', 'Riverwood', '2210', 'NSW', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (12, 'unit 2', 'Tardis ', 'The universe', '9999', 'Galefray', 'Australia') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (15, '', 'The Tardis', 'Tardis', '345667', 'universe', 'Cayman Islands') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (14, '', '2 bedrock lane', 'Bedropck', '45567', 'stone age', 'United States Virgin Islands') ON CONFLICT DO NOTHING;
+INSERT INTO public.address VALUES (10, '', 'Baggsend', 'hobbiton', '', 'the shire', 'Barbados') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3631 (class 0 OID 16423)
--- Dependencies: 216
+-- Data for Name: addresses; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
+--
+
+
+
+--
 -- Data for Name: alias; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.alias (userid, groupid, _perms, id, name, target) FROM stdin;
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	stor	15
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	2	bronze	9
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	3	store	15
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	4	knck-dev	23
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	knck	16
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	6	knock-dev	23
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	7	cpp	24
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	8	CPP	24
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	9	c++	24
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	10	proc	21
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	11	dir	18
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	12	out	7
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	13	api.q	19
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	14	api_u	13
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	15	API_U	13
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	16	in	5
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	19	tool	12
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	21	fred	22
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	22	pk	16
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	23	add	4
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	25	perl6	27
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	26	pg	34
-\.
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, 'stor', 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 2, 'bronze', 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 3, 'store', 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 4, 'knck-dev', 23) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, 'knck', 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 6, 'knock-dev', 23) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 7, 'cpp', 24) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 8, 'CPP', 24) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 9, 'c++', 24) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 10, 'proc', 21) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 11, 'dir', 18) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 12, 'out', 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 13, 'api.q', 19) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 14, 'api_u', 13) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 15, 'API_U', 13) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 16, 'in', 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 19, 'tool', 12) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 21, 'fred', 22) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 22, 'pk', 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 23, 'add', 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 25, 'perl6', 27) ON CONFLICT DO NOTHING;
+INSERT INTO public.alias VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 26, 'pg', 34) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3636 (class 0 OID 16468)
--- Dependencies: 225
 -- Data for Name: codes_prefixes; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.codes_prefixes (prefix, cc, _flag) FROM stdin;
-\.
 
 
 --
--- TOC entry 3637 (class 0 OID 16471)
--- Dependencies: 226
 -- Data for Name: countries; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.countries (prefix, cc, id, _name, _escape, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, _flag) FROM stdin;
-+61	AU	2	Australia	0	(?:(?:\\+61[ -]?\\d|0\\d|\\(0\\d\\)|0\\d)[ -]?)?\\d{4}[ -]?\\d{4}	(?:\\+61|0)?\\d{3}[ -]?\\d{3}[ -]?\\d{3}	Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.	Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876	+612-9567-2876|(02) 9567 2876|0295672876	+61438-567-876|0438 567 876|0438567876	/flags/AU.png
-+1340	VI	8	United States Virgin Islands	\N	(?:\\+?1[ -]?)?340[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?340[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1340-234-1234 or 1340 234 1234 or 340-234-1234.	Only +digits or local formats allowed i.e. +1340-234-1234 or 1340 234 1234 or 240-234-1234.	+1-340-234-1234|1 340 234 1234|340 234 1234	+1-340-234-1234|1 340 234 1234|340 234 1234	/flags/VI.png
-+1345	KY	9	Cayman Islands	\N	(?:\\+?1[ -]?)?345[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?345[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1345-234-1234 or 1345 234 1234 or 345-234-1234.	Only +digits or local formats allowed i.e. +1345-234-1234 or 1345 234 1234 or 245-234-1234.	+1-345-234-1234|1 345 234 1234|345 234 1234	+1-345-234-1234|1 345 234 1234|345 234 1234	/flags/KY.png
-+1242	BS	1	The Bahamas	\N	(?:\\+?1[ -]?)?242[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?242[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1242-234-1234 or 1242 234 1234 or 242-234-1234.	Only +digits or local formats allowed i.e. +1242-234-1234 or 1242 234 1234 or 242-234-1234.	+1-242-234-1234|1 242 234 1234|242 234 1234	+1-242-234-1234|1 242 234 1234|242 234 1234	/flags/BS.png
-+1246	BB	3	Barbados	\N	(?:\\+?1[ -]?)?246[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?246[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1246-234-1234 or 1246 234 1234 or 246-234-1234.	Only +digits or local formats allowed i.e. +1246-234-1234 or 1246 234 1234 or 246-234-1234.	+1-246-234-1234|1 242 234 1234|242 234 1234	+1-246-234-1234|1 246 234 1234|246 234 1234	/flags/BB.png
-+1284	VG	6	British Virgin Islands	\N	(?:\\+?1[ -]?)?284[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?284[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1284-234-1234 or 1284 234 1234 or 284-234-1234.	Only +digits or local formats allowed i.e. +1284-234-1234 or 1284 234 1234 or 284-234-1234.	+1-248-234-1234|1 248 234 1234|248 234 1234	+1-284-234-1234|1 284 234 1234|284 234 1234	/flags/VG.png
-+1268	AG	5	Antigua and Barbuda	\N	(?:\\+?1[ -]?)?268[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?268[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1268-234-1234 or 1268 234 1234 or 268-234-1234.	Only +digits or local formats allowed i.e. +1268-234-1234 or 1248 234 1234 or 248-234-1234.	+1-248-234-1234|1 248 234 1234|248 234 1234	+1-248-234-1234|1 248 234 1234|248 234 1234	/flags/AG.png
-+1264	AI	4	Anguilla	\N	(?:\\+?1[ -]?)?264[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?264[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1264-234-1234 or 1264 234 1234 or 264-234-1234.	Only +digits or local formats allowed i.e. +1264-234-1234 or 1246 234 1234 or 246-234-1234.	+1-246-234-1234|1 242 234 1234|242 234 1234	+1-246-234-1234|1 246 234 1234|246 234 1234	/flags/AI.png
-+1441	BM	10	Bermuda	\N	(?:\\+?1[ -]?)?441[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?441[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1441-234-1234 or 1441 234 1234 or 441-234-1234.	Only +digits or local formats allowed i.e. +1441-234-1234 or 1441 234 1234 or 441-234-1234.	+1-441-234-1234|1 441 234 1234|441 234 1234	+1-441-234-1234|1 441 234 1234|441 234 1234	/flags/BM.png
-+1473	GD	11	Grenada	\N	(?:\\+?1[ -]?)?473[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?473[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1473-234-1234 or 1473 234 1234 or 473-234-1234.	Only +digits or local formats allowed i.e. +1473-234-1234 or 1473 234 1234 or 473-234-1234.	+1-473-234-1234|1 473 234 1234|473 234 1234	+1-473-234-1234|1 473 234 1234|473 234 1234	/flags/GD.png
-+1649	TC	12	Turks and Caicos Islands	\N	(?:\\+?1[ -]?)?649[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?649[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +16439-234-1234 or 1649 234 1234 or 649-234-1234.	Only +digits or local formats allowed i.e. +1649-234-1234 or 1649 234 1234 or 649-234-1234.	+1-649-234-1234|1 649 234 1234|649 234 1234	+1-649-234-1234|1 649 234 1234|649 234 1234	/flags/TC.png
-+1658	JM	13	Jamaica	\N	(?:\\+?1[ -]?)?658[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?658[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1658-234-1234 or 1658 234 1234 or 658-234-1234.	Only +digits or local formats allowed i.e. +1658-234-1234 or 1658 234 1234 or 658-234-1234.	+1-658-234-1234|1 658 234 1234|658 234 1234	+1-658-234-1234|1 658 234 1234|658 234 1234	/flags/JM.png
-+1664	MS	14	Montserrat	\N	(?:\\+?1[ -]?)?664[ -]?[2-9]\\d{2}[ -]?\\d{4}	(?:\\+?1[ -]?)?664[ -]?[2-9]\\d{2}[ -]?\\d{4}	Only +digits or local formats allowed i.e. +1664-234-1234 or 1664 234 1234 or 664-234-1234.	Only +digits or local formats allowed i.e. +1664-234-1234 or 1664 234 1234 or 664-234-1234.	+1-664-234-1234|1 664 234 1234|664 234 1234	+1-664-234-1234|1 664 234 1234|664 234 1234	/flags/MS.png
-\.
+INSERT INTO public.countries VALUES ('+61', 'AU', 2, 'Australia', '0', '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}', '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}', 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.', 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876', '+612-9567-2876|(02) 9567 2876|0295672876', '+61438-567-876|0438 567 876|0438567876', '/flags/AU.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1340', 'VI', 8, 'United States Virgin Islands', NULL, '(?:\+?1[ -]?)?340[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?340[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1340-234-1234 or 1340 234 1234 or 340-234-1234.', 'Only +digits or local formats allowed i.e. +1340-234-1234 or 1340 234 1234 or 240-234-1234.', '+1-340-234-1234|1 340 234 1234|340 234 1234', '+1-340-234-1234|1 340 234 1234|340 234 1234', '/flags/VI.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1345', 'KY', 9, 'Cayman Islands', NULL, '(?:\+?1[ -]?)?345[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?345[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1345-234-1234 or 1345 234 1234 or 345-234-1234.', 'Only +digits or local formats allowed i.e. +1345-234-1234 or 1345 234 1234 or 245-234-1234.', '+1-345-234-1234|1 345 234 1234|345 234 1234', '+1-345-234-1234|1 345 234 1234|345 234 1234', '/flags/KY.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1242', 'BS', 1, 'The Bahamas', NULL, '(?:\+?1[ -]?)?242[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?242[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1242-234-1234 or 1242 234 1234 or 242-234-1234.', 'Only +digits or local formats allowed i.e. +1242-234-1234 or 1242 234 1234 or 242-234-1234.', '+1-242-234-1234|1 242 234 1234|242 234 1234', '+1-242-234-1234|1 242 234 1234|242 234 1234', '/flags/BS.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1246', 'BB', 3, 'Barbados', NULL, '(?:\+?1[ -]?)?246[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?246[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1246-234-1234 or 1246 234 1234 or 246-234-1234.', 'Only +digits or local formats allowed i.e. +1246-234-1234 or 1246 234 1234 or 246-234-1234.', '+1-246-234-1234|1 242 234 1234|242 234 1234', '+1-246-234-1234|1 246 234 1234|246 234 1234', '/flags/BB.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1284', 'VG', 6, 'British Virgin Islands', NULL, '(?:\+?1[ -]?)?284[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?284[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1284-234-1234 or 1284 234 1234 or 284-234-1234.', 'Only +digits or local formats allowed i.e. +1284-234-1234 or 1284 234 1234 or 284-234-1234.', '+1-248-234-1234|1 248 234 1234|248 234 1234', '+1-284-234-1234|1 284 234 1234|284 234 1234', '/flags/VG.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1268', 'AG', 5, 'Antigua and Barbuda', NULL, '(?:\+?1[ -]?)?268[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?268[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1268-234-1234 or 1268 234 1234 or 268-234-1234.', 'Only +digits or local formats allowed i.e. +1268-234-1234 or 1248 234 1234 or 248-234-1234.', '+1-248-234-1234|1 248 234 1234|248 234 1234', '+1-248-234-1234|1 248 234 1234|248 234 1234', '/flags/AG.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1264', 'AI', 4, 'Anguilla', NULL, '(?:\+?1[ -]?)?264[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?264[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1264-234-1234 or 1264 234 1234 or 264-234-1234.', 'Only +digits or local formats allowed i.e. +1264-234-1234 or 1246 234 1234 or 246-234-1234.', '+1-246-234-1234|1 242 234 1234|242 234 1234', '+1-246-234-1234|1 246 234 1234|246 234 1234', '/flags/AI.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1441', 'BM', 10, 'Bermuda', NULL, '(?:\+?1[ -]?)?441[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?441[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1441-234-1234 or 1441 234 1234 or 441-234-1234.', 'Only +digits or local formats allowed i.e. +1441-234-1234 or 1441 234 1234 or 441-234-1234.', '+1-441-234-1234|1 441 234 1234|441 234 1234', '+1-441-234-1234|1 441 234 1234|441 234 1234', '/flags/BM.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1473', 'GD', 11, 'Grenada', NULL, '(?:\+?1[ -]?)?473[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?473[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1473-234-1234 or 1473 234 1234 or 473-234-1234.', 'Only +digits or local formats allowed i.e. +1473-234-1234 or 1473 234 1234 or 473-234-1234.', '+1-473-234-1234|1 473 234 1234|473 234 1234', '+1-473-234-1234|1 473 234 1234|473 234 1234', '/flags/GD.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1649', 'TC', 12, 'Turks and Caicos Islands', NULL, '(?:\+?1[ -]?)?649[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?649[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +16439-234-1234 or 1649 234 1234 or 649-234-1234.', 'Only +digits or local formats allowed i.e. +1649-234-1234 or 1649 234 1234 or 649-234-1234.', '+1-649-234-1234|1 649 234 1234|649 234 1234', '+1-649-234-1234|1 649 234 1234|649 234 1234', '/flags/TC.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1658', 'JM', 13, 'Jamaica', NULL, '(?:\+?1[ -]?)?658[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?658[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1658-234-1234 or 1658 234 1234 or 658-234-1234.', 'Only +digits or local formats allowed i.e. +1658-234-1234 or 1658 234 1234 or 658-234-1234.', '+1-658-234-1234|1 658 234 1234|658 234 1234', '+1-658-234-1234|1 658 234 1234|658 234 1234', '/flags/JM.png') ON CONFLICT DO NOTHING;
+INSERT INTO public.countries VALUES ('+1664', 'MS', 14, 'Montserrat', NULL, '(?:\+?1[ -]?)?664[ -]?[2-9]\d{2}[ -]?\d{4}', '(?:\+?1[ -]?)?664[ -]?[2-9]\d{2}[ -]?\d{4}', 'Only +digits or local formats allowed i.e. +1664-234-1234 or 1664 234 1234 or 664-234-1234.', 'Only +digits or local formats allowed i.e. +1664-234-1234 or 1664 234 1234 or 664-234-1234.', '+1-664-234-1234|1 664 234 1234|664 234 1234', '+1-664-234-1234|1 664 234 1234|664 234 1234', '/flags/MS.png') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3640 (class 0 OID 16478)
--- Dependencies: 229
 -- Data for Name: email; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.email (id, _email, verified) FROM stdin;
-1	grizzly@smit.id.au	f
-7	frodo@tolkien.com	f
-4	grizzly@smit.id.au	f
-3	grizzly@smit.id.au	f
-2	grizzly@smit.id.au	f
-8	doctor@tardis.org	f
-9	fredie.j@hillsong.com	f
-10	fred@bedrock.org	f
-11	romanna@tardis.org	f
-\.
+INSERT INTO public.email VALUES (1, 'grizzly@smit.id.au', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (4, 'grizzly@smit.id.au', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (3, 'grizzly@smit.id.au', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (2, 'grizzly@smit.id.au', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (8, 'doctor@tardis.org', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (11, 'romanna@tardis.org', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (10, 'fred@bedrock.org', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.email VALUES (7, 'frodo@tolkien.com', false) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3642 (class 0 OID 16484)
--- Dependencies: 231
 -- Data for Name: emails; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.emails (id, email_id, address_id) FROM stdin;
-\.
 
 
 --
--- TOC entry 3644 (class 0 OID 16489)
--- Dependencies: 233
 -- Data for Name: groups; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.groups (id, group_id, passwd_id) FROM stdin;
-1	4	2
-3	1	2
-8	5	2
-9	3	3
-10	1	3
-24	8	3
-28	8	2
-29	1	8
-30	3	8
-31	5	8
-32	4	8
-33	8	8
-34	1	9
-35	8	9
-36	5	9
-37	4	9
-38	3	9
-39	9	9
-40	10	10
-41	9	10
-42	3	10
-43	4	10
-44	5	10
-45	1	10
-46	8	10
-47	1	11
-48	8	11
-49	5	11
-50	4	11
-51	3	11
-52	10	11
-53	11	11
-\.
+INSERT INTO public.groups VALUES (1, 4, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (3, 1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (8, 5, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (9, 3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (10, 1, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (24, 8, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (28, 8, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (29, 1, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (30, 3, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (31, 5, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (32, 4, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (33, 8, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (40, 10, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (41, 9, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (42, 3, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (43, 4, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (44, 5, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (45, 1, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (46, 8, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (47, 1, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (48, 8, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (49, 5, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (50, 4, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (51, 3, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (52, 10, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.groups VALUES (53, 11, 11) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3635 (class 0 OID 16446)
--- Dependencies: 221
 -- Data for Name: links; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.links (userid, groupid, _perms, id, section_id, link, name) FROM stdin;
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	1	https://version.oztell.com.au/anycast/dl.88.io	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	2	1	https://version.oztell.com.au/anycast/dl.88.io/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	3	2	https://version.contacttrace.com.au/fiduciary-exchange/key/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	4	2	https://version.contacttrace.com.au/fiduciary-exchange/key/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	2	https://version.contacttrace.com.au/fiduciary-exchange/key/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	6	3	https://vault.net2maxlabs.net/net2max1/wp-admin/post.php?post=48209&action=edit	edit-docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	7	3	https://vault.net2maxlabs.net/net2max1/location-grid/	view-docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	8	4	https://version.contacttrace.com.au/fiduciary-exchange/address/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	9	4	https://version.contacttrace.com.au/fiduciary-exchange/address/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	10	4	https://version.contacttrace.com.au/fiduciary-exchange/address/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	11	5	https://version.contacttrace.com.au/contact0/input/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	12	5	https://version.contacttrace.com.au/contact0/input	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	13	5	https://version.contacttrace.com.au/contact0/input/-pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	14	6	https://version.contacttrace.com.au/contact0/app/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	15	6	https://version.contacttrace.com.au/contact0/app/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	16	6	https://version.contacttrace.com.au/contact0/app/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	17	7	https://version.contacttrace.com.au/contact0/output/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	18	7	https://version.contacttrace.com.au/contact0/output/-scripts/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	19	7	https://version.contacttrace.com.au/contact0/output/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	20	8	https://vault.net2maxlabs.net/net2max1/business-identity-check/	view-docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	21	8	https://vault.net2maxlabs.net/net2max1/wp-admin/post.php?post=51576&action=edit	edit-docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	76	34	https://www.postgresql.org/docs/	docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	77	36	https://php.net	main
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	78	36	https://www.php.net/manual/en/	docs-en
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	79	36	https://www.php.net/manual/en/langref.php	lang
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	80	36	https://www.php.net/manual/en/security.php	security
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	81	36	https://www.php.net/manual/en/funcref.php	funs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	82	36	https://www.php.net/manual/en/faq.php	faq
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	83	36	https://www.php.net/manual/en/appendices.php	apendices
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	84	36	https://www.php.net/manual/en/features.php	features
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	99	34	https://www.postgresql.org/	main
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	22	9	https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/-/blob/prod/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	23	9	https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	24	9	https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	25	10	https://version.contacttrace.com.au/fiduciary-exchange/signature/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	26	10	https://version.contacttrace.com.au/fiduciary-exchange/signature/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	27	10	https://version.contacttrace.com.au/fiduciary-exchange/signature/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	28	11	https://chat.quuvoo4ohcequuox.0.88.io/home	chat
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	29	12	https://version.oztell.com.au/88io0/tools/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	31	12	https://version.oztell.com.au/88io0/tools/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	32	13	https://version.contacttrace.com.au/contact2/api_ugh8eika/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	33	13	https://version.contacttrace.com.au/contact2/api_ugh8eika/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	34	13	https://version.contacttrace.com.au/contact2/api_ugh8eika/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	35	14	https://vault.net2maxlabs.net/net2max1/business-identity-check/	namecheck
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	36	14	https://vault.net2maxlabs.net/net2max1/location-grid/	map
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	37	15	https://version.contacttrace.com.au/contact0/storage/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	38	15	https://version.contacttrace.com.au/contact0/storage/-/pipelines	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	39	15	https://version.contacttrace.com.au/contact0/storage/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	40	16	https://version.contacttrace.com.au/contact0/dops-portknocking/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	41	16	https://version.contacttrace.com.au/contact0/dops-portknocking/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	42	16	https://version.contacttrace.com.au/contact0/dops-portknocking/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	43	17	https://version.contacttrace.com.au/contact0/dops-scripts/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	44	17	https://version.contacttrace.com.au/contact0/dops-scripts/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	45	17	https://version.contacttrace.com.au/contact0/dops-scripts/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	46	18	https://version.contacttrace.com.au/contact0/directory/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	47	18	https://version.contacttrace.com.au/contact0/directory/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	48	18	https://version.contacttrace.com.au/contact0/directory/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	49	19	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	50	19	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io/-/blob/prod/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	51	19	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	52	20	https://version.oztell.com.au/oztell8/api	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	53	21	https://version.contacttrace.com.au/contact0/processor/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	54	21	https://version.contacttrace.com.au/contact0/processor	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	55	21	https://version.contacttrace.com.au/contact0/processor/-/blob/dev/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	56	22	https://ledger.contacttrace.com.au/?chain=0-s1-dev	0-s1-dev
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	57	22	https://ledger.contacttrace.com.au/	launch-page
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	58	23	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/-/blob/prod/README.md	readme
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	59	23	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/	gitlab
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	60	23	https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/-/pipelines/	pipeline
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	61	24	https://isocpp.org/	iso
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	62	24	https://en.cppreference.com/w/	cppref
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	63	24	https://www.modernescpp.com/index.php	modernescpp
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	69	27	https://raku.org/	main
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	70	27	https://modules.raku.org/	modules
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	71	27	https://docs.raku.org/	docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	72	27	https://docs.raku.org/language.html	lang
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	73	27	https://docs.raku.org/type.html	types
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	74	27	https://web.libera.chat/?channel=#raku	chat
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	100	34	https://www.postgresql.org/account	account
-\.
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, 1, 'https://version.oztell.com.au/anycast/dl.88.io', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 2, 1, 'https://version.oztell.com.au/anycast/dl.88.io/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 3, 2, 'https://version.contacttrace.com.au/fiduciary-exchange/key/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 4, 2, 'https://version.contacttrace.com.au/fiduciary-exchange/key/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, 2, 'https://version.contacttrace.com.au/fiduciary-exchange/key/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 6, 3, 'https://vault.net2maxlabs.net/net2max1/wp-admin/post.php?post=48209&action=edit', 'edit-docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 7, 3, 'https://vault.net2maxlabs.net/net2max1/location-grid/', 'view-docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 8, 4, 'https://version.contacttrace.com.au/fiduciary-exchange/address/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 9, 4, 'https://version.contacttrace.com.au/fiduciary-exchange/address/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 10, 4, 'https://version.contacttrace.com.au/fiduciary-exchange/address/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 11, 5, 'https://version.contacttrace.com.au/contact0/input/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 12, 5, 'https://version.contacttrace.com.au/contact0/input', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 13, 5, 'https://version.contacttrace.com.au/contact0/input/-pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 14, 6, 'https://version.contacttrace.com.au/contact0/app/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 15, 6, 'https://version.contacttrace.com.au/contact0/app/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 16, 6, 'https://version.contacttrace.com.au/contact0/app/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 17, 7, 'https://version.contacttrace.com.au/contact0/output/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 18, 7, 'https://version.contacttrace.com.au/contact0/output/-scripts/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 19, 7, 'https://version.contacttrace.com.au/contact0/output/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 20, 8, 'https://vault.net2maxlabs.net/net2max1/business-identity-check/', 'view-docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 21, 8, 'https://vault.net2maxlabs.net/net2max1/wp-admin/post.php?post=51576&action=edit', 'edit-docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 76, 34, 'https://www.postgresql.org/docs/', 'docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 77, 36, 'https://php.net', 'main') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 78, 36, 'https://www.php.net/manual/en/', 'docs-en') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 79, 36, 'https://www.php.net/manual/en/langref.php', 'lang') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 80, 36, 'https://www.php.net/manual/en/security.php', 'security') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 81, 36, 'https://www.php.net/manual/en/funcref.php', 'funs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 82, 36, 'https://www.php.net/manual/en/faq.php', 'faq') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 83, 36, 'https://www.php.net/manual/en/appendices.php', 'apendices') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 84, 36, 'https://www.php.net/manual/en/features.php', 'features') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 99, 34, 'https://www.postgresql.org/', 'main') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 22, 9, 'https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/-/blob/prod/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 23, 9, 'https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 24, 9, 'https://version.contacttrace.com.au/fiduciary-exchange/bronze-aus/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 25, 10, 'https://version.contacttrace.com.au/fiduciary-exchange/signature/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 26, 10, 'https://version.contacttrace.com.au/fiduciary-exchange/signature/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 27, 10, 'https://version.contacttrace.com.au/fiduciary-exchange/signature/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 28, 11, 'https://chat.quuvoo4ohcequuox.0.88.io/home', 'chat') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 29, 12, 'https://version.oztell.com.au/88io0/tools/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 31, 12, 'https://version.oztell.com.au/88io0/tools/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 32, 13, 'https://version.contacttrace.com.au/contact2/api_ugh8eika/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 33, 13, 'https://version.contacttrace.com.au/contact2/api_ugh8eika/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 34, 13, 'https://version.contacttrace.com.au/contact2/api_ugh8eika/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 35, 14, 'https://vault.net2maxlabs.net/net2max1/business-identity-check/', 'namecheck') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 36, 14, 'https://vault.net2maxlabs.net/net2max1/location-grid/', 'map') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 37, 15, 'https://version.contacttrace.com.au/contact0/storage/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 38, 15, 'https://version.contacttrace.com.au/contact0/storage/-/pipelines', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 39, 15, 'https://version.contacttrace.com.au/contact0/storage/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 40, 16, 'https://version.contacttrace.com.au/contact0/dops-portknocking/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 41, 16, 'https://version.contacttrace.com.au/contact0/dops-portknocking/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 42, 16, 'https://version.contacttrace.com.au/contact0/dops-portknocking/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 43, 17, 'https://version.contacttrace.com.au/contact0/dops-scripts/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 44, 17, 'https://version.contacttrace.com.au/contact0/dops-scripts/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 45, 17, 'https://version.contacttrace.com.au/contact0/dops-scripts/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 46, 18, 'https://version.contacttrace.com.au/contact0/directory/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 47, 18, 'https://version.contacttrace.com.au/contact0/directory/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 48, 18, 'https://version.contacttrace.com.au/contact0/directory/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 49, 19, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 50, 19, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io/-/blob/prod/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 51, 19, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/api.quuvoo4ohcequuox.0.88.io/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 52, 20, 'https://version.oztell.com.au/oztell8/api', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 53, 21, 'https://version.contacttrace.com.au/contact0/processor/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 54, 21, 'https://version.contacttrace.com.au/contact0/processor', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 55, 21, 'https://version.contacttrace.com.au/contact0/processor/-/blob/dev/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 56, 22, 'https://ledger.contacttrace.com.au/?chain=0-s1-dev', '0-s1-dev') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 57, 22, 'https://ledger.contacttrace.com.au/', 'launch-page') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 58, 23, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/-/blob/prod/README.md', 'readme') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 59, 23, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/', 'gitlab') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 60, 23, 'https://version.quuvoo4ohcequuox.0.88.io/quuvoo4ohcequuox/portknocking.quuvoo4ohcequuox.0.88.io/-/pipelines/', 'pipeline') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 61, 24, 'https://isocpp.org/', 'iso') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 62, 24, 'https://en.cppreference.com/w/', 'cppref') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 63, 24, 'https://www.modernescpp.com/index.php', 'modernescpp') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 69, 27, 'https://raku.org/', 'main') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 70, 27, 'https://modules.raku.org/', 'modules') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 71, 27, 'https://docs.raku.org/', 'docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 72, 27, 'https://docs.raku.org/language.html', 'lang') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 73, 27, 'https://docs.raku.org/type.html', 'types') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 74, 27, 'https://web.libera.chat/?channel=#raku', 'chat') ON CONFLICT DO NOTHING;
+INSERT INTO public.links VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 100, 34, 'https://www.postgresql.org/account', 'account') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3634 (class 0 OID 16433)
--- Dependencies: 219
 -- Data for Name: links_sections; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.links_sections (userid, groupid, _perms, id, section) FROM stdin;
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	dl.88.io
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	2	key
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	3	location-grid-old-docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	4	address
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	input
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	6	app
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	7	output
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	8	business-identity-check
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	9	bronze-aus
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	10	signature
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	11	chat.q
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	12	tools
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	13	api_ugh8eika
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	14	oldocs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	15	storage
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	16	portknocking
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	17	scripts
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	18	directory
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	19	api.quuvoo4ohcequuox.0.88.io
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	20	api
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	21	processor
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	22	blockchains
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	23	portknocking-dev
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	24	C++
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	27	raku
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	34	postgres
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	36	php
-\.
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, 'dl.88.io') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 2, 'key') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 3, 'location-grid-old-docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 4, 'address') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, 'input') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 6, 'app') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 7, 'output') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 8, 'business-identity-check') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 9, 'bronze-aus') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 10, 'signature') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 11, 'chat.q') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 12, 'tools') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 13, 'api_ugh8eika') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 14, 'oldocs') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 15, 'storage') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 16, 'portknocking') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 17, 'scripts') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 18, 'directory') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 19, 'api.quuvoo4ohcequuox.0.88.io') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 20, 'api') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 21, 'processor') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 22, 'blockchains') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 23, 'portknocking-dev') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 24, 'C++') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 27, 'raku') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 34, 'postgres') ON CONFLICT DO NOTHING;
+INSERT INTO public.links_sections VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 36, 'php') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3646 (class 0 OID 16498)
--- Dependencies: 236
 -- Data for Name: page_section; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.page_section (userid, groupid, _perms, id, pages_id, links_section_id) FROM stdin;
-4	5	("(t,t,t)","(t,t,t)","(t,f,f)")	80	39	24
-4	5	("(t,t,t)","(t,t,t)","(t,f,f)")	81	39	27
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	1	12
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	2	1	20
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	3	3	16
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	4	3	23
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	5	19
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	6	5	1
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	7	7	15
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	8	7	21
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	9	7	17
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	10	7	16
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	11	7	4
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	12	7	10
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	13	7	9
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	14	7	13
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	15	7	5
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	16	7	18
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	17	7	7
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	18	7	6
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	19	7	2
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	20	20	3
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	21	20	14
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	78	37	1
-\.
+INSERT INTO public.page_section VALUES (4, 5, '("(t,t,t)","(t,t,t)","(t,f,f)")', 80, 39, 24) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (4, 5, '("(t,t,t)","(t,t,t)","(t,f,f)")', 81, 39, 27) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, 1, 12) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 2, 1, 20) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 3, 3, 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 4, 3, 23) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, 5, 19) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 6, 5, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 7, 7, 15) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 8, 7, 21) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 9, 7, 17) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 10, 7, 16) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 11, 7, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 12, 7, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 13, 7, 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 14, 7, 13) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 15, 7, 5) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 16, 7, 18) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 17, 7, 7) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 18, 7, 6) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 19, 7, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 20, 20, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 21, 20, 14) ON CONFLICT DO NOTHING;
+INSERT INTO public.page_section VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 78, 37, 1) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3647 (class 0 OID 16506)
--- Dependencies: 237
 -- Data for Name: pages; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.pages (userid, groupid, _perms, id, name, full_name) FROM stdin;
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	oztell.com.au	oztell.com.au stuff
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	3	knock	port knocking
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	7	contacttrace	contacttrace
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	20	docsold	The Old Docs
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	88.io	88.io stuff
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	37	apk	where the apks are
-4	5	("(t,t,t)","(t,t,t)","(t,f,f)")	39	grizz-page	Grizzs Page
-\.
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, 'oztell.com.au', 'oztell.com.au stuff') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 3, 'knock', 'port knocking') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 7, 'contacttrace', 'contacttrace') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 20, 'docsold', 'The Old Docs') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, '88.io', '88.io stuff') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 37, 'apk', 'where the apks are') ON CONFLICT DO NOTHING;
+INSERT INTO public.pages VALUES (4, 5, '("(t,t,t)","(t,t,t)","(t,f,f)")', 39, 'grizz-page', 'Grizzs Page') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3652 (class 0 OID 16539)
--- Dependencies: 245
 -- Data for Name: passwd; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.passwd (id, username, _password, passwd_details_id, primary_group_id, _admin, email_id) FROM stdin;
-1	admin	{X-PBKDF2}HMACSHA2+512:AAAIAA:1j44CmP4SfwiYFHyQSJ+NA==:N2xeXHLH5MLnAq3hAAFgPscGSbkZu9bvvN6pgnNPkUeX3c1pzzI+NnxtyITUf0sZ1fd23G3MDFgA/aoLmHf0aQ==	1	1	t	1
-4	grizz	{X-PBKDF2}HMACSHA2+512:AAAIAA:zWeWVTYpvU2EsxbD6fjNIw==:sdYmcRwOLxC55Q/cCigfExdtT32EFH3vzTvV8IaYVkjNo4Svo8A9FumS1Wu8Dpu7ca2W+uFcX7ZEA5zilPK3vg==	4	5	f	4
-3	grizzly	{X-PBKDF2}HMACSHA2+512:AAAIAA:Po+YOhfNSqvgJVkWfUJdoQ==:kA39+vz0F3/pIECA7Y2TuW1wLIPdal0WBv2LOWdkRCWci6GEcKdSu0NQ5wwsZuI4G0fsMBE83LIGvBiZJe0VcA==	3	4	t	3
-2	grizzlysmit	{X-PBKDF2}HMACSHA2+512:AAAIAA:205IxJhEjYkb5aOMExRFEA==:rk5nlRePO0bI4w1KOUPOyJADkCtBxpTd6goK9IGBc7fUu5otOvz+hXthcw41HH1DXSMB0qbicNJWpGC18wmUww==	2	3	t	2
-7	frodo	{X-PBKDF2}HMACSHA2+512:AAAIAA:L8niz4XzsghhSbcrOSDRHA==:MbAm1ydlPeqD2gIBVdvNOS9iLJwN55p59wXHZh28BdbMIl3Zu5zj0ysFmDzGiv4f/jA4zc/9FsUTQAQD64MjUQ==	7	8	f	7
-8	doctor	{X-PBKDF2}HMACSHA2+512:AAAIAA:qI8dL7+iG0krRmP0j5UuBQ==:VZOV1L9FRFI+hH5Veiw66J6qdCe8hbyCeHnQ9cGkijk0UarrsYSSjxajlTtHYZ7qScd/uMSZBxT9w+5gEuj94w==	8	9	t	8
-9	fredie	{X-PBKDF2}HMACSHA2+512:AAAIAA:5vZjOqzL6yFmcDWXqQZO4Q==:rVQtKvYtiJ990AppqZ3H1qlKNUPRBUqJx3X/P6EjFLUREe0fz7SzxDQSHaqVDbbvf5GGryAd4MJ+coPRS+Wx+A==	9	10	t	9
-10	fred	{X-PBKDF2}HMACSHA2+512:AAAIAA:MngWyewYRJDLVd4R0g90XA==:hNjmHMU/6Q/ygd0pR+TKw/Jp7B1zyuUvdRSZMqw1SoRdv47AytpnjvUWuhn+z3bRBcJrwTIZUEUKNVNRIpTZKQ==	10	11	t	10
-11	romanna	{X-PBKDF2}HMACSHA2+512:AAAIAA:bVOYGpst/uGWLk9DVK9Sdw==:WpOfCez6IKE3lRLhMB8IkCTUiiPgdaK2vVofvsjZaBP92yDGeqlwiDi3l1cnvcxGo8c4yjbUEtnyaMoA9FiLYA==	11	12	t	11
-\.
+INSERT INTO public.passwd VALUES (1, 'admin', '{X-PBKDF2}HMACSHA2+512:AAAIAA:1j44CmP4SfwiYFHyQSJ+NA==:N2xeXHLH5MLnAq3hAAFgPscGSbkZu9bvvN6pgnNPkUeX3c1pzzI+NnxtyITUf0sZ1fd23G3MDFgA/aoLmHf0aQ==', 1, 1, true, 1) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (4, 'grizz', '{X-PBKDF2}HMACSHA2+512:AAAIAA:zWeWVTYpvU2EsxbD6fjNIw==:sdYmcRwOLxC55Q/cCigfExdtT32EFH3vzTvV8IaYVkjNo4Svo8A9FumS1Wu8Dpu7ca2W+uFcX7ZEA5zilPK3vg==', 4, 5, false, 4) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (3, 'grizzly', '{X-PBKDF2}HMACSHA2+512:AAAIAA:Po+YOhfNSqvgJVkWfUJdoQ==:kA39+vz0F3/pIECA7Y2TuW1wLIPdal0WBv2LOWdkRCWci6GEcKdSu0NQ5wwsZuI4G0fsMBE83LIGvBiZJe0VcA==', 3, 4, true, 3) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (2, 'grizzlysmit', '{X-PBKDF2}HMACSHA2+512:AAAIAA:205IxJhEjYkb5aOMExRFEA==:rk5nlRePO0bI4w1KOUPOyJADkCtBxpTd6goK9IGBc7fUu5otOvz+hXthcw41HH1DXSMB0qbicNJWpGC18wmUww==', 2, 3, true, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (8, 'doctor', '{X-PBKDF2}HMACSHA2+512:AAAIAA:qI8dL7+iG0krRmP0j5UuBQ==:VZOV1L9FRFI+hH5Veiw66J6qdCe8hbyCeHnQ9cGkijk0UarrsYSSjxajlTtHYZ7qScd/uMSZBxT9w+5gEuj94w==', 8, 9, true, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (11, 'romanna', '{X-PBKDF2}HMACSHA2+512:AAAIAA:Hfx25iKf16ALs9uLyAP0dg==:uZ3Yf8yYB3wNU3o+a5V++YfLR13j2n1UGn9PlNImGuDwhG2dvm8MbM3pNgRwe1k6H1KCXaNS34gsbE7SYkrZcg==', 11, 12, true, 11) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (10, 'fred', '{X-PBKDF2}HMACSHA2+512:AAAIAA:MngWyewYRJDLVd4R0g90XA==:hNjmHMU/6Q/ygd0pR+TKw/Jp7B1zyuUvdRSZMqw1SoRdv47AytpnjvUWuhn+z3bRBcJrwTIZUEUKNVNRIpTZKQ==', 10, 11, true, 10) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd VALUES (7, 'frodo', '{X-PBKDF2}HMACSHA2+512:AAAIAA:L8niz4XzsghhSbcrOSDRHA==:MbAm1ydlPeqD2gIBVdvNOS9iLJwN55p59wXHZh28BdbMIl3Zu5zj0ysFmDzGiv4f/jA4zc/9FsUTQAQD64MjUQ==', 7, 8, false, 7) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3654 (class 0 OID 16545)
--- Dependencies: 247
 -- Data for Name: passwd_details; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.passwd_details (id, display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id, countries_id) FROM stdin;
-1	Francis Grizzly Smit	Francis Grizzly	Smit	3	3	1	\N	2
-7	Frodo Baggins	Frodo	Baggins	10	10	\N	\N	2
-4	Francis Grizzly Smit	Francis Grizzly	Smit	7	6	7	10	2
-3	Francis Grizzly Smit	Francis Grizzly	Smit	5	11	5	11	2
-2	Francis Grizzly Smit	Francis Grizzly	Smit	4	4	3	9	2
-8	The Doctor Whatever	The Doctor	Whatever	12	12	12	13	2
-9	Fredie J	Fredie	J	13	13	14	15	2
-10	Fred Flintstone	Fred	Flintstone	14	14	16	17	2
-11	Romanna Time Lady	Romanna	Time Lady	15	15	18	19	2
-\.
+INSERT INTO public.passwd_details VALUES (1, 'Francis Grizzly Smit', 'Francis Grizzly', 'Smit', 3, 3, 1, NULL, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (4, 'Francis Grizzly Smit', 'Francis Grizzly', 'Smit', 7, 6, 7, 10, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (3, 'Francis Grizzly Smit', 'Francis Grizzly', 'Smit', 5, 11, 5, 11, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (2, 'Francis Grizzly Smit', 'Francis Grizzly', 'Smit', 4, 4, 3, 9, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (8, 'The Doctor Whatever', 'The Doctor', 'Whatever', 12, 12, 12, 13, 2) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (11, 'Romanna Time Lady', 'Romanna', 'Time Lady', 15, 15, 18, 19, 9) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (10, 'Fred Flintstone', 'Fred', 'Flintstone', 14, 14, 16, 17, 8) ON CONFLICT DO NOTHING;
+INSERT INTO public.passwd_details VALUES (7, 'Frodo Baggins', 'Frodo', 'Baggins', 10, 10, NULL, NULL, 3) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3656 (class 0 OID 16552)
--- Dependencies: 249
 -- Data for Name: phone; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.phone (id, _number, verified) FROM stdin;
-1	+61482176343	f
-2	+612 9217 6004	f
-4	+612 9217 6004	f
-6	(02) 9217 6004	f
-8	+612-9217-6004	f
-7	+61482176343	f
-10	+61292176004	f
-5	+61482176343	f
-11	+61292176004	f
-3	+61482176343	f
-9	+61292176004	f
-12	0482 176 343	f
-13	(02) 9217 6004	f
-14	0438433646	f
-15	02 9217 6004	f
-16	+1-340-234-1234	f
-17	+1-340-432-4321	f
-18	+1-345-234-1234	f
-19	+1-345-432-4321	f
-\.
+INSERT INTO public.phone VALUES (1, '+61482176343', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (2, '+612 9217 6004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (4, '+612 9217 6004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (6, '(02) 9217 6004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (8, '+612-9217-6004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (7, '+61482176343', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (10, '+61292176004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (5, '+61482176343', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (11, '+61292176004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (3, '+61482176343', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (9, '+61292176004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (12, '0482 176 343', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (13, '(02) 9217 6004', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (18, '+13452341234', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (19, '+1345+1-345-432-4321', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (16, '+13402341234', false) ON CONFLICT DO NOTHING;
+INSERT INTO public.phone VALUES (17, '+1340+1-340-432-4321', false) ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3658 (class 0 OID 16558)
--- Dependencies: 251
 -- Data for Name: phones; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.phones (id, phone_id, address_id) FROM stdin;
-\.
 
 
 --
--- TOC entry 3649 (class 0 OID 16524)
--- Dependencies: 241
 -- Data for Name: pseudo_pages; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.pseudo_pages (userid, groupid, _perms, id, pattern, status, name, full_name) FROM stdin;
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	1	.*	unassigned	misc	misc
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	2	.*	both	all	all
-1	1	("(t,t,t)","(t,t,t)","(t,f,f)")	5	.*	assigned	already	already in pages
-\.
+INSERT INTO public.pseudo_pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 1, '.*', 'unassigned', 'misc', 'misc') ON CONFLICT DO NOTHING;
+INSERT INTO public.pseudo_pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 2, '.*', 'both', 'all', 'all') ON CONFLICT DO NOTHING;
+INSERT INTO public.pseudo_pages VALUES (1, 1, '("(t,t,t)","(t,t,t)","(t,f,f)")', 5, '.*', 'assigned', 'already', 'already in pages') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3630 (class 0 OID 16415)
--- Dependencies: 215
 -- Data for Name: secure; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.secure (userid, groupid, _perms) FROM stdin;
-\.
 
 
 --
--- TOC entry 3660 (class 0 OID 16568)
--- Dependencies: 254
 -- Data for Name: sessions; Type: TABLE DATA; Schema: public; Owner: grizzlysmit
 --
 
-COPY public.sessions (id, a_session) FROM stdin;
-ccaf15a07783d52542704b543d8dc2b9	BQsDAAAAEBcLZ3JpenpseXNtaXQAAAARbG9nZ2VkaW5fdXNlcm5hbWUXFEZyYW5jaXMgR3Jpenps\neSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZQoCMjUAAAALcGFnZV9sZW5ndGgIgAAAAA5s\nb2dnZWRpbl9hZG1pbhcEU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkXD0ZyYW5jaXMgR3JpenpseQAA\nAA5sb2dnZWRpbl9naXZlbgoJbGlua3NeQysrAAAAD2N1cnJlbnRfc2VjdGlvbhcOKzYxNDgyIDE3\nNiAzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVyFxJncml6emx5QHNtaXQuaWQuYXUAAAAObG9n\nZ2VkaW5fZW1haWwKATAAAAAFZGVidWcIggAAAAhsb2dnZWRpbgoPcHNldWRvLXBhZ2VeYWxsAAAA\nDGN1cnJlbnRfcGFnZQogY2NhZjE1YTA3NzgzZDUyNTQyNzA0YjU0M2Q4ZGMyYjkAAAALX3Nlc3Np\nb25faWQIggAAAAtsb2dnZWRpbl9pZBcLZ3JpenpseXNtaXQAAAASbG9nZ2VkaW5fZ3JvdXBuYW1l\nCIMAAAAWbG9nZ2VkaW5fZ3JvdXBubmFtZV9pZA==\n
-068675cd502b8327e5dd27ef507aa3c0	BQsDAAAAEAiBAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQKCWxpbmtzXkMrKwAAAA9jdXJyZW50\nX3NlY3Rpb24KATEAAAAFZGVidWcXBWFkbWluAAAAEWxvZ2dlZGluX3VzZXJuYW1lCIEAAAALbG9n\nZ2VkaW5faWQIgQAAAA5sb2dnZWRpbl9hZG1pbhcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9n\nZ2VkaW5fZGlzcGxheV9uYW1lCIEAAAAIbG9nZ2VkaW4XEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5s\nb2dnZWRpbl9lbWFpbBcPRnJhbmNpcyBHcml6emx5AAAADmxvZ2dlZGluX2dpdmVuCgIyNQAAAAtw\nYWdlX2xlbmd0aAoPcHNldWRvLXBhZ2VeYWxsAAAADGN1cnJlbnRfcGFnZRcMKzYxNDgyMTc2MzQz\nAAAAFWxvZ2dlZGluX3Bob25lX251bWJlchcFYWRtaW4AAAASbG9nZ2VkaW5fZ3JvdXBuYW1lFwRT\nbWl0AAAAD2xvZ2dlZGluX2ZhbWlseQogMDY4Njc1Y2Q1MDJiODMyN2U1ZGQyN2VmNTA3YWEzYzAA\nAAALX3Nlc3Npb25faWQ=\n
-dd658768b14194054d895bb6e64d5294	BQsDAAAAEAoObGlua3NecG9zdGdyZXMAAAAPY3VycmVudF9zZWN0aW9uFxRGcmFuY2lzIEdyaXp6\nbHkgU21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25hbWUXC2dyaXp6bHlzbWl0AAAAEWxvZ2dlZGlu\nX3VzZXJuYW1lFwtncml6emx5c21pdAAAABJsb2dnZWRpbl9ncm91cG5hbWUXD0ZyYW5jaXMgR3Jp\nenpseQAAAA5sb2dnZWRpbl9naXZlbgogZGQ2NTg3NjhiMTQxOTQwNTRkODk1YmI2ZTY0ZDUyOTQA\nAAALX3Nlc3Npb25faWQKAjI4AAAAC3BhZ2VfbGVuZ3RoFxJncml6emx5QHNtaXQuaWQuYXUAAAAO\nbG9nZ2VkaW5fZW1haWwIgwAAABZsb2dnZWRpbl9ncm91cG5uYW1lX2lkChBwc2V1ZG8tcGFnZV5t\naXNjAAAADGN1cnJlbnRfcGFnZQiBAAAADmxvZ2dlZGluX2FkbWluCIIAAAAIbG9nZ2VkaW4IggAA\nAAtsb2dnZWRpbl9pZAoBMAAAAAVkZWJ1ZxcOKzYxNDgyIDE3NiAzNDMAAAAVbG9nZ2VkaW5fcGhv\nbmVfbnVtYmVyFwRTbWl0AAAAD2xvZ2dlZGluX2ZhbWlseQ==\n
-498b2cd3b6da04091d39c89f9190ecbe	BQsDAAAABQogNDk4YjJjZDNiNmRhMDQwOTFkMzljODlmOTE5MGVjYmUAAAALX3Nlc3Npb25faWQK\nD3BzZXVkby1wYWdlXmFsbAAAAAxjdXJyZW50X3BhZ2UKAjIzAAAAC3BhZ2VfbGVuZ3RoCglsaW5r\nc15DKysAAAAPY3VycmVudF9zZWN0aW9uCgExAAAABWRlYnVn\n
-d54a395a7e3d035b2eab35e3e1e3eddd	BQsDAAAAEAogZDU0YTM5NWE3ZTNkMDM1YjJlYWIzNWUzZTFlM2VkZGQAAAALX3Nlc3Npb25faWQX\nDis2MTQ4Mi0xNzYtMzQzAAAAFWxvZ2dlZGluX3Bob25lX251bWJlchcFZ3JpenoAAAASbG9nZ2Vk\naW5fZ3JvdXBuYW1lFxRGcmFuY2lzIEdyaXp6bHkgU21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25h\nbWUXBWdyaXp6AAAAEWxvZ2dlZGluX3VzZXJuYW1lFw9GcmFuY2lzIEdyaXp6bHkAAAAObG9nZ2Vk\naW5fZ2l2ZW4KD3BhZ2VeZ3JpenotcGFnZQAAAAxjdXJyZW50X3BhZ2UKAjI1AAAAC3BhZ2VfbGVu\nZ3RoCIQAAAAIbG9nZ2VkaW4IhAAAAAtsb2dnZWRpbl9pZBcEU21pdAAAAA9sb2dnZWRpbl9mYW1p\nbHkXEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFpbAiFAAAAFmxvZ2dlZGluX2dy\nb3Vwbm5hbWVfaWQKDGFsbF9zZWN0aW9ucwAAAA9jdXJyZW50X3NlY3Rpb24IgAAAAA5sb2dnZWRp\nbl9hZG1pbgoBMAAAAAVkZWJ1Zw==\n
-88aa7cad761ab4c62664ab011059f338	BQsDAAAABQoKbGlua3NecmFrdQAAAA9jdXJyZW50X3NlY3Rpb24KD3BzZXVkby1wYWdlXmFsbAAA\nAAxjdXJyZW50X3BhZ2UKAjQxAAAAC3BhZ2VfbGVuZ3RoCiA4OGFhN2NhZDc2MWFiNGM2MjY2NGFi\nMDExMDU5ZjMzOAAAAAtfc2Vzc2lvbl9pZAoBMAAAAAVkZWJ1Zw==\n
-a5d41456a83643e9445ceb8e1f8fe4d2	BQsDAAAABQoCMjgAAAALcGFnZV9sZW5ndGgKC2FsaWFzXnBlcmw2AAAAD2N1cnJlbnRfc2VjdGlv\nbgoQcHNldWRvLXBhZ2VebWlzYwAAAAxjdXJyZW50X3BhZ2UKATAAAAAFZGVidWcKIGE1ZDQxNDU2\nYTgzNjQzZTk0NDVjZWI4ZTFmOGZlNGQyAAAAC19zZXNzaW9uX2lk\n
-e1b7ae146ea967338bc75bd9ecc4b4ae	BQsDAAAABQogZTFiN2FlMTQ2ZWE5NjczMzhiYzc1YmQ5ZWNjNGI0YWUAAAALX3Nlc3Npb25faWQK\nATEAAAAFZGVidWcKD3BzZXVkby1wYWdlXmFsbAAAAAxjdXJyZW50X3BhZ2UKDmxpbmtzXnBvc3Rn\ncmVzAAAAD2N1cnJlbnRfc2VjdGlvbgoCMzkAAAALcGFnZV9sZW5ndGg=\n
-da64773d703775653f795947988a29cd	BQsDAAAAEAiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQXC2dyaXp6bHlzbWl0AAAAEmxvZ2dl\nZGluX2dyb3VwbmFtZQoPcGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZRcPRnJhbmNpcyBH\ncml6emx5AAAADmxvZ2dlZGluX2dpdmVuCIIAAAALbG9nZ2VkaW5faWQIgQAAAA5sb2dnZWRpbl9h\nZG1pbhcEU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkKAjI1AAAAC3BhZ2VfbGVuZ3RoFxJncml6emx5\nQHNtaXQuaWQuYXUAAAAObG9nZ2VkaW5fZW1haWwXDis2MTQ4MiAxNzYgMzQzAAAAFWxvZ2dlZGlu\nX3Bob25lX251bWJlcgoMYWxsX3NlY3Rpb25zAAAAD2N1cnJlbnRfc2VjdGlvbgoBMAAAAAVkZWJ1\nZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABFsb2dnZWRpbl91c2VybmFtZQogZGE2NDc3\nM2Q3MDM3NzU2NTNmNzk1OTQ3OTg4YTI5Y2QAAAALX3Nlc3Npb25faWQXFEZyYW5jaXMgR3Jpenps\neSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZQ==\n
-12d1122cc4eba147d70ae2097bb6e221	BQsDAAAAEAogMTJkMTEyMmNjNGViYTE0N2Q3MGFlMjA5N2JiNmUyMjEAAAALX3Nlc3Npb25faWQX\nD0ZyYW5jaXMgR3JpenpseQAAAA5sb2dnZWRpbl9naXZlbgoMYWxsX3NlY3Rpb25zAAAAD2N1cnJl\nbnRfc2VjdGlvbgoBMAAAAAVkZWJ1ZxcMKzYxNDgyMTc2MzQzAAAAFWxvZ2dlZGluX3Bob25lX251\nbWJlchcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lCIIAAAAI\nbG9nZ2VkaW4XBFNtaXQAAAAPbG9nZ2VkaW5fZmFtaWx5Fwtncml6emx5c21pdAAAABFsb2dnZWRp\nbl91c2VybmFtZQoCMjUAAAALcGFnZV9sZW5ndGgXC2dyaXp6bHlzbWl0AAAAEmxvZ2dlZGluX2dy\nb3VwbmFtZQiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQKD3BhZ2VeZ3JpenotcGFnZQAAAAxj\ndXJyZW50X3BhZ2UXEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFpbAiBAAAADmxv\nZ2dlZGluX2FkbWluCIIAAAALbG9nZ2VkaW5faWQ=\n
-c8ab85ca784010747adb0aad5dcb6306	BQsDAAAAEAoBMAAAAAVkZWJ1ZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABJsb2dnZWRp\nbl9ncm91cG5hbWUKAjI1AAAAC3BhZ2VfbGVuZ3RoFwtncml6emx5c21pdAAAABFsb2dnZWRpbl91\nc2VybmFtZQoPcGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZQoMYWxsX3NlY3Rpb25zAAAA\nD2N1cnJlbnRfc2VjdGlvbgiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQXBFNtaXQAAAAPbG9n\nZ2VkaW5fZmFtaWx5CIIAAAALbG9nZ2VkaW5faWQKIGM4YWI4NWNhNzg0MDEwNzQ3YWRiMGFhZDVk\nY2I2MzA2AAAAC19zZXNzaW9uX2lkCIEAAAAObG9nZ2VkaW5fYWRtaW4XD0ZyYW5jaXMgR3Jpenps\neQAAAA5sb2dnZWRpbl9naXZlbhcSZ3JpenpseUBzbWl0LmlkLmF1AAAADmxvZ2dlZGluX2VtYWls\nFwwrNjE0ODIxNzYzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVyFxRGcmFuY2lzIEdyaXp6bHkg\nU21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25hbWU=\n
-1c8659df2843a2096c728067be7b9e01	BQsDAAAAEAoBMQAAAAVkZWJ1ZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABJsb2dnZWRp\nbl9ncm91cG5hbWUXC2dyaXp6bHlzbWl0AAAAEWxvZ2dlZGluX3VzZXJuYW1lCg9wc2V1ZG8tcGFn\nZV5hbGwAAAAMY3VycmVudF9wYWdlCgIyNQAAAAtwYWdlX2xlbmd0aBcEU21pdAAAAA9sb2dnZWRp\nbl9mYW1pbHkKDWxpbmtzXnNjcmlwdHMAAAAPY3VycmVudF9zZWN0aW9uCIMAAAAWbG9nZ2VkaW5f\nZ3JvdXBubmFtZV9pZAiCAAAAC2xvZ2dlZGluX2lkCiAxYzg2NTlkZjI4NDNhMjA5NmM3MjgwNjdi\nZTdiOWUwMQAAAAtfc2Vzc2lvbl9pZAiBAAAADmxvZ2dlZGluX2FkbWluFw9GcmFuY2lzIEdyaXp6\nbHkAAAAObG9nZ2VkaW5fZ2l2ZW4XEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFp\nbBcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lFw4rNjE0ODIg\nMTc2IDM0MwAAABVsb2dnZWRpbl9waG9uZV9udW1iZXI=\n
-6066c112263af0046fa9d0b23ca1b0b9	BQsDAAAAEAiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABFsb2dnZWRpbl91c2VybmFtZRcE\nU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkKAjI1AAAAC3BhZ2VfbGVuZ3RoCg9wc2V1ZG8tcGFnZV5h\nbGwAAAAMY3VycmVudF9wYWdlCIIAAAALbG9nZ2VkaW5faWQKIDYwNjZjMTEyMjYzYWYwMDQ2ZmE5\nZDBiMjNjYTFiMGI5AAAAC19zZXNzaW9uX2lkChZsaW5rc15wb3J0a25vY2tpbmctZGV2AAAAD2N1\ncnJlbnRfc2VjdGlvbhcMKzYxNDgyMTc2MzQzAAAAFWxvZ2dlZGluX3Bob25lX251bWJlchcURnJh\nbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lCIEAAAAObG9nZ2VkaW5f\nYWRtaW4XD0ZyYW5jaXMgR3JpenpseQAAAA5sb2dnZWRpbl9naXZlbgoBMQAAAAVkZWJ1ZxcSZ3Jp\nenpseUBzbWl0LmlkLmF1AAAADmxvZ2dlZGluX2VtYWlsFwtncml6emx5c21pdAAAABJsb2dnZWRp\nbl9ncm91cG5hbWUIgwAAABZsb2dnZWRpbl9ncm91cG5uYW1lX2lk\n
-9a075a2b3a3d0a15d9b2461d1011f0de	BQsDAAAAEAogOWEwNzVhMmIzYTNkMGExNWQ5YjI0NjFkMTAxMWYwZGUAAAALX3Nlc3Npb25faWQX\nEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFpbBcHZ3JpenpseQAAABFsb2dnZWRp\nbl91c2VybmFtZQoCMjUAAAALcGFnZV9sZW5ndGgKD3BhZ2VeZ3JpenotcGFnZQAAAAxjdXJyZW50\nX3BhZ2UIgQAAAA5sb2dnZWRpbl9hZG1pbhcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2Vk\naW5fZGlzcGxheV9uYW1lCgEwAAAABWRlYnVnCIMAAAALbG9nZ2VkaW5faWQXB2dyaXp6bHkAAAAS\nbG9nZ2VkaW5fZ3JvdXBuYW1lFwwrNjE0ODIxNzYzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVy\nCIMAAAAIbG9nZ2VkaW4XBFNtaXQAAAAPbG9nZ2VkaW5fZmFtaWx5CIQAAAAWbG9nZ2VkaW5fZ3Jv\ndXBubmFtZV9pZBcPRnJhbmNpcyBHcml6emx5AAAADmxvZ2dlZGluX2dpdmVuCgxhbGxfc2VjdGlv\nbnMAAAAPY3VycmVudF9zZWN0aW9u\n
-5a5965dc25adf870510ea76a4ba34053	BQsDAAAAEAiDAAAACGxvZ2dlZGluCgIyNQAAAAtwYWdlX2xlbmd0aBcSZ3JpenpseUBzbWl0Lmlk\nLmF1AAAADmxvZ2dlZGluX2VtYWlsCgxhbGxfc2VjdGlvbnMAAAAPY3VycmVudF9zZWN0aW9uFwRT\nbWl0AAAAD2xvZ2dlZGluX2ZhbWlseQogNWE1OTY1ZGMyNWFkZjg3MDUxMGVhNzZhNGJhMzQwNTMA\nAAALX3Nlc3Npb25faWQIgQAAAA5sb2dnZWRpbl9hZG1pbgiEAAAAFmxvZ2dlZGluX2dyb3Vwbm5h\nbWVfaWQXFEZyYW5jaXMgR3JpenpseSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZQiDAAAA\nC2xvZ2dlZGluX2lkFwdncml6emx5AAAAEmxvZ2dlZGluX2dyb3VwbmFtZQoBMAAAAAVkZWJ1ZwoP\ncGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZRcMKzYxNDgyMTc2MzQzAAAAFWxvZ2dlZGlu\nX3Bob25lX251bWJlchcPRnJhbmNpcyBHcml6emx5AAAADmxvZ2dlZGluX2dpdmVuFwdncml6emx5\nAAAAEWxvZ2dlZGluX3VzZXJuYW1l\n
-\.
+INSERT INTO public.sessions VALUES ('ccaf15a07783d52542704b543d8dc2b9', 'BQsDAAAAEBcLZ3JpenpseXNtaXQAAAARbG9nZ2VkaW5fdXNlcm5hbWUXFEZyYW5jaXMgR3Jpenps
+eSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZQoCMjUAAAALcGFnZV9sZW5ndGgIgAAAAA5s
+b2dnZWRpbl9hZG1pbhcEU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkXD0ZyYW5jaXMgR3JpenpseQAA
+AA5sb2dnZWRpbl9naXZlbgoJbGlua3NeQysrAAAAD2N1cnJlbnRfc2VjdGlvbhcOKzYxNDgyIDE3
+NiAzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVyFxJncml6emx5QHNtaXQuaWQuYXUAAAAObG9n
+Z2VkaW5fZW1haWwKATAAAAAFZGVidWcIggAAAAhsb2dnZWRpbgoPcHNldWRvLXBhZ2VeYWxsAAAA
+DGN1cnJlbnRfcGFnZQogY2NhZjE1YTA3NzgzZDUyNTQyNzA0YjU0M2Q4ZGMyYjkAAAALX3Nlc3Np
+b25faWQIggAAAAtsb2dnZWRpbl9pZBcLZ3JpenpseXNtaXQAAAASbG9nZ2VkaW5fZ3JvdXBuYW1l
+CIMAAAAWbG9nZ2VkaW5fZ3JvdXBubmFtZV9pZA==
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('068675cd502b8327e5dd27ef507aa3c0', 'BQsDAAAAEAiBAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQKCWxpbmtzXkMrKwAAAA9jdXJyZW50
+X3NlY3Rpb24KATEAAAAFZGVidWcXBWFkbWluAAAAEWxvZ2dlZGluX3VzZXJuYW1lCIEAAAALbG9n
+Z2VkaW5faWQIgQAAAA5sb2dnZWRpbl9hZG1pbhcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9n
+Z2VkaW5fZGlzcGxheV9uYW1lCIEAAAAIbG9nZ2VkaW4XEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5s
+b2dnZWRpbl9lbWFpbBcPRnJhbmNpcyBHcml6emx5AAAADmxvZ2dlZGluX2dpdmVuCgIyNQAAAAtw
+YWdlX2xlbmd0aAoPcHNldWRvLXBhZ2VeYWxsAAAADGN1cnJlbnRfcGFnZRcMKzYxNDgyMTc2MzQz
+AAAAFWxvZ2dlZGluX3Bob25lX251bWJlchcFYWRtaW4AAAASbG9nZ2VkaW5fZ3JvdXBuYW1lFwRT
+bWl0AAAAD2xvZ2dlZGluX2ZhbWlseQogMDY4Njc1Y2Q1MDJiODMyN2U1ZGQyN2VmNTA3YWEzYzAA
+AAALX3Nlc3Npb25faWQ=
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('dd658768b14194054d895bb6e64d5294', 'BQsDAAAAEAoObGlua3NecG9zdGdyZXMAAAAPY3VycmVudF9zZWN0aW9uFxRGcmFuY2lzIEdyaXp6
+bHkgU21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25hbWUXC2dyaXp6bHlzbWl0AAAAEWxvZ2dlZGlu
+X3VzZXJuYW1lFwtncml6emx5c21pdAAAABJsb2dnZWRpbl9ncm91cG5hbWUXD0ZyYW5jaXMgR3Jp
+enpseQAAAA5sb2dnZWRpbl9naXZlbgogZGQ2NTg3NjhiMTQxOTQwNTRkODk1YmI2ZTY0ZDUyOTQA
+AAALX3Nlc3Npb25faWQKAjI4AAAAC3BhZ2VfbGVuZ3RoFxJncml6emx5QHNtaXQuaWQuYXUAAAAO
+bG9nZ2VkaW5fZW1haWwIgwAAABZsb2dnZWRpbl9ncm91cG5uYW1lX2lkChBwc2V1ZG8tcGFnZV5t
+aXNjAAAADGN1cnJlbnRfcGFnZQiBAAAADmxvZ2dlZGluX2FkbWluCIIAAAAIbG9nZ2VkaW4IggAA
+AAtsb2dnZWRpbl9pZAoBMAAAAAVkZWJ1ZxcOKzYxNDgyIDE3NiAzNDMAAAAVbG9nZ2VkaW5fcGhv
+bmVfbnVtYmVyFwRTbWl0AAAAD2xvZ2dlZGluX2ZhbWlseQ==
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('498b2cd3b6da04091d39c89f9190ecbe', 'BQsDAAAABQogNDk4YjJjZDNiNmRhMDQwOTFkMzljODlmOTE5MGVjYmUAAAALX3Nlc3Npb25faWQK
+D3BzZXVkby1wYWdlXmFsbAAAAAxjdXJyZW50X3BhZ2UKAjIzAAAAC3BhZ2VfbGVuZ3RoCglsaW5r
+c15DKysAAAAPY3VycmVudF9zZWN0aW9uCgExAAAABWRlYnVn
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('d54a395a7e3d035b2eab35e3e1e3eddd', 'BQsDAAAAEAogZDU0YTM5NWE3ZTNkMDM1YjJlYWIzNWUzZTFlM2VkZGQAAAALX3Nlc3Npb25faWQX
+Dis2MTQ4Mi0xNzYtMzQzAAAAFWxvZ2dlZGluX3Bob25lX251bWJlchcFZ3JpenoAAAASbG9nZ2Vk
+aW5fZ3JvdXBuYW1lFxRGcmFuY2lzIEdyaXp6bHkgU21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25h
+bWUXBWdyaXp6AAAAEWxvZ2dlZGluX3VzZXJuYW1lFw9GcmFuY2lzIEdyaXp6bHkAAAAObG9nZ2Vk
+aW5fZ2l2ZW4KD3BhZ2VeZ3JpenotcGFnZQAAAAxjdXJyZW50X3BhZ2UKAjI1AAAAC3BhZ2VfbGVu
+Z3RoCIQAAAAIbG9nZ2VkaW4IhAAAAAtsb2dnZWRpbl9pZBcEU21pdAAAAA9sb2dnZWRpbl9mYW1p
+bHkXEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFpbAiFAAAAFmxvZ2dlZGluX2dy
+b3Vwbm5hbWVfaWQKDGFsbF9zZWN0aW9ucwAAAA9jdXJyZW50X3NlY3Rpb24IgAAAAA5sb2dnZWRp
+bl9hZG1pbgoBMAAAAAVkZWJ1Zw==
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('88aa7cad761ab4c62664ab011059f338', 'BQsDAAAABQoKbGlua3NecmFrdQAAAA9jdXJyZW50X3NlY3Rpb24KD3BzZXVkby1wYWdlXmFsbAAA
+AAxjdXJyZW50X3BhZ2UKAjQxAAAAC3BhZ2VfbGVuZ3RoCiA4OGFhN2NhZDc2MWFiNGM2MjY2NGFi
+MDExMDU5ZjMzOAAAAAtfc2Vzc2lvbl9pZAoBMAAAAAVkZWJ1Zw==
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('a5d41456a83643e9445ceb8e1f8fe4d2', 'BQsDAAAABQoCMjgAAAALcGFnZV9sZW5ndGgKC2FsaWFzXnBlcmw2AAAAD2N1cnJlbnRfc2VjdGlv
+bgoQcHNldWRvLXBhZ2VebWlzYwAAAAxjdXJyZW50X3BhZ2UKATAAAAAFZGVidWcKIGE1ZDQxNDU2
+YTgzNjQzZTk0NDVjZWI4ZTFmOGZlNGQyAAAAC19zZXNzaW9uX2lk
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('e1b7ae146ea967338bc75bd9ecc4b4ae', 'BQsDAAAABQogZTFiN2FlMTQ2ZWE5NjczMzhiYzc1YmQ5ZWNjNGI0YWUAAAALX3Nlc3Npb25faWQK
+ATEAAAAFZGVidWcKD3BzZXVkby1wYWdlXmFsbAAAAAxjdXJyZW50X3BhZ2UKDmxpbmtzXnBvc3Rn
+cmVzAAAAD2N1cnJlbnRfc2VjdGlvbgoCMzkAAAALcGFnZV9sZW5ndGg=
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('da64773d703775653f795947988a29cd', 'BQsDAAAAEAiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQXC2dyaXp6bHlzbWl0AAAAEmxvZ2dl
+ZGluX2dyb3VwbmFtZQoPcGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZRcPRnJhbmNpcyBH
+cml6emx5AAAADmxvZ2dlZGluX2dpdmVuCIIAAAALbG9nZ2VkaW5faWQIgQAAAA5sb2dnZWRpbl9h
+ZG1pbhcEU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkKAjI1AAAAC3BhZ2VfbGVuZ3RoFxJncml6emx5
+QHNtaXQuaWQuYXUAAAAObG9nZ2VkaW5fZW1haWwXDis2MTQ4MiAxNzYgMzQzAAAAFWxvZ2dlZGlu
+X3Bob25lX251bWJlcgoMYWxsX3NlY3Rpb25zAAAAD2N1cnJlbnRfc2VjdGlvbgoBMAAAAAVkZWJ1
+ZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABFsb2dnZWRpbl91c2VybmFtZQogZGE2NDc3
+M2Q3MDM3NzU2NTNmNzk1OTQ3OTg4YTI5Y2QAAAALX3Nlc3Npb25faWQXFEZyYW5jaXMgR3Jpenps
+eSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZQ==
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('c8ab85ca784010747adb0aad5dcb6306', 'BQsDAAAAEAoBMAAAAAVkZWJ1ZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABJsb2dnZWRp
+bl9ncm91cG5hbWUKAjI1AAAAC3BhZ2VfbGVuZ3RoFwtncml6emx5c21pdAAAABFsb2dnZWRpbl91
+c2VybmFtZQoPcGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZQoMYWxsX3NlY3Rpb25zAAAA
+D2N1cnJlbnRfc2VjdGlvbgiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQXBFNtaXQAAAAPbG9n
+Z2VkaW5fZmFtaWx5CIIAAAALbG9nZ2VkaW5faWQKIGM4YWI4NWNhNzg0MDEwNzQ3YWRiMGFhZDVk
+Y2I2MzA2AAAAC19zZXNzaW9uX2lkCIEAAAAObG9nZ2VkaW5fYWRtaW4XD0ZyYW5jaXMgR3Jpenps
+eQAAAA5sb2dnZWRpbl9naXZlbhcSZ3JpenpseUBzbWl0LmlkLmF1AAAADmxvZ2dlZGluX2VtYWls
+FwwrNjE0ODIxNzYzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVyFxRGcmFuY2lzIEdyaXp6bHkg
+U21pdAAAABVsb2dnZWRpbl9kaXNwbGF5X25hbWU=
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('1c8659df2843a2096c728067be7b9e01', 'BQsDAAAAEAoBMQAAAAVkZWJ1ZwiCAAAACGxvZ2dlZGluFwtncml6emx5c21pdAAAABJsb2dnZWRp
+bl9ncm91cG5hbWUXC2dyaXp6bHlzbWl0AAAAEWxvZ2dlZGluX3VzZXJuYW1lCg9wc2V1ZG8tcGFn
+ZV5hbGwAAAAMY3VycmVudF9wYWdlCgIyNQAAAAtwYWdlX2xlbmd0aBcEU21pdAAAAA9sb2dnZWRp
+bl9mYW1pbHkKDWxpbmtzXnNjcmlwdHMAAAAPY3VycmVudF9zZWN0aW9uCIMAAAAWbG9nZ2VkaW5f
+Z3JvdXBubmFtZV9pZAiCAAAAC2xvZ2dlZGluX2lkCiAxYzg2NTlkZjI4NDNhMjA5NmM3MjgwNjdi
+ZTdiOWUwMQAAAAtfc2Vzc2lvbl9pZAiBAAAADmxvZ2dlZGluX2FkbWluFw9GcmFuY2lzIEdyaXp6
+bHkAAAAObG9nZ2VkaW5fZ2l2ZW4XEmdyaXp6bHlAc21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFp
+bBcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lFw4rNjE0ODIg
+MTc2IDM0MwAAABVsb2dnZWRpbl9waG9uZV9udW1iZXI=
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('12d1122cc4eba147d70ae2097bb6e221', 'BQsDAAAAEAiBAAAADmxvZ2dlZGluX2FkbWluCIMAAAAWbG9nZ2VkaW5fZ3JvdXBubmFtZV9pZAoM
+YWxsX3NlY3Rpb25zAAAAD2N1cnJlbnRfc2VjdGlvbhcLZ3JpenpseXNtaXQAAAARbG9nZ2VkaW5f
+dXNlcm5hbWUXC2dyaXp6bHlzbWl0AAAAEmxvZ2dlZGluX2dyb3VwbmFtZQogMTJkMTEyMmNjNGVi
+YTE0N2Q3MGFlMjA5N2JiNmUyMjEAAAALX3Nlc3Npb25faWQKATAAAAAFZGVidWcXEmdyaXp6bHlA
+c21pdC5pZC5hdQAAAA5sb2dnZWRpbl9lbWFpbBcEU21pdAAAAA9sb2dnZWRpbl9mYW1pbHkXFEZy
+YW5jaXMgR3JpenpseSBTbWl0AAAAFWxvZ2dlZGluX2Rpc3BsYXlfbmFtZRcMKzYxNDgyMTc2MzQz
+AAAAFWxvZ2dlZGluX3Bob25lX251bWJlcgiCAAAAC2xvZ2dlZGluX2lkCg9wYWdlXmdyaXp6LXBh
+Z2UAAAAMY3VycmVudF9wYWdlFw9GcmFuY2lzIEdyaXp6bHkAAAAObG9nZ2VkaW5fZ2l2ZW4IggAA
+AAhsb2dnZWRpbgoCMjUAAAALcGFnZV9sZW5ndGg=
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('6066c112263af0046fa9d0b23ca1b0b9', 'BQsDAAAAEAiBAAAADmxvZ2dlZGluX2FkbWluCIIAAAALbG9nZ2VkaW5faWQIggAAAAhsb2dnZWRp
+bhcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lCg9wc2V1ZG8t
+cGFnZV5hbGwAAAAMY3VycmVudF9wYWdlFw9GcmFuY2lzIEdyaXp6bHkAAAAObG9nZ2VkaW5fZ2l2
+ZW4KATEAAAAFZGVidWcXC2dyaXp6bHlzbWl0AAAAEWxvZ2dlZGluX3VzZXJuYW1lCgIyNQAAAAtw
+YWdlX2xlbmd0aAoWbGlua3NecG9ydGtub2NraW5nLWRldgAAAA9jdXJyZW50X3NlY3Rpb24XBFNt
+aXQAAAAPbG9nZ2VkaW5fZmFtaWx5CiA2MDY2YzExMjI2M2FmMDA0NmZhOWQwYjIzY2ExYjBiOQAA
+AAtfc2Vzc2lvbl9pZAiDAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQXEmdyaXp6bHlAc21pdC5p
+ZC5hdQAAAA5sb2dnZWRpbl9lbWFpbBcLZ3JpenpseXNtaXQAAAASbG9nZ2VkaW5fZ3JvdXBuYW1l
+FwwrNjE0ODIxNzYzNDMAAAAVbG9nZ2VkaW5fcGhvbmVfbnVtYmVy
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('9a075a2b3a3d0a15d9b2461d1011f0de', 'BQsDAAAAEBcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAVbG9nZ2VkaW5fZGlzcGxheV9uYW1lCg9w
+YWdlXmdyaXp6LXBhZ2UAAAAMY3VycmVudF9wYWdlCIMAAAAIbG9nZ2VkaW4IgQAAAA5sb2dnZWRp
+bl9hZG1pbgoMYWxsX3NlY3Rpb25zAAAAD2N1cnJlbnRfc2VjdGlvbhcMKzYxNDgyMTc2MzQzAAAA
+FWxvZ2dlZGluX3Bob25lX251bWJlchcHZ3JpenpseQAAABJsb2dnZWRpbl9ncm91cG5hbWUXD0Zy
+YW5jaXMgR3JpenpseQAAAA5sb2dnZWRpbl9naXZlbgogOWEwNzVhMmIzYTNkMGExNWQ5YjI0NjFk
+MTAxMWYwZGUAAAALX3Nlc3Npb25faWQKAjI1AAAAC3BhZ2VfbGVuZ3RoCIMAAAALbG9nZ2VkaW5f
+aWQXBFNtaXQAAAAPbG9nZ2VkaW5fZmFtaWx5CIQAAAAWbG9nZ2VkaW5fZ3JvdXBubmFtZV9pZBcH
+Z3JpenpseQAAABFsb2dnZWRpbl91c2VybmFtZQoBMAAAAAVkZWJ1ZxcSZ3JpenpseUBzbWl0Lmlk
+LmF1AAAADmxvZ2dlZGluX2VtYWls
+') ON CONFLICT DO NOTHING;
+INSERT INTO public.sessions VALUES ('5a5965dc25adf870510ea76a4ba34053', 'BQsDAAAAEBcMKzYxNDgyMTc2MzQzAAAAFWxvZ2dlZGluX3Bob25lX251bWJlcgoBMAAAAAVkZWJ1
+ZxcSZ3JpenpseUBzbWl0LmlkLmF1AAAADmxvZ2dlZGluX2VtYWlsCiA1YTU5NjVkYzI1YWRmODcw
+NTEwZWE3NmE0YmEzNDA1MwAAAAtfc2Vzc2lvbl9pZBcHZ3JpenpseQAAABJsb2dnZWRpbl9ncm91
+cG5hbWUKAjI1AAAAC3BhZ2VfbGVuZ3RoCIMAAAALbG9nZ2VkaW5faWQXD0ZyYW5jaXMgR3Jpenps
+eQAAAA5sb2dnZWRpbl9naXZlbgiDAAAACGxvZ2dlZGluFwRTbWl0AAAAD2xvZ2dlZGluX2ZhbWls
+eQoPcGFnZV5ncml6ei1wYWdlAAAADGN1cnJlbnRfcGFnZRcHZ3JpenpseQAAABFsb2dnZWRpbl91
+c2VybmFtZQiEAAAAFmxvZ2dlZGluX2dyb3Vwbm5hbWVfaWQIgQAAAA5sb2dnZWRpbl9hZG1pbgoM
+YWxsX3NlY3Rpb25zAAAAD2N1cnJlbnRfc2VjdGlvbhcURnJhbmNpcyBHcml6emx5IFNtaXQAAAAV
+bG9nZ2VkaW5fZGlzcGxheV9uYW1l
+') ON CONFLICT DO NOTHING;
 
 
 --
--- TOC entry 3718 (class 0 OID 0)
--- Dependencies: 211
 -- Name: _group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public._group_id_seq', 12, true);
+SELECT pg_catalog.setval('public._group_id_seq', 13, true);
 
 
 --
--- TOC entry 3719 (class 0 OID 0)
--- Dependencies: 213
 -- Name: address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.address_id_seq', 15, true);
+SELECT pg_catalog.setval('public.address_id_seq', 16, true);
 
 
 --
--- TOC entry 3720 (class 0 OID 0)
--- Dependencies: 217
+-- Name: addresses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
+--
+
+SELECT pg_catalog.setval('public.addresses_id_seq', 1, false);
+
+
+--
 -- Name: alias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1478,8 +1604,6 @@ SELECT pg_catalog.setval('public.alias_id_seq', 34, true);
 
 
 --
--- TOC entry 3721 (class 0 OID 0)
--- Dependencies: 227
 -- Name: countries_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1487,17 +1611,13 @@ SELECT pg_catalog.setval('public.countries_id_seq', 14, true);
 
 
 --
--- TOC entry 3722 (class 0 OID 0)
--- Dependencies: 228
 -- Name: email_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.email_id_seq', 11, true);
+SELECT pg_catalog.setval('public.email_id_seq', 12, true);
 
 
 --
--- TOC entry 3723 (class 0 OID 0)
--- Dependencies: 230
 -- Name: emails_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1505,17 +1625,13 @@ SELECT pg_catalog.setval('public.emails_id_seq', 1, false);
 
 
 --
--- TOC entry 3724 (class 0 OID 0)
--- Dependencies: 232
 -- Name: groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.groups_id_seq', 53, true);
+SELECT pg_catalog.setval('public.groups_id_seq', 104, true);
 
 
 --
--- TOC entry 3725 (class 0 OID 0)
--- Dependencies: 218
 -- Name: links_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1523,8 +1639,6 @@ SELECT pg_catalog.setval('public.links_id_seq', 37, true);
 
 
 --
--- TOC entry 3726 (class 0 OID 0)
--- Dependencies: 234
 -- Name: links_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1532,8 +1646,6 @@ SELECT pg_catalog.setval('public.links_id_seq1', 115, true);
 
 
 --
--- TOC entry 3727 (class 0 OID 0)
--- Dependencies: 239
 -- Name: page_section_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1541,8 +1653,6 @@ SELECT pg_catalog.setval('public.page_section_id_seq', 81, true);
 
 
 --
--- TOC entry 3728 (class 0 OID 0)
--- Dependencies: 243
 -- Name: pages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1550,35 +1660,27 @@ SELECT pg_catalog.setval('public.pages_id_seq', 39, true);
 
 
 --
--- TOC entry 3729 (class 0 OID 0)
--- Dependencies: 246
 -- Name: passwd_details_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.passwd_details_id_seq', 11, true);
+SELECT pg_catalog.setval('public.passwd_details_id_seq', 12, true);
 
 
 --
--- TOC entry 3730 (class 0 OID 0)
--- Dependencies: 244
 -- Name: passwd_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.passwd_id_seq', 11, true);
+SELECT pg_catalog.setval('public.passwd_id_seq', 12, true);
 
 
 --
--- TOC entry 3731 (class 0 OID 0)
--- Dependencies: 248
 -- Name: phone_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
-SELECT pg_catalog.setval('public.phone_id_seq', 19, true);
+SELECT pg_catalog.setval('public.phone_id_seq', 21, true);
 
 
 --
--- TOC entry 3732 (class 0 OID 0)
--- Dependencies: 250
 -- Name: phones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1586,8 +1688,6 @@ SELECT pg_catalog.setval('public.phones_id_seq', 1, false);
 
 
 --
--- TOC entry 3733 (class 0 OID 0)
--- Dependencies: 252
 -- Name: psudo_pages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: grizzlysmit
 --
 
@@ -1595,7 +1695,6 @@ SELECT pg_catalog.setval('public.psudo_pages_id_seq', 8, true);
 
 
 --
--- TOC entry 3387 (class 2606 OID 16584)
 -- Name: _group _group_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1604,7 +1703,6 @@ ALTER TABLE ONLY public._group
 
 
 --
--- TOC entry 3391 (class 2606 OID 16586)
 -- Name: address address_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1613,7 +1711,14 @@ ALTER TABLE ONLY public.address
 
 
 --
--- TOC entry 3393 (class 2606 OID 16588)
+-- Name: addresses addresses_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
+--
+
+ALTER TABLE ONLY public.addresses
+    ADD CONSTRAINT addresses_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: alias alias_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1622,7 +1727,6 @@ ALTER TABLE ONLY public.alias
 
 
 --
--- TOC entry 3395 (class 2606 OID 16590)
 -- Name: alias alias_unique_contraint_name; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1631,7 +1735,6 @@ ALTER TABLE ONLY public.alias
 
 
 --
--- TOC entry 3408 (class 2606 OID 16592)
 -- Name: codes_prefixes codes_prefixes_pk; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1640,7 +1743,6 @@ ALTER TABLE ONLY public.codes_prefixes
 
 
 --
--- TOC entry 3410 (class 2606 OID 16594)
 -- Name: countries countries_pk; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1649,7 +1751,6 @@ ALTER TABLE ONLY public.countries
 
 
 --
--- TOC entry 3412 (class 2606 OID 16596)
 -- Name: countries countries_prefix_ukey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1658,7 +1759,6 @@ ALTER TABLE ONLY public.countries
 
 
 --
--- TOC entry 3414 (class 2606 OID 16598)
 -- Name: email email_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1667,7 +1767,6 @@ ALTER TABLE ONLY public.email
 
 
 --
--- TOC entry 3416 (class 2606 OID 16600)
 -- Name: emails emails_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1676,7 +1775,6 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3389 (class 2606 OID 16602)
 -- Name: _group group_unique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1685,7 +1783,6 @@ ALTER TABLE ONLY public._group
 
 
 --
--- TOC entry 3418 (class 2606 OID 16604)
 -- Name: groups groups_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1694,7 +1791,6 @@ ALTER TABLE ONLY public.groups
 
 
 --
--- TOC entry 3420 (class 2606 OID 16606)
 -- Name: groups groups_unique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1703,7 +1799,6 @@ ALTER TABLE ONLY public.groups
 
 
 --
--- TOC entry 3397 (class 2606 OID 16608)
 -- Name: links_sections links_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1712,7 +1807,6 @@ ALTER TABLE ONLY public.links_sections
 
 
 --
--- TOC entry 3403 (class 2606 OID 16610)
 -- Name: links links_pkey1; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1721,7 +1815,6 @@ ALTER TABLE ONLY public.links
 
 
 --
--- TOC entry 3400 (class 2606 OID 16612)
 -- Name: links_sections links_sections_unnique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1730,7 +1823,6 @@ ALTER TABLE ONLY public.links_sections
 
 
 --
--- TOC entry 3405 (class 2606 OID 16614)
 -- Name: links links_unique_contraint_name; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1739,7 +1831,6 @@ ALTER TABLE ONLY public.links
 
 
 --
--- TOC entry 3422 (class 2606 OID 16616)
 -- Name: page_section page_section_unique; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1748,7 +1839,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3426 (class 2606 OID 16618)
 -- Name: pages page_unique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1757,7 +1847,6 @@ ALTER TABLE ONLY public.pages
 
 
 --
--- TOC entry 3438 (class 2606 OID 16620)
 -- Name: passwd_details passwd_details_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1766,7 +1855,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3434 (class 2606 OID 16622)
 -- Name: passwd passwd_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1775,7 +1863,6 @@ ALTER TABLE ONLY public.passwd
 
 
 --
--- TOC entry 3436 (class 2606 OID 16624)
 -- Name: passwd passwd_unique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1784,7 +1871,6 @@ ALTER TABLE ONLY public.passwd
 
 
 --
--- TOC entry 3440 (class 2606 OID 16626)
 -- Name: phone phone_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1793,7 +1879,6 @@ ALTER TABLE ONLY public.phone
 
 
 --
--- TOC entry 3442 (class 2606 OID 16628)
 -- Name: phones phones_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1802,7 +1887,6 @@ ALTER TABLE ONLY public.phones
 
 
 --
--- TOC entry 3428 (class 2606 OID 16630)
 -- Name: pages pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1811,7 +1895,6 @@ ALTER TABLE ONLY public.pages
 
 
 --
--- TOC entry 3430 (class 2606 OID 16632)
 -- Name: pseudo_pages pseudo_pages_unique_key; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1820,7 +1903,6 @@ ALTER TABLE ONLY public.pseudo_pages
 
 
 --
--- TOC entry 3424 (class 2606 OID 16634)
 -- Name: page_section psge_section_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1829,7 +1911,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3432 (class 2606 OID 16636)
 -- Name: pseudo_pages psudo_pages_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1838,7 +1919,6 @@ ALTER TABLE ONLY public.pseudo_pages
 
 
 --
--- TOC entry 3444 (class 2606 OID 16638)
 -- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1847,7 +1927,6 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- TOC entry 3401 (class 1259 OID 16639)
 -- Name: fki_section_fkey; Type: INDEX; Schema: public; Owner: grizzlysmit
 --
 
@@ -1855,7 +1934,6 @@ CREATE INDEX fki_section_fkey ON public.links USING btree (section_id);
 
 
 --
--- TOC entry 3398 (class 1259 OID 16640)
 -- Name: links_sections_unique_key; Type: INDEX; Schema: public; Owner: grizzlysmit
 --
 
@@ -1863,7 +1941,6 @@ CREATE UNIQUE INDEX links_sections_unique_key ON public.links_sections USING btr
 
 
 --
--- TOC entry 3406 (class 1259 OID 16641)
 -- Name: links_unique_key; Type: INDEX; Schema: public; Owner: grizzlysmit
 --
 
@@ -1873,7 +1950,22 @@ ALTER TABLE public.links CLUSTER ON links_unique_key;
 
 
 --
--- TOC entry 3447 (class 2606 OID 16642)
+-- Name: addresses addresses_address_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
+--
+
+ALTER TABLE ONLY public.addresses
+    ADD CONSTRAINT addresses_address_id_fkey FOREIGN KEY (address_id) REFERENCES public.address(id) NOT VALID;
+
+
+--
+-- Name: addresses addresses_passwd_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
+--
+
+ALTER TABLE ONLY public.addresses
+    ADD CONSTRAINT addresses_passwd_id_fkey FOREIGN KEY (passwd_id) REFERENCES public.passwd(id) NOT VALID;
+
+
+--
 -- Name: alias alias_foriegn_key; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1882,7 +1974,6 @@ ALTER TABLE ONLY public.alias
 
 
 --
--- TOC entry 3448 (class 2606 OID 16647)
 -- Name: alias alias_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1891,7 +1982,6 @@ ALTER TABLE ONLY public.alias
 
 
 --
--- TOC entry 3449 (class 2606 OID 16652)
 -- Name: alias alias_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1900,7 +1990,6 @@ ALTER TABLE ONLY public.alias
 
 
 --
--- TOC entry 3455 (class 2606 OID 16657)
 -- Name: emails emails_address_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1909,7 +1998,6 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3456 (class 2606 OID 16662)
 -- Name: emails emails_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1918,7 +2006,6 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3457 (class 2606 OID 16667)
 -- Name: groups groups_address_foreign_key; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1927,7 +2014,6 @@ ALTER TABLE ONLY public.groups
 
 
 --
--- TOC entry 3458 (class 2606 OID 16672)
 -- Name: groups groups_foreign_key; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1936,7 +2022,6 @@ ALTER TABLE ONLY public.groups
 
 
 --
--- TOC entry 3452 (class 2606 OID 16677)
 -- Name: links links_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1945,7 +2030,6 @@ ALTER TABLE ONLY public.links
 
 
 --
--- TOC entry 3459 (class 2606 OID 16682)
 -- Name: page_section links_section_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1954,7 +2038,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3450 (class 2606 OID 16687)
 -- Name: links_sections links_sections_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1963,7 +2046,6 @@ ALTER TABLE ONLY public.links_sections
 
 
 --
--- TOC entry 3451 (class 2606 OID 16692)
 -- Name: links_sections links_sections_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1972,7 +2054,6 @@ ALTER TABLE ONLY public.links_sections
 
 
 --
--- TOC entry 3453 (class 2606 OID 16697)
 -- Name: links links_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1981,7 +2062,6 @@ ALTER TABLE ONLY public.links
 
 
 --
--- TOC entry 3460 (class 2606 OID 16702)
 -- Name: page_section page_section_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1990,7 +2070,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3461 (class 2606 OID 16707)
 -- Name: page_section page_section_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -1999,7 +2078,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3462 (class 2606 OID 16712)
 -- Name: page_section pages_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2008,7 +2086,6 @@ ALTER TABLE ONLY public.page_section
 
 
 --
--- TOC entry 3463 (class 2606 OID 16717)
 -- Name: pages pages_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2017,7 +2094,6 @@ ALTER TABLE ONLY public.pages
 
 
 --
--- TOC entry 3464 (class 2606 OID 16722)
 -- Name: pages pages_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2026,7 +2102,6 @@ ALTER TABLE ONLY public.pages
 
 
 --
--- TOC entry 3474 (class 2606 OID 16806)
 -- Name: passwd_details passwd_details_cc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2035,7 +2110,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3467 (class 2606 OID 16727)
 -- Name: passwd passwd_details_connection_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2044,7 +2118,6 @@ ALTER TABLE ONLY public.passwd
 
 
 --
--- TOC entry 3470 (class 2606 OID 16737)
 -- Name: passwd_details passwd_details_p_phone_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2053,7 +2126,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3471 (class 2606 OID 16742)
 -- Name: passwd_details passwd_details_post_foreign_key; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2062,7 +2134,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3472 (class 2606 OID 16747)
 -- Name: passwd_details passwd_details_res_foreign_key; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2071,7 +2142,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3473 (class 2606 OID 16799)
 -- Name: passwd_details passwd_details_sec_phone_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2080,7 +2150,6 @@ ALTER TABLE ONLY public.passwd_details
 
 
 --
--- TOC entry 3468 (class 2606 OID 16752)
 -- Name: passwd passwd_group_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2089,7 +2158,6 @@ ALTER TABLE ONLY public.passwd
 
 
 --
--- TOC entry 3469 (class 2606 OID 16757)
 -- Name: passwd passwd_primary_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2098,7 +2166,6 @@ ALTER TABLE ONLY public.passwd
 
 
 --
--- TOC entry 3475 (class 2606 OID 16762)
 -- Name: phones phones_address_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2107,7 +2174,6 @@ ALTER TABLE ONLY public.phones
 
 
 --
--- TOC entry 3476 (class 2606 OID 16767)
 -- Name: phones phones_phone_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2116,7 +2182,6 @@ ALTER TABLE ONLY public.phones
 
 
 --
--- TOC entry 3465 (class 2606 OID 16772)
 -- Name: pseudo_pages pseudo_pages_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2125,7 +2190,6 @@ ALTER TABLE ONLY public.pseudo_pages
 
 
 --
--- TOC entry 3466 (class 2606 OID 16777)
 -- Name: pseudo_pages pseudo_pages_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2134,7 +2198,6 @@ ALTER TABLE ONLY public.pseudo_pages
 
 
 --
--- TOC entry 3454 (class 2606 OID 16782)
 -- Name: links section_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2143,7 +2206,6 @@ ALTER TABLE ONLY public.links
 
 
 --
--- TOC entry 3445 (class 2606 OID 16787)
 -- Name: secure secure_groupid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2152,7 +2214,6 @@ ALTER TABLE ONLY public.secure
 
 
 --
--- TOC entry 3446 (class 2606 OID 16792)
 -- Name: secure secure_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: grizzlysmit
 --
 
@@ -2161,8 +2222,6 @@ ALTER TABLE ONLY public.secure
 
 
 --
--- TOC entry 3666 (class 0 OID 0)
--- Dependencies: 962
 -- Name: TYPE perm_set; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2170,8 +2229,6 @@ GRANT ALL ON TYPE public.perm_set TO urluser WITH GRANT OPTION;
 
 
 --
--- TOC entry 3667 (class 0 OID 0)
--- Dependencies: 963
 -- Name: TYPE perms; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2181,8 +2238,6 @@ GRANT ALL ON TYPE public.perms TO grizzlysmit WITH GRANT OPTION;
 
 
 --
--- TOC entry 3668 (class 0 OID 0)
--- Dependencies: 211
 -- Name: SEQUENCE _group_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2190,8 +2245,6 @@ GRANT ALL ON SEQUENCE public._group_id_seq TO urluser;
 
 
 --
--- TOC entry 3669 (class 0 OID 0)
--- Dependencies: 212
 -- Name: TABLE _group; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2199,8 +2252,6 @@ GRANT ALL ON TABLE public._group TO urluser;
 
 
 --
--- TOC entry 3670 (class 0 OID 0)
--- Dependencies: 213
 -- Name: SEQUENCE address_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2208,8 +2259,6 @@ GRANT ALL ON SEQUENCE public.address_id_seq TO urluser;
 
 
 --
--- TOC entry 3671 (class 0 OID 0)
--- Dependencies: 214
 -- Name: TABLE address; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2217,8 +2266,13 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.address TO urluser;
 
 
 --
--- TOC entry 3672 (class 0 OID 0)
--- Dependencies: 215
+-- Name: TABLE addresses; Type: ACL; Schema: public; Owner: grizzlysmit
+--
+
+GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.addresses TO urluser;
+
+
+--
 -- Name: TABLE secure; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2226,8 +2280,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.secure TO urluser;
 
 
 --
--- TOC entry 3673 (class 0 OID 0)
--- Dependencies: 216
 -- Name: TABLE alias; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2235,8 +2287,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.alias TO urluser;
 
 
 --
--- TOC entry 3675 (class 0 OID 0)
--- Dependencies: 217
 -- Name: SEQUENCE alias_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2244,8 +2294,6 @@ GRANT ALL ON SEQUENCE public.alias_id_seq TO urluser;
 
 
 --
--- TOC entry 3676 (class 0 OID 0)
--- Dependencies: 218
 -- Name: SEQUENCE links_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2253,8 +2301,6 @@ GRANT ALL ON SEQUENCE public.links_id_seq TO urluser;
 
 
 --
--- TOC entry 3677 (class 0 OID 0)
--- Dependencies: 219
 -- Name: TABLE links_sections; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2262,8 +2308,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.links_sections TO url
 
 
 --
--- TOC entry 3678 (class 0 OID 0)
--- Dependencies: 220
 -- Name: TABLE alias_links; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2271,8 +2315,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.alias_links TO urluse
 
 
 --
--- TOC entry 3679 (class 0 OID 0)
--- Dependencies: 221
 -- Name: TABLE links; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2280,8 +2322,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.links TO urluser;
 
 
 --
--- TOC entry 3680 (class 0 OID 0)
--- Dependencies: 222
 -- Name: TABLE alias_union_links; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2289,8 +2329,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.alias_union_links TO 
 
 
 --
--- TOC entry 3681 (class 0 OID 0)
--- Dependencies: 223
 -- Name: TABLE alias_union_links_sections; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2298,8 +2336,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.alias_union_links_sec
 
 
 --
--- TOC entry 3682 (class 0 OID 0)
--- Dependencies: 224
 -- Name: TABLE aliases; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2307,8 +2343,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.aliases TO urluser;
 
 
 --
--- TOC entry 3683 (class 0 OID 0)
--- Dependencies: 225
 -- Name: TABLE codes_prefixes; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2316,8 +2350,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.codes_prefixes TO url
 
 
 --
--- TOC entry 3684 (class 0 OID 0)
--- Dependencies: 226
 -- Name: TABLE countries; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2325,8 +2357,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.countries TO urluser;
 
 
 --
--- TOC entry 3686 (class 0 OID 0)
--- Dependencies: 228
 -- Name: SEQUENCE email_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2334,8 +2364,6 @@ GRANT ALL ON SEQUENCE public.email_id_seq TO urluser;
 
 
 --
--- TOC entry 3687 (class 0 OID 0)
--- Dependencies: 229
 -- Name: TABLE email; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2343,8 +2371,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.email TO urluser;
 
 
 --
--- TOC entry 3688 (class 0 OID 0)
--- Dependencies: 230
 -- Name: SEQUENCE emails_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2352,8 +2378,6 @@ GRANT ALL ON SEQUENCE public.emails_id_seq TO urluser;
 
 
 --
--- TOC entry 3689 (class 0 OID 0)
--- Dependencies: 231
 -- Name: TABLE emails; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2361,8 +2385,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.emails TO urluser;
 
 
 --
--- TOC entry 3690 (class 0 OID 0)
--- Dependencies: 232
 -- Name: SEQUENCE groups_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2370,8 +2392,6 @@ GRANT ALL ON SEQUENCE public.groups_id_seq TO urluser;
 
 
 --
--- TOC entry 3691 (class 0 OID 0)
--- Dependencies: 233
 -- Name: TABLE groups; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2379,8 +2399,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.groups TO urluser;
 
 
 --
--- TOC entry 3693 (class 0 OID 0)
--- Dependencies: 234
 -- Name: SEQUENCE links_id_seq1; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2388,8 +2406,6 @@ GRANT ALL ON SEQUENCE public.links_id_seq1 TO urluser;
 
 
 --
--- TOC entry 3694 (class 0 OID 0)
--- Dependencies: 235
 -- Name: TABLE links_sections_join_links; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2397,8 +2413,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.links_sections_join_l
 
 
 --
--- TOC entry 3695 (class 0 OID 0)
--- Dependencies: 236
 -- Name: TABLE page_section; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2406,8 +2420,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.page_section TO urlus
 
 
 --
--- TOC entry 3696 (class 0 OID 0)
--- Dependencies: 237
 -- Name: TABLE pages; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2415,8 +2427,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.pages TO urluser;
 
 
 --
--- TOC entry 3697 (class 0 OID 0)
--- Dependencies: 238
 -- Name: TABLE page_link_view; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2424,8 +2434,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.page_link_view TO url
 
 
 --
--- TOC entry 3699 (class 0 OID 0)
--- Dependencies: 239
 -- Name: SEQUENCE page_section_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2433,8 +2441,6 @@ GRANT ALL ON SEQUENCE public.page_section_id_seq TO urluser;
 
 
 --
--- TOC entry 3700 (class 0 OID 0)
--- Dependencies: 240
 -- Name: TABLE page_view; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2442,8 +2448,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.page_view TO urluser;
 
 
 --
--- TOC entry 3701 (class 0 OID 0)
--- Dependencies: 241
 -- Name: TABLE pseudo_pages; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2451,8 +2455,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.pseudo_pages TO urlus
 
 
 --
--- TOC entry 3702 (class 0 OID 0)
--- Dependencies: 242
 -- Name: TABLE pagelike; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2460,8 +2462,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.pagelike TO urluser;
 
 
 --
--- TOC entry 3704 (class 0 OID 0)
--- Dependencies: 243
 -- Name: SEQUENCE pages_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2469,8 +2469,6 @@ GRANT ALL ON SEQUENCE public.pages_id_seq TO urluser;
 
 
 --
--- TOC entry 3705 (class 0 OID 0)
--- Dependencies: 244
 -- Name: SEQUENCE passwd_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2478,8 +2476,6 @@ GRANT ALL ON SEQUENCE public.passwd_id_seq TO urluser;
 
 
 --
--- TOC entry 3706 (class 0 OID 0)
--- Dependencies: 245
 -- Name: TABLE passwd; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2487,8 +2483,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.passwd TO urluser;
 
 
 --
--- TOC entry 3707 (class 0 OID 0)
--- Dependencies: 246
 -- Name: SEQUENCE passwd_details_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2496,8 +2490,6 @@ GRANT ALL ON SEQUENCE public.passwd_details_id_seq TO urluser;
 
 
 --
--- TOC entry 3708 (class 0 OID 0)
--- Dependencies: 247
 -- Name: TABLE passwd_details; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2505,8 +2497,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.passwd_details TO url
 
 
 --
--- TOC entry 3709 (class 0 OID 0)
--- Dependencies: 248
 -- Name: SEQUENCE phone_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2514,8 +2504,6 @@ GRANT ALL ON SEQUENCE public.phone_id_seq TO urluser;
 
 
 --
--- TOC entry 3710 (class 0 OID 0)
--- Dependencies: 249
 -- Name: TABLE phone; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2523,8 +2511,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.phone TO urluser;
 
 
 --
--- TOC entry 3711 (class 0 OID 0)
--- Dependencies: 250
 -- Name: SEQUENCE phones_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2532,8 +2518,6 @@ GRANT ALL ON SEQUENCE public.phones_id_seq TO urluser;
 
 
 --
--- TOC entry 3712 (class 0 OID 0)
--- Dependencies: 251
 -- Name: TABLE phones; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2541,8 +2525,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.phones TO urluser;
 
 
 --
--- TOC entry 3714 (class 0 OID 0)
--- Dependencies: 252
 -- Name: SEQUENCE psudo_pages_id_seq; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2550,8 +2532,6 @@ GRANT ALL ON SEQUENCE public.psudo_pages_id_seq TO urluser;
 
 
 --
--- TOC entry 3715 (class 0 OID 0)
--- Dependencies: 253
 -- Name: TABLE sections; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2559,8 +2539,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.sections TO urluser;
 
 
 --
--- TOC entry 3716 (class 0 OID 0)
--- Dependencies: 254
 -- Name: TABLE sessions; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2568,8 +2546,6 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.sessions TO urluser;
 
 
 --
--- TOC entry 3717 (class 0 OID 0)
--- Dependencies: 255
 -- Name: TABLE vlinks; Type: ACL; Schema: public; Owner: grizzlysmit
 --
 
@@ -2577,14 +2553,11 @@ GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLE public.vlinks TO urluser;
 
 
 --
--- TOC entry 2163 (class 826 OID 16797)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: -; Owner: grizzlysmit
 --
 
 ALTER DEFAULT PRIVILEGES FOR ROLE grizzlysmit GRANT SELECT,INSERT,DELETE,TRUNCATE,UPDATE ON TABLES  TO urluser;
 
-
--- Completed on 2022-05-18 06:27:20 AEST
 
 --
 -- PostgreSQL database dump complete
