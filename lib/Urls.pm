@@ -2844,7 +2844,7 @@ use HTML::Entities;
         say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobile</th><th>land line</th><th>group</th><th>admin</th><th>additional_groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobile</th><th>land line</th><th>group</th><th>admin</th><th>additional groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
         my $cnt = 0;
         for my $user (@user_details){
             $cnt++;
@@ -2918,7 +2918,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobiler</th><th>land line</th><th>group</th><th>admin</th><th>additional_groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobiler</th><th>land line</th><th>group</th><th>admin</th><th>additional groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
             }
         }
         say "                <tr>";
