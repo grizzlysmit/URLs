@@ -699,7 +699,7 @@ use HTML::Entities;
                 push @msgs, "Error: failed to define Alias: $alias => $section";
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_alias', 'Add an other Alias', undef, undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'add_alias', 'Add an other Alias', undef, undef, @msgs);
             return $return;
         }
 
@@ -1000,7 +1000,7 @@ use HTML::Entities;
                 push @msgs, "Error: Page insertion failed";
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_page', 'Add an other Page', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'add_page', 'Add an other Page', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -1220,7 +1220,7 @@ use HTML::Entities;
                 $query->finish();
                 $return = 0;
             }
-            $self->message($debug, \%session, $db, 'add_link', 'Add Another Link', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'add_link', 'Add Another Link', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -1410,7 +1410,7 @@ use HTML::Entities;
             if($@){
                 my @msgs = ("Error: $@", "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, @msgs);
+                $self->message($cfg, $debug, \%session, $db, 'add_pseudo_page', undef, undef, @msgs);
 
                 untie %session;
                 $db->disconnect;
@@ -1419,14 +1419,14 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
             if($result){
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
+                $self->message($cfg, $debug, \%session, $db, 'add_pseudo_page', 'Add Another Pseudo-Page', undef, "Pseudo page defined: ($name, $full_name, $status, $pattern)");
 
                 untie %session;
                 $db->disconnect;
                 return 1;
             }else{
                 $query->finish();
-                $self->message($debug, \%session, $db, 'add_pseudo_page', undef, undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
+                $self->message($cfg, $debug, \%session, $db, 'add_pseudo_page', undef, undef, "Pseudo page insert failed: ($name, $full_name, $status, $pattern)");
 
                 untie %session;
                 $db->disconnect;
@@ -1448,7 +1448,7 @@ use HTML::Entities;
         if($@){
             my @msgs = ("Error: $@", "Pseudo page list failed");
             $query->finish();
-            $self->message($debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'add_pseudo_page', undef, @msgs);
             return 0;
         }
         my @pseudo_pages;
@@ -1460,7 +1460,7 @@ use HTML::Entities;
             }
         }else{
             $query->finish();
-            $self->message($debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page list failed");
+            $self->message($cfg, $debug, \%session, $db, 'add_pseudo_page', undef, "Pseudo page list failed");
             return 0;
         }
         $query->finish();
@@ -1764,7 +1764,7 @@ use HTML::Entities;
                     $query->finish();
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_links', 'Delete some more links', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'delete_links', 'Delete some more links', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -1782,7 +1782,7 @@ use HTML::Entities;
             $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_links', undef, undef, "Error: $@");
+            $self->message($cfg, $debug, \%session, $db, 'delete_links', undef, undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -1872,8 +1872,10 @@ use HTML::Entities;
 
 
     sub message {
-        my ($self, $debug, $_session, $db, $fun, $button_msg, $dont_do_form, @msgs) = @_;
+        my ($self, $cfg, $debug, $_session, $db, $fun, $button_msg, $dont_do_form, @msgs) = @_;
         my $ident           = ident $self;
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session = %{$_session};
         $fun = 'index' if $fun eq 'main';
@@ -1914,30 +1916,33 @@ use HTML::Entities;
                 say "                    </td>";
                 say "                </tr>";
             }
-            say "                <tr>";
-            say "                    <td>";
-            if($debug){
-                say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-                say "                    </td>";
-                say "                    <td>";
-                say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-            }else{
-                say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-                say "                    </td>";
-                say "                    <td>";
-                say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-            }
-            say "                    </td>";
-            if($button_msg){
-                say "                    <td>";
-                say "                        <input name=\"submit\" type=\"submit\" value=\"$button_msg\">";
-                say "                    </td>";
-            }else{
-                say "                    <td>";
-                say "                        <input name=\"submit\" type=\"submit\" value=\"Try Again\">";
-                say "                    </td>";
-            }
-            say "                </tr>";
+            $button_msg = 'Try Again' unless defined $button_msg;
+            my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => $button_msg, }, );
+            $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+            #say "                <tr>";
+            #say "                    <td>";
+            #if($debug){
+            #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+            #    say "                    </td>";
+            #    say "                    <td>";
+            #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+            #}else{
+            #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+            #    say "                    </td>";
+            #    say "                    <td>";
+            #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+            #}
+            #say "                    </td>";
+            #if($button_msg){
+            #    say "                    <td>";
+            #    say "                        <input name=\"submit\" type=\"submit\" value=\"$button_msg\">";
+            #    say "                    </td>";
+            #}else{
+            #    say "                    <td>";
+            #    say "                        <input name=\"submit\" type=\"submit\" value=\"Try Again\">";
+            #    say "                    </td>";
+            #}
+            #say "                </tr>";
             say "            </table>";
             say "        </form>";
         }
@@ -1958,6 +1963,8 @@ use HTML::Entities;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session;
 
@@ -2064,7 +2071,7 @@ use HTML::Entities;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_pages', 'Delete some more pages', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'delete_pages', 'Delete some more pages', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -2080,7 +2087,7 @@ use HTML::Entities;
             $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_pages', undef, undef, "Error: $@");
+            $self->message($cfg, $debug, \%session, $db, 'delete_pages', undef, undef, "Error: $@");
             $query->finish();
             return 0;
         }
@@ -2134,24 +2141,26 @@ use HTML::Entities;
                 say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Pages\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pages', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Pages\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
@@ -2172,6 +2181,8 @@ use HTML::Entities;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session;
 
@@ -2261,7 +2272,7 @@ use HTML::Entities;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_pseudo_page', 'Delete some more pseudo_pages', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'delete_pseudo_page', 'Delete some more pseudo_pages', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -2279,7 +2290,7 @@ use HTML::Entities;
             $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_pseudo_page', undef, undef, "Error: $@", "Cannot read from pseudo_pages");
+            $self->message($cfg, $debug, \%session, $db, 'delete_pseudo_page', undef, undef, "Error: $@", "Cannot read from pseudo_pages");
             $query->finish();
             return 0;
         }
@@ -2341,24 +2352,26 @@ use HTML::Entities;
                 say "                <tr><th>Name</th><th>Full Name</th><th>Pattern</th><th>Status</th><th>Select</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td colspan=\"3\">";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Pseudo-Pages\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pseudo-Pages', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td colspan=\"3\">";
+        #say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Pseudo-Pages\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
@@ -2379,6 +2392,8 @@ use HTML::Entities;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session;
 
@@ -2453,7 +2468,7 @@ use HTML::Entities;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_aliases', 'Delete some more Aliases', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'delete_aliases', 'Delete some more Aliases', undef, @msgs);
             return $return;
         }
 
@@ -2468,7 +2483,7 @@ use HTML::Entities;
             $result         = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_aliases', undef, "Error: $@", "Cannnot Read aliases");
+            $self->message($cfg, $debug, \%session, $db, 'delete_aliases', undef, "Error: $@", "Cannnot Read aliases");
             $query->finish();
             return 0;
         }
@@ -2538,24 +2553,26 @@ use HTML::Entities;
                 say "                <tr><th>Name</th><th>Full Name</th><th>Select</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Aliases\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Aliases', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Aliases\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
@@ -2626,6 +2643,8 @@ use HTML::Entities;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session;
 
@@ -2708,7 +2727,7 @@ use HTML::Entities;
                 $return = 0;
                 push @msgs, "session admin rights did nnot match db something is wrong!!!!";
             }
-            $self->message($debug, \%session, $db, ($return?'main':'user'), ($return ? 'user' : undef), !$return && @msgs, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'user'), ($return ? 'user' : undef), !$return && @msgs, @msgs) if @msgs;
 
             unless($return){
                 untie %session;
@@ -2801,7 +2820,7 @@ use HTML::Entities;
                 push @msgs, "Nothing to change" unless @selected;
             }
             $self->log(Data::Dumper->Dump([$return, \@msgs, $submit], [qw(return @msgs submit)]));
-            $self->message($debug, \%session, $db, ($return?'main':'user'), ($return ? 'continue' : undef), 1, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'user'), ($return ? 'continue' : undef), 1, @msgs) if @msgs;
         }
 
         my @user_details;
@@ -2834,7 +2853,7 @@ use HTML::Entities;
             $return = 0;
         }
         unless($return){
-            $self->message($debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
             return $return;
         }
         
@@ -2947,27 +2966,29 @@ use HTML::Entities;
                 say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobiler</th><th>land line</th><th>group</th><th>admin</th><th>additional groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td colspan=\"3\">";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
-        say "                    </td>";
-        say "                    <td colspan=\"8\">";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Delete Users', colspan => 3, }, {tag => 'input', name => 'submit', type => 'submit', value => 'Toggle Admin Flag', colspan => 8, }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td colspan=\"3\">";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Delete Users\">";
+        #say "                    </td>";
+        #say "                    <td colspan=\"8\">";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Toggle Admin Flag\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
@@ -3198,7 +3219,7 @@ use HTML::Entities;
                     my $_group_id = $req->param($_);
                     my ($group_name, $return_group, @msgs_group) = $self->getgroup_name($_group_id, $db);
                     unless($return_group){
-                        $self->message($debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                        $self->message($cfg, $debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
                     }
                     push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
                     push @group_id_add, $_group_id;
@@ -3213,7 +3234,7 @@ use HTML::Entities;
             my $passwd_id       = $req->param('passwd_id');
             if(!defined $passwd_id || $passwd_id <= 0){
                 my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id <= 0!!!");
-                $self->message($debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                $self->message($cfg, $debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
                 return 0;
             }
             my $sql             = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
@@ -3244,7 +3265,7 @@ use HTML::Entities;
                 $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
                 if(!$r){
                     my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id not found in Database!!!");
-                    $self->message($debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                    $self->message($cfg, $debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
                     return 0;
                 }
                 if($r->{username} eq $loggedin_username){
@@ -3255,7 +3276,7 @@ use HTML::Entities;
                 push @msgs, "SELECT passwd etc al failed";
             }
             unless($return){
-                $self->message($debug, \%session, $db, 'user', undef, undef, @msgs);
+                $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs);
                 return 0;
             }
             $user_id                = $r->{id};
@@ -3297,7 +3318,7 @@ use HTML::Entities;
             for my $group_name (@_groups){
                 my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
                 unless($return_group){
-                    $self->message($debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                    $self->message($cfg, $debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
                     next;
                 }
                 push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
@@ -3330,7 +3351,7 @@ use HTML::Entities;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
             $query->finish();
-            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
 
             unless($return){
                 untie %session;
@@ -3405,7 +3426,7 @@ use HTML::Entities;
                     $return = 0;
                 }
                 $_query->finish();
-                $self->message($debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
+                $self->message($cfg, $debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
             }
 
             if($password && $repeat
@@ -3414,7 +3435,7 @@ use HTML::Entities;
                 my $line = __LINE__;
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
                 my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
-                $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
+                $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, 1, @msgs);
             }elsif(defined $username && defined $email && defined $street && defined $country
                 && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
                 && (!$city_suburb || $city_suburb =~ m/^[^\'\"]+$/) 
@@ -3616,7 +3637,7 @@ use HTML::Entities;
                         $return = 0;
                         push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                     }
-                    $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'back to users' : undef), !$return, @msgs);
+                    $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'back to users' : undef), !$return, @msgs);
                     return $return if $return;
                 }
             }else{
@@ -3711,7 +3732,7 @@ use HTML::Entities;
         }
         $query->finish();
         unless($return){
-            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
+            $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
         }
 
         untie %session;
@@ -4439,7 +4460,7 @@ use HTML::Entities;
                     }
                 }
             }
-            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', undef, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'delete_orphaned_links_sections', 'Delete some more links_sections', undef, @msgs);
 
             untie %session;
             $db->disconnect;
@@ -4458,7 +4479,7 @@ use HTML::Entities;
             $result     = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         };
         if($@){
-            $self->message($debug, \%session, $db, 'delete_orphaned_links_sections', undef, undef, "Error: $@", "Cannnot Read links_sections");
+            $self->message($cfg, $debug, \%session, $db, 'delete_orphaned_links_sections', undef, undef, "Error: $@", "Cannnot Read links_sections");
             $query->finish();
             return 0;
         }
@@ -4705,7 +4726,7 @@ use HTML::Entities;
             }
             $query->finish();
 
-            $self->message($debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
 
             $self->log(Data::Dumper->Dump([\%session], [qw(%session)]));
 
@@ -5031,7 +5052,7 @@ use HTML::Entities;
                 push @msgs, "could not find your record somethinnng is wrong with your login";
             }
             $query->finish();
-            $self->message($debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
 
             unless($return){
                 untie %session;
@@ -5096,7 +5117,7 @@ use HTML::Entities;
                 $return = 0;
             }
             $_query->finish();
-            $self->message($debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
+            $self->message($cfg, $debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
         }
 
         my $cond = defined $postal_street && defined $postal_country
@@ -5114,12 +5135,12 @@ use HTML::Entities;
             my $line = __LINE__;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
-            $self->message($debug, \%session, $db, 'register', undef, undef, 1, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, 1, @msgs);
         }elsif(($password || $repeat) && $password ne $repeat){
             my $line = __LINE__;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
             my @msgs = ('password and repeat password did not match!');
-            $self->message($debug, \%session, $db, 'register', undef, 1, @msgs);
+            $self->message($cfg, $debug, \%session, $db, 'register', undef, 1, @msgs);
         }elsif(defined $username && defined $email && $password && $repeat
             && defined $street && defined $country
             && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
@@ -5294,7 +5315,7 @@ use HTML::Entities;
                     $button_name = 'Back to Home';
                     $back_to     = 'main';
                 }
-                $self->message($debug, \%session, $db, ($return?$back_to:'register'), ($return ? $button_name : undef), !$return, @msgs);
+                $self->message($cfg, $debug, \%session, $db, ($return?$back_to:'register'), ($return ? $button_name : undef), !$return, @msgs);
                 return $return if $return;
             }
         }else{
@@ -5339,7 +5360,7 @@ use HTML::Entities;
             $result     = $query->execute();
         };
         if($@){
-            $self->message($debug, \%session, $db, 'register', undef, undef, "Error: $@", "Cannnot Read _group");
+            $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, "Error: $@", "Cannnot Read _group");
             $query->finish();
             return 0;
         }
@@ -5380,7 +5401,7 @@ use HTML::Entities;
         }
         $query->finish();
         unless($return){
-            $self->message($debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
+            $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
         }
 
         untie %session;
