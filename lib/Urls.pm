@@ -604,6 +604,8 @@ use HTML::Entities;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
+
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
