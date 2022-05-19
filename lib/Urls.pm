@@ -1343,6 +1343,8 @@ use HTML::Entities;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
+
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
@@ -1506,24 +1508,26 @@ use HTML::Entities;
         say "                        <input type=\"text\" name=\"pattern\" id=\"pattern\" placeholder=\"pattern\" pattern=\"[^;'\\x22]+\" title=\"; ' and \\x22 not allowed to prevent abuse\"/>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"OK\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "            <h1>Existing Pseudo-Pages</h1>";
         say "            <table>";
@@ -1567,6 +1571,8 @@ use HTML::Entities;
         #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
 
         my %session;
 
@@ -1835,27 +1841,29 @@ use HTML::Entities;
                 say "                <tr><th>section</th><th>name</th><th>link</th><th>Select</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Section\">";
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Link\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Section', }, {tag => 'input', name => 'delete', type => 'submit', value => 'Delete Link', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Section\">";
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"delete\" type=\"submit\" value=\"Delete Link\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
