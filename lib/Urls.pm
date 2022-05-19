@@ -504,6 +504,8 @@ use HTML::Entities;
         #return 0;
         my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
 
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
+
         my %session;
 
         my $id = $self->get_id($req, $cfg, $rec);
@@ -778,24 +780,26 @@ use HTML::Entities;
         say "                        </select>";
         say "                    </td>";
         say "                </tr>";
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, \$session, $db, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
