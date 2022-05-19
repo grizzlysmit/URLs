@@ -405,24 +405,26 @@ use HTML::Entities;
                 say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
             }
         }
-        say "                <tr>";
-        say "                    <td>";
-        if($debug){
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        }else{
-            say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-            say "                    </td>";
-            say "                    <td>";
-            say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        }
-        say "                    </td>";
-        say "                    <td>";
-        say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
-        say "                    </td>";
-        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply Filter', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, 16, \$session, $db, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Apply Filter\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
         return 1;
@@ -7216,6 +7218,83 @@ use HTML::Entities;
         $query->finish();
         return ($return, @msgs);
     } ## --- end sub update_passwd
+
+
+    sub bottom_buttons {
+        my ($self, $debug, $dont_showdebug, $indent, $_session, $db, @buttons) = @_;
+        $indent = 0 unless defined $indent;
+        $indent = ' ' x $indent;
+        say "$indent<tr>";
+        if($dont_showdebug){
+            $buttons[0]->{colspan} += 2;
+        }else{
+            say "$indent    <td>";
+            if($debug){
+                say "$indent        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+                say "$indent    </td>";
+                say "$indent    <td>";
+                say "$indent        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+            }else{
+                say "$indent        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+                say "$indent    </td>";
+                say "$indent    <td>";
+                say "$indent        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+            }
+            say "$indent    </td>";
+        }
+        for my$button (@buttons){
+            my $colspan = $button->{colspan};
+            my $name    = $button->{name};
+            my $type    = $button->{type};
+            my $value   = $button->{value};
+            my $class   = $button->{class};
+            my $id      = $button->{id};
+            my $tag     = $button->{tag};
+            my $event   = $button->{event};
+            my $handler = $button->{handler};
+            my $html    = $button->{html};
+            $colspan    = 1 unless defined $colspan;
+            $tag        = 'input' unless defined $tag;
+            if(defined $name){
+                $name = qq(name="$name");
+            }else{
+                $name = '';
+            }
+            if(defined $type){
+                $type = qq(type="$type");
+            }elsif($tag eq 'input'){
+                $type = qq(type="submit");
+            }else{
+                $type = '';
+            }
+            if(defined $value){
+                $value = qq(value="$value");
+            }else{
+                $value = '';
+            }
+            if(defined $class){
+                $class = qq(class="$class");
+            }else{
+                $class = '';
+            }
+            if(defined $id){
+                $id = qq(class="$id");
+            }else{
+                $id = '';
+            }
+            $event  = 'onclick' unless defined $event;
+            my $event_spec = '';
+            $event_spec = qq($event="$handler") if defined $handler;
+            say "$indent    <td colspan=\"$colspan\">";
+            if(defined $html){
+                say "$indent        <$tag $name $type $class $id $event_spec $value>$html</$tag>";
+            }else{
+                say "$indent        <$tag $name $type $class $id $event_spec $value/>";
+            }
+            say "$indent    </td>";
+        }
+        say "$indent</tr>";
+    } ## --- end sub bottom_buttons
 
 }
 
