@@ -408,7 +408,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply Filter', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, \$session, $db, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -7223,7 +7223,7 @@ use HTML::Entities;
 
 
     sub bottom_buttons {
-        my ($self, $debug, $dont_showdebug, $indent, $_session, $db, @buttons) = @_;
+        my ($self, $debug, $dont_showdebug, $indent, @buttons) = @_;
         $indent = 0 unless defined $indent;
         $indent = ' ' x $indent;
         say "$indent<tr>";
