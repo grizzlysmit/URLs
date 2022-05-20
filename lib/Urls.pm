@@ -4705,7 +4705,7 @@ use HTML::Entities;
                 push @msgs, "SELECT FROM passwd failed: $@";
                 $return = 0;
             }
-            $self->log(Data::Dumper->Dump([$result, $query, $return, \@msg, $sql], [qw(result query return @msg sql)]));
+            $self->log(Data::Dumper->Dump([$result, $query, $return, \@msgs, $sql], [qw(result query return @msgs sql)]));
             if($result){
                 my $r      = $query->fetchrow_hashref();
                 my $loggedin_id       = $r->{id};
