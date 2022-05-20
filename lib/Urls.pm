@@ -408,7 +408,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply Filter', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -473,6 +473,8 @@ use HTML::Entities;
                 }else{
                     say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name: $loggedin_username\" /></form>\n";
                 }
+            }elsif($fun eq 'logout' && $fun ne $Fun){
+                say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$Fun\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
             }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
             }else{
@@ -783,7 +785,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -1073,7 +1075,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'OK', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -1281,7 +1283,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'OK', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -1509,7 +1511,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -1842,7 +1844,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Section', }, {tag => 'input', name => 'delete', type => 'submit', value => 'Delete Link', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -1918,7 +1920,7 @@ use HTML::Entities;
             }
             $button_msg = 'Try Again' unless defined $button_msg;
             my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => $button_msg, }, );
-            $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+            $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
             #say "                <tr>";
             #say "                    <td>";
             #if($debug){
@@ -2142,7 +2144,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pages', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -2353,7 +2355,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pseudo-Pages', colspan => 3, }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -2554,7 +2556,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Aliases', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -2967,7 +2969,7 @@ use HTML::Entities;
             }
         }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Delete Users', colspan => 3, }, {tag => 'input', name => 'submit', type => 'submit', value => 'Toggle Admin Flag', colspan => 8, }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -4292,7 +4294,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Save Changes', colspan => 2, }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -4561,7 +4563,7 @@ use HTML::Entities;
             say "                </tr>";
         }
         my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Orphans', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -4794,7 +4796,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Login', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -4871,6 +4873,7 @@ use HTML::Entities;
         }
 
         my $submit  = $req->param('submit');
+        my $from    = $req->param('from');
 
         $submit     = '' unless defined $submit;
 
@@ -4903,8 +4906,7 @@ use HTML::Entities;
         }else{
             $self->links('logout', \%session);
 
-            say "        <form action=\"logout.pl\" method=\"post\">";
-            say "            <h1>Logout</h1>";
+            say "        <h1>Logout</h1>";
         }
 
 
@@ -4914,11 +4916,13 @@ use HTML::Entities;
         say "            <table>";
         say "                <tr>";
         say "                    <td colspan=\"3\">";
-        say "                        <input type=\"submit\" name=\"submit\" id=\"cancel\" value=\"Cancel\"/>";
+        say "                        <form action=\"$from\" method=\"post\">";
+        say "                            <input type=\"submit\" name=\"submit\" id=\"cancel\" value=\"Cancel\"/>";
+        say "                        </form>";
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Logout', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, 'logout.pl', 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -4938,7 +4942,6 @@ use HTML::Entities;
         #say "                    </td>";
         #say "                </tr>";
         say "            </table>";
-        say "        </form>";
 
         return 1;
     } ## --- end sub logout
@@ -5930,7 +5933,7 @@ use HTML::Entities;
             say "                </tr>";
         }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Register', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -6031,7 +6034,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
         #if($debug){
@@ -6168,7 +6171,7 @@ use HTML::Entities;
         say "                    <form action=\"admin.pl\" method=\"post\">";
         say "                        <table class=\"ex\">";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply', }, );
-        $self->bottom_buttons($debug, $dont_showdebug, 28, @buttons);
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 28, @buttons);
         #say "                            <td>";
         #if($debug){
         #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
@@ -7294,8 +7297,14 @@ use HTML::Entities;
 
 
     sub bottom_buttons {
-        my ($self, $debug, $dont_showdebug, $indent, @buttons) = @_;
+        my ($self, $debug, $dont_showdebug, $form, $indent, @buttons) = @_;
         $indent = 0 unless defined $indent;
+        my $form_indent;
+        if($form){
+            $form_indent = ' ' x $indent;
+            say "$form_indent<form  action=\"$form\" method=\"post\">";
+            $indent += 4;
+        }
         $indent = ' ' x $indent;
         say "$indent<tr>";
         if($dont_showdebug){
@@ -7368,6 +7377,9 @@ use HTML::Entities;
             say "$indent    </td>";
         }
         say "$indent</tr>";
+        if($form){
+            say "$form_indent</form>";
+        }
     } ## --- end sub bottom_buttons
 
 }
