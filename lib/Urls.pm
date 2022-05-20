@@ -474,7 +474,9 @@ use HTML::Entities;
                     say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name: $loggedin_username\" /></form>\n";
                 }
             }elsif($fun eq 'logout' && $fun ne $Fun){
-                say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$Fun\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
+                my $from = $Fun;
+                $from    = 'index' if $Fun eq 'main';
+                say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$Fun.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
             }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
             }else{
