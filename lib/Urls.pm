@@ -4737,7 +4737,7 @@ use HTML::Entities;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
                     $self->log(Data::Dumper->Dump([$r, \%session], [qw(r %session)]));
-                    return $self->redirect('index.pl');
+                    return $self->redirect($rec, 'index.pl');
                     #$rec->headers_out->set( Location => "index.pl" );
                     #$rec->status(Apache2::Const::REDIRECT);
                     #return 0;
@@ -7392,7 +7392,7 @@ use HTML::Entities;
 
 
     sub redirect {
-        my ($self, $url) = @_;
+        my ($self, $rec, $url) = @_;
         $rec->headers_out->set( Location => $url );
         $rec->status(Apache2::Const::REDIRECT);
         return 1;
