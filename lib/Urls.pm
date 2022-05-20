@@ -475,6 +475,7 @@ use HTML::Entities;
                 }
             }elsif($fun eq 'logout' && $fun ne $Fun){
                 my $from = $Fun;
+                $from    =~ tr/_/-/;
                 $from    = 'index' if $Fun eq 'main';
                 say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$from.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
             }elsif($fun eq $Fun){
