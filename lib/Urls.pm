@@ -429,12 +429,12 @@ use HTML::Entities;
         #say "                    </td>";
         #say "                </tr>";
         say "            </table>";
-        say "                    <script>";
-        say "                        function onclick_link(n){";
-        say "                            var lnk = document.getElementById('lnk[' + n + ']');";
-        say "                            lnk.click();";
-        say "                        }";
-        say "                    </script>";
+        say "            <script>";
+        say "                function onclick_link(n){";
+        say "                    var lnk = document.getElementById('lnk[' + n + ']');";
+        say "                    lnk.click();";
+        say "                }";
+        say "            </script>";
         say "        </form>";
         return 1;
     } ## --- end sub main
