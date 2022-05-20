@@ -26,6 +26,7 @@ use Data::Dumper;
 use Config::IniFiles;
 use FileHandle;
 use lib '/usr/share/mod_perl';
+use Apache2::RequestRec;
 use Urls;
 
 my $r = shift;

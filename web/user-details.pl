@@ -21,6 +21,7 @@ use strict;
 use warnings;
 use utf8;
 use v5.32.1;
+use Apache2::RequestRec;
 use Apache2::Request;
 use Data::Dumper;
 use Config::IniFiles;
