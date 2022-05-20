@@ -23,6 +23,7 @@ use Scalar::Util qw(blessed dualvar isweak readonly refaddr reftype tainted
                         weaken isvstring looks_like_number set_prototype);
 use Apache2::RequestRec;
 use Apache2::Request;
+use Apache2::Const;
 use Digest::MD5;
 use Apache2::Cookie;
 use Data::Dumper;
@@ -4736,6 +4737,8 @@ use HTML::Entities;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
                     $self->log(Data::Dumper->Dump([$r, \%session], [qw(r %session)]));
+                    $rec->headers_out->set(location => "index.pl")
+                    return Apache2::Const::HTTP_MOVED_PERMANENTLY;
                     push @msgs, "Loggedin";
                 }
             }
