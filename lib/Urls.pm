@@ -4738,7 +4738,7 @@ use HTML::Entities;
                     $session{loggedin_groupnname_id} = $primary_group_id;
                     $self->log(Data::Dumper->Dump([$r, \%session], [qw(r %session)]));
                     $rec->headers_out->set(location => "index.pl");
-                    return Apache2::Const::HTTP_MOVED_PERMANENTLY;
+                    return Apache2::Const::HTTP_MOVED_TEMPORARILY;
                     push @msgs, "Loggedin";
                 }
             }
