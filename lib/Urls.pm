@@ -7299,6 +7299,7 @@ use HTML::Entities;
         $indent = ' ' x $indent;
         say "$indent<tr>";
         if($dont_showdebug){
+            $buttons[0]->{colspan} = 1 unless defined $buttons[0]->{colspan};
             $buttons[0]->{colspan} += 2;
         }else{
             say "$indent    <td>";
