@@ -402,7 +402,7 @@ use HTML::Entities;
             my $link    = $bod->{link};
             say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$section</div></td>";
             say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$name</div></td>";
-            say "                    <td><a id=\"lnk[$cnt]\" href=\"$link\" target=\"_blank\"><label for=\"lnk[$cnt]\"><div class=\"ext\">$link</div></label></a></td>";
+            say "                    <td><a id=\"lnk[$cnt]\" href=\"$link\" target=\"_blank\"><div class=\"ext\">$link</div></a></td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
                 say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
