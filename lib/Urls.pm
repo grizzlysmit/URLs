@@ -4705,6 +4705,7 @@ use HTML::Entities;
                 push @msgs, "SELECT FROM passwd failed: $@";
                 $return = 0;
             }
+            $self->log(Data::Dumper->Dump([$result, $query, $return, \@msg, $sql], [qw(result query return @msg sql)]));
             if($result){
                 my $r      = $query->fetchrow_hashref();
                 my $loggedin_id       = $r->{id};
@@ -4741,8 +4742,14 @@ use HTML::Entities;
                     #$rec->headers_out->set( Location => "index.pl" );
                     #$rec->status(Apache2::Const::REDIRECT);
                     #return 0;
-                    push @msgs, "Loggedin";
+                    #push @msgs, "Loggedin";
+                }else{
+                    push @msgs, "Username and Password combination failed!!! Perhaps you miss typed";
+                    $return = 0;
                 }
+            }else{
+                push @msgs, "SELECT FROM passwd failed: $sql";
+                $return = 0;
             }
             $query->finish();
 
