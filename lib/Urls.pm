@@ -4753,7 +4753,7 @@ use HTML::Entities;
             }
             $query->finish();
 
-            $self->message($cfg, $debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), !$return, @msgs);
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'login'), ($return ? 'continue' : undef), undef, @msgs);
 
             $self->log(Data::Dumper->Dump([\%session], [qw(%session)]));
 
