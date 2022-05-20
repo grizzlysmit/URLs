@@ -2316,7 +2316,7 @@ use HTML::Entities;
 
         say "            <table>";
         say "                <tr>";
-        say "                    <td colspan=\"3\">";
+        say "                    <td colspan=\"5\">";
         say "                        <label for=\"page_length\"><div class=\"ex\">Page Length:";
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\"></div>";
         say "                        </label>";
