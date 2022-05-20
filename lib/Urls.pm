@@ -4749,6 +4749,7 @@ use HTML::Entities;
                     push @msgs, "Username and Password combination failed!!! Perhaps you miss typed";
                     $return = 0;
                 }
+            }elsif($result == 0){
             }else{
                 push @msgs, "SELECT FROM passwd failed: $sql";
                 $return = 0;
