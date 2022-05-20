@@ -400,9 +400,9 @@ use HTML::Entities;
             my $section = $bod->{section};
             my $name    = $bod->{name};
             my $link    = $bod->{link};
-            say "                    <td>$section</td>";
-            say "                    <td>$name</td>";
-            say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
+            say "                    <td><label for=\"lnk[$cnt]\"><div class=\"ext\">$section</div></label></td>";
+            say "                    <td><label for=\"lnk[$cnt]\"><div class=\"ext\">$name</div></label></td>";
+            say "                    <td><a id=\"lnk[$cnt]\" href=\"$link\" target=\"_blank\"><label for=\"lnk[$cnt]\"><div class=\"ext\">$link</div></label></a></td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
                 say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
