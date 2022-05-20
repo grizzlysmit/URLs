@@ -4708,6 +4708,7 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$result, $query, $return, \@msgs, $sql], [qw(result query return @msgs sql)]));
             if($result){
                 my $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$result, $r], [qw(result r)]));
                 my $loggedin_id       = $r->{id};
                 my $loggedin_username = $r->{username};
                 my $primary_group_id  = $r->{group_id};
