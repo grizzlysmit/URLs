@@ -6166,7 +6166,7 @@ use HTML::Entities;
         say "            <tr>";
         say "                <td>";
         say "                    <form action=\"admin.pl\" method=\"post\">";
-        say "                        <table>";
+        say "                        <table class=\"ex\">";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply', }, );
         $self->bottom_buttons($debug, $dont_showdebug, 28, @buttons);
         #say "                            <td>";
