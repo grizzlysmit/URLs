@@ -403,14 +403,6 @@ use HTML::Entities;
             say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$section</div></td>";
             say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$name</div></td>";
             say "                    <td><a id=\"lnk[$cnt]\" href=\"$link\" target=\"_blank\"><label for=\"lnk[$cnt]\"><div class=\"ext\">$link</div></label></a></td>";
-            say "                    <script>";
-            say "                        function onclick_link(n){";
-            say "                            var lnk = document.getElementById('lnk[' + n + ']');";
-            say "                            lnk.click();";
-            say "                            ";
-            say "                            ";
-            say "                        }";
-            say "                    </script>";
             say "                </tr>";
             if($cnt % $page_length == 0){
                 say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
@@ -437,6 +429,12 @@ use HTML::Entities;
         #say "                    </td>";
         #say "                </tr>";
         say "            </table>";
+        say "                    <script>";
+        say "                        function onclick_link(n){";
+        say "                            var lnk = document.getElementById('lnk[' + n + ']');";
+        say "                            lnk.click();";
+        say "                        }";
+        say "                    </script>";
         say "        </form>";
         return 1;
     } ## --- end sub main
