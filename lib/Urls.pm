@@ -476,19 +476,19 @@ use HTML::Entities;
             #say "                    <a href=\"$href\" >$name</a>\n";
             if($fun eq 'profile'){
                 if($fun eq $Fun){
-                    say "                    <button id=\"$fun\" type=\"button\" disabled>$name: $loggedin_username</button>\n";
+                    say "                    <button id=\"$fun\" type=\"button\" disabled>$name: $loggedin_username</button>";
                 }else{
-                    say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name: $loggedin_username\" /></form>\n";
+                    say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name: $loggedin_username\" /></form>";
                 }
             }elsif($fun eq 'logout' && $fun ne $Fun){
                 my $from = $Fun;
                 $from    =~ tr/_/-/;
                 $from    = 'index' if $Fun eq 'main';
-                say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$from.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
+                say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$from.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>";
             }elsif($fun eq $Fun){
-                say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>\n";
+                say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>";
             }else{
-                say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>\n";
+                say "                    <form action=\"$href\" method=\"post\" ><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>";
             }
             say "                </td>";
             if($cnt % 7 == 0){
