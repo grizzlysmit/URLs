@@ -4737,9 +4737,10 @@ use HTML::Entities;
                     $session{loggedin_groupname}     = $groupname;
                     $session{loggedin_groupnname_id} = $primary_group_id;
                     $self->log(Data::Dumper->Dump([$r, \%session], [qw(r %session)]));
-                    $rec->headers_out->set( Location => "index.pl" );
-                    $rec->status(Apache2::Const::REDIRECT);
-                    return 0;
+                    return $self->redirect('index.pl');
+                    #$rec->headers_out->set( Location => "index.pl" );
+                    #$rec->status(Apache2::Const::REDIRECT);
+                    #return 0;
                     push @msgs, "Loggedin";
                 }
             }
@@ -7388,6 +7389,14 @@ use HTML::Entities;
             say "$form_indent</form>";
         }
     } ## --- end sub bottom_buttons
+
+
+    sub redirect {
+        my ($self, $url) = @_;
+        $rec->headers_out->set( Location => $url );
+        $rec->status(Apache2::Const::REDIRECT);
+        return 1;
+    } ## --- end sub redirect
 
 }
 
