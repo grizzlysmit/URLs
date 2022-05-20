@@ -4706,7 +4706,7 @@ use HTML::Entities;
                 $return = 0;
             }
             $self->log(Data::Dumper->Dump([$result, $query, $return, \@msgs, $sql], [qw(result query return @msgs sql)]));
-            if($result){
+            if($result && $result != 0){
                 my $r      = $query->fetchrow_hashref();
                 my $line = __LINE__;
                 $self->log(Data::Dumper->Dump([$line, $result, $r], [qw(line result r)]));
