@@ -2352,7 +2352,7 @@ use HTML::Entities;
                 say "                <tr><th>Name</th><th>Full Name</th><th>Pattern</th><th>Status</th><th>Select</th></tr>";
             }
         }
-        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pseudo-Pages', }, );
+        my @buttons = ({tag => 'input', name => 'delete', type => 'submit', value => 'Delete Pseudo-Pages', colspan => 3, }, );
         $self->bottom_buttons($debug, $dont_showdebug, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
