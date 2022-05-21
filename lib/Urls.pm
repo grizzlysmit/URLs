@@ -1095,7 +1095,7 @@ use HTML::Entities;
         for my $page (@pages){
             my $name      = $page->{name};
             my $full_name = $page->{full_name};
-            say "                            <option value=\"$name\">$page $full_name</option>";
+            say "                            <option value=\"$name\">$name => $full_name</option>";
         }
         say "                        </select>";
         say "                    </td>";
