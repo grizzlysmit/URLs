@@ -1385,15 +1385,21 @@ use HTML::Entities;
             my $section = $bod->{section};
             my $name    = $bod->{name};
             my $link    = $bod->{link};
-            say "                    <td>$section</td>";
-            say "                    <td>$name</td>";
-            say "                    <td><a href=\"$link\" target=\"_blank\">$link</a></td>";
+            say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$section</div></td>";
+            say "                    <td><div class=\"ext\" onclick=\"onclick_link($cnt)\">$name</div></td>";
+            say "                    <td><a href=\"$link\" target=\"_blank\"><div class=\"ext\">$link</div></a></td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
                 say "                <tr><th>section</th><th>name</th><th>link</th></tr>";
             }
         }
         say "            </table>";
+        say "            <script>";
+        say "                function onclick_link(n){";
+        say "                    var lnk = document.getElementById('lnk[' + n + ']');";
+        say "                    lnk.click();";
+        say "                }";
+        say "            </script>";
         say "        </form>";
 
         return 1;
