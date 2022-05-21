@@ -1072,7 +1072,7 @@ use HTML::Entities;
         say "            <h1>Add Page</h1>";
         say "            <table>";
         say "                <tr>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"3\">";
         say "                        <script>";
         say "                            function onchange_page(){";
         say "                                var slt = document.getElementById(\"pages\");";
