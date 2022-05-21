@@ -1018,15 +1018,45 @@ use HTML::Entities;
             $db->disconnect;
             return $return;
         }
+
+        my @pages;
+        my $return = 1;
+        my @msgs;
+        my $sql    ="SELECT p.name, p.full_name FROM pagelike p\n";
+        $sql      .= "WHERE (? = 1 OR (p.userid = ? AND (p)._perms._user._read = true)\n";
+        $sql      .= "     OR ((p.groupid = ? OR p.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql      .= "          AND (p)._perms._group._read = true) OR (p)._perms._other._read = true)\n";
+        $sql      .="ORDER BY p.name, p.full_name\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        eval {
+            $result    = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+        };
+        if($@){
+            $return = 0;
+            push @msgs, "SELECT FROM pagelike Failed: $@";
+        }
+        if($result && $result != 0){
+            my $r      = $query->fetchrow_hashref();
+            while($r){
+                push @pages, $r;
+                $r     = $query->fetchrow_hashref();
+            }
+        }else{
+            $return = 0;
+            push @msgs, "SELECT FROM pagelike Failed: $sql";
+        }
+        $self->message($cfg, $debug, \%session, $db, 'add_link', 'Try again', !$return, @msgs) if @msgs;
+        return $return if !$return;
         
 
-        my $sql             = "SELECT ls.id, ls.section FROM links_sections ls\n";
+        $sql                = "SELECT ls.id, ls.section FROM links_sections ls\n";
         $sql               .= "WHERE (? = 1 OR (ls.userid = ? AND (ls)._perms._user._read = true)\n";
         $sql               .= "   OR ((ls.groupid = ? OR ls.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
         $sql               .= "         AND (ls)._perms._group._read = true) OR (ls)._perms._other._read = true)\n";
         $sql               .= "ORDER BY ls.section\n";
-        my $query           = $db->prepare($sql);
-        my $result          = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+        $query              = $db->prepare($sql);
+        $result             = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
         my @sections;
         my $r               = $query->fetchrow_hashref();
@@ -1041,6 +1071,35 @@ use HTML::Entities;
         say "        <form action=\"add-page.pl\" method=\"post\">";
         say "            <h1>Add Page</h1>";
         say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"2\">";
+        say "                        <script>";
+        say "                            function onchange_page(){";
+        say "                                var slt = document.getElementById(\"pages\");";
+        say "                                var name = slt.value;";
+        say "                                var pages = {";
+        for my $page (@pages){
+            my $name      = $page->{name};
+            my $full_name = $page->{full_name};
+            say "                                    \"$name\": \"$full_name\",";
+        }
+        say "                                    };";
+        say "                                var full_name = pages[name];";
+        say "                                var page = document.getElementById(\"page\");";
+        say "                                page.value = name";
+        say "                                var fname = document.getElementById(\"full_name\");";
+        say "                                fname.value = full_name;";
+        say "                            }";
+        say "                        </script>";
+        say "                        <select id=\"pages\" onchange=\"onchange_page()\">";
+        for my $page (@pages){
+            my $name      = $page->{name};
+            my $full_name = $page->{full_name};
+            say "                            <option value=\"$name\">$page $full_name</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"page\"><div class=\"ex\">Page: </div></label>";
@@ -1245,7 +1304,7 @@ use HTML::Entities;
         $sql      .= "          AND (lsl)._perms._group._read = true) OR (lsl)._perms._other._read = true)\n";
         $sql      .= "ORDER BY lsl.section, lsl.name;\n";
         my $query  = $db->prepare($sql);
-        my $result = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
+        my $result    = $query->execute($loggedin_admin, $loggedin_id, $loggedin_primary_group_id, $loggedin_id);
         my $r      = $query->fetchrow_hashref();
         my @body;
         while($r){
