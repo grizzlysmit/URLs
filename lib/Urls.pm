@@ -1340,7 +1340,7 @@ use HTML::Entities;
         say "                        <label for=\"name\">Name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"Only a-z, A-Z, 0-9, ., - and _ allowed\"/>";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"[a-zA-Z0-9+\\x28\\x2E_-]+\" title=\"Only a-z, A-Z, 0-9, ., +, - and _ allowed\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
