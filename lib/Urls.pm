@@ -1242,7 +1242,7 @@ use HTML::Entities;
         my $link     = $req->param('link');
 
         $self->log(Data::Dumper->Dump([$section, $name, $link], [qw(section name link)]));
-        if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\@)+$/ && $name =~ m/^(?:\w|-|\.|\@)+$/ && is_uri($link)){
+        if(defined $section && defined $name && defined $link && $section =~ m/^(?:\w|-|\.|\+|\@)+$/ && $name =~ m/^(?:\w|-|\.|\+|\@)+$/ && is_uri($link)){
             my @msgs;
             my $return = 1;
             my $sql  = "INSERT INTO links_sections(section, userid, groupid) VALUES(?, ?, ?) ON CONFLICT (section) DO NOTHING;\n";
