@@ -7619,7 +7619,8 @@ use HTML::Entities;
         $mobile_placeholder   = '' unless defined $mobile_placeholder;
         $list                 = '' unless defined $list;
 
-        $self->log(Data::Dumper->Dump([$name, $target], [qw(name cc)]));
+        $self->log(Data::Dumper->Dump([$cc, $rprefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
+                [qw(cc rprefix name flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder cc)]));
 
         untie %session;
         $db->disconnect;
