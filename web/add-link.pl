@@ -36,10 +36,10 @@ my $req             = Apache2::Request->new($r);
 my $debug           = $req->param('debug');
 
 # make a inifile object to get the inifile data #
-my $inipath = "/etc/urls/config.ini"; # TODO: define on server.
+my $inipath = "/etc/urls/config.ini";
 my $cfg = Config::IniFiles->new( -file => $inipath );
 
-my $logpath = '/var/log/urls'; # TODO: define on server.
+my $logpath = '/var/log/urls';
 
 my $log;
 if($debug){

@@ -711,7 +711,8 @@ use HTML::Entities;
                 push @msgs, "Error: failed to define Alias: $alias => $section";
                 $return = 0;
             }
-            $self->message($cfg, $debug, \%session, $db, 'add_alias', 'Add an other Alias', undef, undef, @msgs);
+            #my ($self,    $cfg, $debug, $_session, $db, $fun,        $button_msg,          $dont_do_form, @msgs) = @_;
+            $self->message($cfg, $debug, \%session, $db, 'add_alias', 'Add an other Alias', undef,         @msgs);
             return $return;
         }
 
@@ -6255,7 +6256,7 @@ use HTML::Entities;
         say "            </tr>";
         say "            <tr>";
         say "                <td>";
-        say "                    <form action=\"register.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Register a new user\"/></form>";
+        say "                    <form action=\"insert-countries.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Insert Countries\"/></form>";
         say "                </td>";
         say "            </tr>";
         say "            <tr>";
@@ -7486,6 +7487,251 @@ use HTML::Entities;
         $rec->status(Apache2::Const::REDIRECT);
         return 1;
     } ## --- end sub redirect
+
+
+    sub insert_countries {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
+        $self->links('insert_countries', \%session);
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        my $submit               = $req->param('submit');
+        my $name                 = $req->param('name');
+        my $cc                   = $req->param('cc');
+        my $country_prefix       = $req->param('country_prefix');
+        my $landline_pattern     = $req->param('landline_pattern');
+        my $mobile_pattern       = $req->param('mobile_pattern');
+        my $landline_title       = $req->param('landline_title');
+        my $mobile_title         = $req->param('mobile_title');
+        my $landline_placeholder = $req->param('landline_placeholder');
+        my $mobile_placeholder   = $req->param('mobile_placeholder');
+        my $list                 = $req->param('list');
+        my @prefixes             = split m/,\s*/, $list;
+
+        if($submit && $submit eq 'Insert'){
+            my $flag = qq(/flags/$cc.png);
+            my @msgs;
+            my $return = 1;
+            for my $prefix (@prefixes){
+                $landline_pattern     =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_pattern     =~ s/\{prefix\}/$prefix/g;
+                $mobile_pattern       =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_pattern       =~ s/\{prefix\}/$prefix/g;
+                $landline_title       =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_title       =~ s/\{prefix\}/$prefix/g;
+                $mobile_title         =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_title         =~ s/\{prefix\}/$prefix/g;
+                $landline_placeholder =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_placeholder =~ s/\{prefix\}/$prefix/g;
+                $mobile_placeholder   =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_placeholder   =~ s/\{prefix\}/$prefix/g;
+                my $rprefix           = "+$country_prefix$prefix";
+                my $sql               = "INSERT INTO countries(cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
+                $sql                 .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n"; 
+                $sql                 .= "RETURNING id, cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+                my $query             = $db->prepare($sql);
+                my $result;
+                eval {
+                    $result  = $query->execute($cc, $rprefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder);
+                };
+                if($@){
+                    push @msgs, "Error: INSERT INTO countries failed: $@";
+                    $return  = 0;
+                }
+                if($result && $result != 0){
+                    push @msgs, "INSERT INTO countries succeeded: $name, $cc, $rprefix";
+                }else{
+                    push @msgs, "Error: INSERT INTO countries failed: $sql";
+                    $return = 0;
+                }
+            }
+            #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
+            $self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
+            return $return;
+        }
+
+        $name                 = '' unless defined $name;
+        $cc                   = '' unless defined $cc;
+        $country_prefix       = '' unless defined $country_prefix;
+        $landline_pattern     = '' unless defined $landline_pattern;
+        $mobile_pattern       = '' unless defined $mobile_pattern;
+        $landline_title       = '' unless defined $landline_title;
+        $mobile_title         = '' unless defined $mobile_title;
+        $landline_placeholder = '' unless defined $landline_placeholder;
+        $mobile_placeholder   = '' unless defined $mobile_placeholder;
+        $list                 = '' unless defined $list;
+
+        $self->log(Data::Dumper->Dump([$name, $target], [qw(name cc)]));
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"add-alias.pl\" method=\"post\">";
+        say "            <h1>Add Alias</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"name\">name: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\" value=\"$name\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"cc\">Country Code: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"cc\" id=\"cc\" placeholder=\"CC\" pattern=\"[A-Z]{2}\" title=\"only exactly 2 A-Z allowed\" value=\"$cc\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"country_prefix\">Country Prefix: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"country_prefix\" id=\"country_prefix\" placeholder=\"222\" pattern=\"[0-9]+\" title=\"only 0-9 allowed\" value=\"$country_prefix\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"landline_pattern\">Landline Pattern: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"landline_pattern\" id=\"landline_pattern\" placeholder=\"landline_pattern\" value=\"$landline_pattern\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"mobile_pattern\">Mobile Pattern: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"mobile_pattern\" id=\"mobile_pattern\" placeholder=\"mobile_pattern\" value=\"$mobile_pattern\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"landline_title\">landline_title: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"landline_title\" id=\"landline_title\" placeholder=\"landline_title\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\" value=\"$landline_title\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"mobile_title\">Mobile Title: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"mobile_title\" id=\"mobile_title\" placeholder=\"mobile_title\" value=\"$mobile_title\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"landline_placeholder\">Landline Placeholder: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"landline_placeholder\" id=\"landline_placeholder\" placeholder=\"landline_placeholder\" value=\"$landline_placeholder\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"mobile_placeholder\">Mobile Placeholder: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"mobile_placeholder\" id=\"mobile_placeholder\" placeholder=\"mobile_placeholder\" value=\"$mobile_placeholder\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"list\">Prefixes: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input name=\"list\" id=\"list\" placeholder=\"num, num, ...\" value=\"$list\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Insert', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        #say "                    </td>";
+        #say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
+    } ## --- end sub insert_countries
 
 }
 
