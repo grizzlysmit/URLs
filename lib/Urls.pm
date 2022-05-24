@@ -7626,7 +7626,7 @@ use HTML::Entities;
         $db->disconnect;
 
         say "        <form action=\"insert-countries.pl\" method=\"post\">";
-        say "            <h1>Add Alias</h1>";
+        say "            <h1>Insert Countries</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
