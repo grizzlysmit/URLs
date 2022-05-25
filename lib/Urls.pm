@@ -7849,12 +7849,12 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             my $country_prefix           = 1;
-            my $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
-            my $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
-            my $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
-            my $mobile_title         = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $mobile_title;
-            my $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $landline_placeholder;
-            my $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $mobile_placeholder;
+            my $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}';
+            my $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}';
+            my $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.';
+            my $mobile_title         = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.';
+            my $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234';
+            my $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234';
             for my $region (@countries){
                 my $id                       = $region->{id};
                 my $cc                       = $region->{cc};
