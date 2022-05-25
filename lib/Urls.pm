@@ -7848,7 +7848,7 @@ use HTML::Entities;
         if($submit && $submit eq 'Update'){
             my @msgs;
             my $return = 1;
-            my $country_prefix           = 1;
+            my $country_prefix       = 1;
             my $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}';
             my $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}';
             my $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.';
@@ -7859,6 +7859,7 @@ use HTML::Entities;
                 my $id                       = $region->{id};
                 my $cc                       = $region->{cc};
                 my $prefix                   = $region->{prefix};
+                $prefix                      = "$prefix";
                 $prefix                      =~ s/^1//;
                 my $name                     = $region->{_name};
                 my $_flag                    = $region->{_flag};
