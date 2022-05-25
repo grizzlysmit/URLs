@@ -6261,7 +6261,7 @@ use HTML::Entities;
         say "            </tr>";
         say "            <tr>";
         say "                <td>";
-        say "                    <form action=\"register.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Register a new user\"/></form>";
+        say "                    <form action=\"fix-us.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Fix US entries\"/></form>";
         say "                </td>";
         say "            </tr>";
         say "            <tr>";
