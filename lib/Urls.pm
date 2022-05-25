@@ -7635,7 +7635,7 @@ use HTML::Entities;
         say "                        <label for=\"name\">name: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" value=\"$name\" size=\"80\"/>";
+        say "                        <input type=\"text\" name=\"name\" id=\"name\" placeholder=\"name\" value=\"$name\" size=\"120\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
