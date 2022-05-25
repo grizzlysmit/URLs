@@ -7908,8 +7908,7 @@ use HTML::Entities;
             @Countries = @countries;
         }
 
-        $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
-                [qw(cc country_prefix name flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder cc)]));
+        $self->log(Data::Dumper->Dump([\@countries, \@Countries], [qw(@countries @Countries)]));
 
         untie %session;
         $db->disconnect;
