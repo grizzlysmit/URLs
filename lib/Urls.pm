@@ -7608,15 +7608,15 @@ use HTML::Entities;
             return $return;
         }
 
-        $name                 = '' unless defined $name;
-        $cc                   = '' unless defined $cc;
-        $country_prefix       = '' unless defined $country_prefix;
-        $landline_pattern     = '' unless defined $landline_pattern;
-        $mobile_pattern       = '' unless defined $mobile_pattern;
-        $landline_title       = '' unless defined $landline_title;
-        $mobile_title         = '' unless defined $mobile_title;
-        $landline_placeholder = '' unless defined $landline_placeholder;
-        $mobile_placeholder   = '' unless defined $mobile_placeholder;
+        $name                 = 'United States' unless defined $name;
+        $cc                   = 'US' unless defined $cc;
+        $country_prefix       = '1' unless defined $country_prefix;
+        $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
+        $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
+        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
+        $mobile_title         = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $mobile_title;
+        $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $landline_placeholder;
+        $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $mobile_placeholder;
         $list                 = '' unless defined $list;
 
         $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
