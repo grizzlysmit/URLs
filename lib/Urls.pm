@@ -7757,6 +7757,256 @@ use HTML::Entities;
         return 1;
     } ## --- end sub insert_countries
 
+
+    sub fix_us {
+        my ($self, $req, $cfg, $rec) = @_;
+        my $ident           = ident $self;
+        my $debug = $debug{$ident};
+
+        my $dbserver        = $cfg->val('urls_db', 'dbserver');
+        my $dbuser          = $cfg->val('urls_db', 'dbuser');
+        my $dbpass          = $cfg->val('urls_db', 'dbpass');
+        my $dbname          = $cfg->val('urls_db', 'dbname');
+        my $dbport          = $cfg->val('urls_db', 'dbport');
+        #my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {'RaiseError' => 1});
+        #return 0;
+        my $db              = DBI->connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", {AutoCommit => 1, 'RaiseError' => 1});
+
+        my $dont_showdebug  = !$cfg->val('general', 'showdebug');
+
+        my %session;
+
+        my $id = $self->get_id($req, $cfg, $rec);
+        if($id){
+            tie %session, 'Apache::Session::Postgres', $id, {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+        }else{
+            tie %session, 'Apache::Session::Postgres', undef(), {
+                Handle => $db,
+                TableName => 'sessions', 
+                #Commit     => 1
+            };
+            $self->set_cookie("SESSION_ID=$session{_session_id}", $cfg, $rec);
+        }
+
+        $debug    = $session{debug} if !defined $debug && exists $session{debug};
+        $debug{$ident} = $debug;
+        $session{debug} = $debug if defined $debug;
+        if(!defined $logfiles{$ident}){
+            my $log;
+            my $logpath = $logpaths{$ident};
+            if($debug){
+                if(open($log, '>>', "$logpath/debug.log")){
+                    $log->autoflush(1);
+                }else{
+                    die "could not open $logpath/debug.log $!";
+                }
+            }
+            $self->debug_init($debug, $log);
+        }
+
+        $self->links('fix_us', \%session);
+
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
+        my $submit               = $req->param('submit');
+
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+
+        my @countries;
+        my $sql                  = "SELECT\n";
+        $sql                    .= "    c.id, c.cc, c.prefix, c._name, c._flag, c.landline_pattern, c.mobile_pattern,\n";
+        $sql                    .= "    c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
+        $sql                    .= "FROM countries c\n";
+        $sql                    .= "WHERE c.cc = 'US';\n";
+        my $query                = $db->prepare($sql);
+        my $result               = $query->execute();
+        my $r                    = $query->fetchrow_hashref();
+        while($r){
+            push @countries, $r;
+            $r                   = $query->fetchrow_hashref();
+        }
+        $query->finish();
+        my @Countries;
+
+        if($submit && $submit eq 'Update'){
+            my @msgs;
+            my $return = 1;
+            my $country_prefix           = 1;
+            my $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
+            my $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
+            my $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
+            my $mobile_title         = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $mobile_title;
+            my $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $landline_placeholder;
+            my $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $mobile_placeholder;
+            for my $region (@countries){
+                my $id                       = $region->{id};
+                my $cc                       = $region->{cc};
+                my $prefix                   = $region->{prefix};
+                $prefix                      =~ s/^1//;
+                my $name                     = $region->{_name};
+                my $_flag                    = $region->{_flag};
+                my $landline_pattern_tmp     = $landline_pattern;
+                my $mobile_pattern_tmp       = $mobile_pattern;
+                my $landline_title_tmp       = $landline_title;
+                my $mobile_title_tmp         = $mobile_title;
+                my $landline_placeholder_tmp = $landline_placeholder;
+                my $mobile_placeholder_tmp   = $mobile_placeholder;
+                $landline_pattern_tmp        =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_pattern_tmp        =~ s/\{prefix\}/$prefix/g;
+                $mobile_pattern_tmp          =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_pattern_tmp          =~ s/\{prefix\}/$prefix/g;
+                $landline_title_tmp          =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_title_tmp          =~ s/\{prefix\}/$prefix/g;
+                $mobile_title_tmp            =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_title_tmp            =~ s/\{prefix\}/$prefix/g;
+                $landline_placeholder_tmp    =~ s/\{country-prefix\}/$country_prefix/g;
+                $landline_placeholder_tmp    =~ s/\{prefix\}/$prefix/g;
+                $mobile_placeholder_tmp      =~ s/\{country-prefix\}/$country_prefix/g;
+                $mobile_placeholder_tmp      =~ s/\{prefix\}/$prefix/g;
+                my $sql                      = "UPDATE countries SET landline_pattern = ?, mobile_pattern = ?, landline_title = ?, mobile_title = ?, landline_placeholder = ?, mobile_placeholder = ?\n";
+                $sql                        .= "WHERE id = ?\n"; 
+                $sql                        .= "RETURNING id, cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+                my $query                    = $db->prepare($sql);
+                my $result;
+                eval {
+                    $result                  = $query->execute($landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $id);
+                };
+                if($@){
+                    push @msgs, "Error: UPDATE countries failed: $@";
+                    $return  = 0;
+                }
+                if($result && $result != 0){
+                    $r                   = $query->fetchrow_hashref();
+                    push @Countries, $r;
+                }else{
+                    push @msgs, "Error: UPDATE countries failed: $sql";
+                    $return = 0;
+                }
+                $query->finish();
+            }
+            #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
+            $self->message($cfg, $debug, \%session, $db, 'fix_us', 'Insert some more countries', 1,        @msgs) if @msgs;
+            #return $return;
+        }else{
+            @Countries = @countries;
+        }
+
+        $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
+                [qw(cc country_prefix name flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder cc)]));
+
+        untie %session;
+        $db->disconnect;
+
+        say "        <form action=\"fix-us.pl\" method=\"post\">";
+        say "            <h1>Fix US</h1>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"submit\" name=\"submit\" id=\"set_page_length\" value=\"Set Page Length\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+        my $cnt = 0;
+        for my $region (@Countries){
+            $cnt++;
+            my $id                       = $region->{id};
+            my $cc                       = $region->{cc};
+            my $prefix                   = $region->{prefix};
+            my $name                     = $region->{_name};
+            my $_flag                    = $region->{_flag};
+            my $landline_pattern         = $region->{landline_pattern};
+            my $mobile_pattern           = $region->{mobile_pattern};
+            my $landline_title           = $region->{landline_title};
+            my $mobile_title             = $region->{mobile_title};
+            my $landline_placeholder     = $region->{landline_placeholder};
+            my $mobile_placeholder       = $region->{mobile_placeholder};
+            say "                <tr>";
+            say "                    <td>";
+            say "                        $id";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $cc";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $prefix";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $name";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <img src=\"$_flag\" alt=\"$_flag\"/>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $landline_pattern";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $mobile_pattern";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $landline_title";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $mobile_title";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $landline_placeholder";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        $mobile_placeholder";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+            }
+        }
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Update', }, );
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td>";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
+        #say "                    </td>";
+        #say "                </tr>";
+        say "            </table>";
+        say "        </form>";
+
+        return 1;
+    } ## --- end sub fix_us
+
 }
 
 1;
