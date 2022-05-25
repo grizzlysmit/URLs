@@ -7922,7 +7922,7 @@ use HTML::Entities;
         say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
         say "                        </label>";
         say "                    </td>";
-        say "                    <td colspan=\"2\">";
+        say "                    <td colspan=\"10\">";
         say "                        <input type=\"submit\" name=\"submit\" id=\"set_page_length\" value=\"Set Page Length\" />";
         say "                    </td>";
         say "                </tr>";
@@ -7980,7 +7980,7 @@ use HTML::Entities;
                 say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
             }
         }
-        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Update', }, );
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Update', colspan => 9, }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         #say "                <tr>";
         #say "                    <td>";
