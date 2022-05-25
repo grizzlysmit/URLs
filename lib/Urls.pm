@@ -7705,7 +7705,7 @@ use HTML::Entities;
         say "                        <label for=\"list\">Prefixes: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input name=\"list\" id=\"list\" placeholder=\"num, num, ...\" value=\"$list\"/>";
+        say "                        <input type=\"text\" name=\"list\" id=\"list\" placeholder=\"num, num, ...\" value=\"$list\" pattern=\"\\s*\\d+(?:\\s*,\\s*\\d+)*\\s*\" title=\"num, num,  ...\"/>";
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Insert', }, );
