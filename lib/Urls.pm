@@ -7564,7 +7564,9 @@ use HTML::Entities;
         my $landline_placeholder = $req->param('landline_placeholder');
         my $mobile_placeholder   = $req->param('mobile_placeholder');
         my $list                 = $req->param('list');
-        my @prefixes             = split m/,\s*/, $list;
+        $list                    =~ s/^\s+//;
+        $list                    =~ s/\s+$//;
+        my @prefixes             = split m/\s*,\s*/, $list;
         my $flag = qq(/flags/$cc.png);
 
         if($submit && $submit eq 'Insert'){
