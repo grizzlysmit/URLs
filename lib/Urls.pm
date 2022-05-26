@@ -7895,7 +7895,8 @@ use HTML::Entities;
         $landline_placeholder = '' unless defined $landline_placeholder;
         $mobile_placeholder   = '' unless defined $mobile_placeholder;
 
-        $self->log(Data::Dumper->Dump([\@countries, \@Countries], [qw(@countries @Countries)]));
+        $self->log(Data::Dumper->Dump([\@countries, $cc_id, $cc, $prefix, $name, $_flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder],
+                [qw(@countries cc_id cc prefix name _flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder)]));
 
         untie %session;
         $db->disconnect;
