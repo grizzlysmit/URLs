@@ -8130,7 +8130,7 @@ use HTML::Entities;
         say "                    input_landline_placeholder.value = landline_placeholder;";
         say "                    input_mobile_placeholder.value   = mobile_placeholder;";
         say "                    alert('_name == ' + _name);";
-        say "                    var input_cc.focusd();";
+        say "                    input_cc.focusd();";
         say "                } // on_country_click(n) //";
         say "            </script>";
         say "        </form>";
