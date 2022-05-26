@@ -7567,7 +7567,12 @@ use HTML::Entities;
         my $list                 = $req->param('list');
         $list                    =~ s/^\s+//;
         $list                    =~ s/\s+$//;
-        my @prefixes             = split m/\s*,\s*/, $list;
+        my @prefixes;
+        if($list eq ''){
+            @prefixes = ('', );
+        }else{
+            @prefixes             = split m/\s*,\s*/, $list;
+        }
         my $flag = qq(/flags/$cc.png);
 
         if($submit && $submit eq 'Insert'){
