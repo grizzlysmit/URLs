@@ -8094,7 +8094,7 @@ use HTML::Entities;
             say "                                        \"$id\": {";
             say "                                                    \"cc\": \"$cc\",";
             say "                                                    \"prefix\": \"$prefix\",";
-            say "                                                    \"_name\": \"$_name\",";
+            say "                                                    \"_name\": \"$name\",";
             say "                                                    \"_flag\": \"$_flag\",";
             say "                                                    \"landline_pattern\": \"$landline_pattern\",";
             say "                                                    \"mobile_pattern\": \"$mobile_pattern\",";
