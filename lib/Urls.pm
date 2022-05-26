@@ -8133,6 +8133,7 @@ use HTML::Entities;
         say "                    input_mobile_placeholder.value   = mobile_placeholder;";
         #say "                    alert('_name == ' + _name);";
         say "                    input_cc.focusd();";
+        say "                    input_cc.select();";
         say "                } // on_country_click(n) //";
         say "            </script>";
         say "        </form>";
