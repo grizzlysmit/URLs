@@ -8091,7 +8091,7 @@ use HTML::Entities;
             say "                                                    \"mobile_placeholder\": \"$mobile_placeholder\",";
             say "                                                 },";
         }
-        say "                                    }";
+        say "                                    };";
         say "                    var cc                           = countries['' + id]['cc'];";
         say "                    var prefix                       = countries['' + id]['prefix'];";
         say "                    var _name                        = countries['' + id]['_name'];";
