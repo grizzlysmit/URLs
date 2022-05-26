@@ -7959,7 +7959,7 @@ use HTML::Entities;
         say "                        <label for=\"landline_pattern\">Landline Pattern</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"landline_pattern\" id=\"landline_pattern\" value=\"$landline_pattern\"/>";
+        say "                        <input type=\"text\" name=\"landline_pattern\" id=\"landline_pattern\" value=\"$landline_pattern\" size=\"120\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
