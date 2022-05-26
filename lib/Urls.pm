@@ -7611,7 +7611,7 @@ use HTML::Entities;
                     $return  = 0;
                 }
                 if($result && $result != 0){
-                    push @msgs, "INSERT INTO countries succeeded: $name, $cc, $rprefix";
+                    push @msgs, "INSERT INTO countries succeeded: $name_region, $cc, $rprefix";
                 }else{
                     push @msgs, "Error: INSERT INTO countries failed: $sql";
                     $return = 0;
