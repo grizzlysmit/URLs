@@ -7918,7 +7918,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"id\">ID</label>";
         say "                    </td>";
-        say "                    <tdo colspan=\"2\">";
+        say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"id\" id=\"id\" value=\"$cc_id\" readonly=\"readonly\"/>";
         say "                    </td>";
         say "                </tr>";
