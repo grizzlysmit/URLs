@@ -7845,7 +7845,7 @@ use HTML::Entities;
         $sql                    .= "    c.id, c.cc, c.prefix, c._name, c._flag, c.landline_pattern, c.mobile_pattern,\n";
         $sql                    .= "    c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql                    .= "FROM countries c\n";
-        $sql                    .= "ORDER BY c.name;\n";
+        $sql                    .= "ORDER BY c._name;\n";
         my $query                = $db->prepare($sql);
         my $result               = $query->execute();
         my $r                    = $query->fetchrow_hashref();
