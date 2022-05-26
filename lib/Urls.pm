@@ -8062,7 +8062,7 @@ use HTML::Entities;
         }
         say "            </table>";
         say "            <script>";
-        say "                function on_country_click(id)";
+        say "                function on_country_click(id){";
         say "                    var countries = {";
         $cnt = 0;
         for my $region (@countries){
