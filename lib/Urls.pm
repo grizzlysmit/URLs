@@ -7948,7 +7948,7 @@ use HTML::Entities;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"_flag\"><img id=\"the_flag\" src=\"$_flag\" alt=\"$_flag\"/></label>";
+        say "                        <label for=\"_flag\">Flag: <img id=\"the_flag\" src=\"$_flag\" alt=\"$_flag\"/></label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"_flag\" id=\"_flag\" value=\"$_flag\"/>";
