@@ -8077,7 +8077,7 @@ use HTML::Entities;
         say "            <script>";
         say "                function on_country_click(id)";
         say "                    var countries = {";
-        my $cnt = 0;
+        $cnt = 0;
         for my $region (@countries){
             $cnt++;
             my $id                       = $region->{id};
