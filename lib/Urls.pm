@@ -7887,7 +7887,7 @@ use HTML::Entities;
         $cc                   = '' unless defined $cc;
         $prefix               = '' unless defined $prefix;
         $name                 = '' unless defined $name;
-        $_flag                = '/flags/AU.png' unless defined $_flag;
+        $_flag                = '/flags/AU.png' unless $_flag;
         $landline_pattern     = '' unless defined $landline_pattern;
         $mobile_pattern       = '' unless defined $mobile_pattern;
         $landline_title       = '' unless defined $landline_title;
