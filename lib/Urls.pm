@@ -8010,7 +8010,7 @@ use HTML::Entities;
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Update', colspan => 1, }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         say "            </table>";
-        say "            <table>";
+        say "            <table class=\"exh\">";
         say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
         my $cnt = 0;
         for my $region (@countries){
