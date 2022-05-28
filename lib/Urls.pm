@@ -8325,7 +8325,6 @@ use HTML::Entities;
         say "                        <label for=\"cc\">Country Code</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "                        <select name=\"cc\" id=\"cc\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
         for my $row (@country){
             my $_cc     = $row->{cc};
