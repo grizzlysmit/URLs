@@ -8342,7 +8342,7 @@ use HTML::Entities;
         for my $row (@country){
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
-            say "                                                    \"$_cc\": \"$_flag"\",";
+            say "                                                    \"$_cc\": \"$_flag\",";
         }
         say "                                                }";
         say "                                var cc_id_elt = document.getElementById('cc');";
