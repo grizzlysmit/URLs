@@ -8338,7 +8338,7 @@ use HTML::Entities;
         for my $row (@country){
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
-            if($_cc == $cc){
+            if($_cc eq $cc){
                 #$flag   = $_flag;
                 say "                                <option value=\"$_cc\" data-image=\"$_flag\" selected=\"selected\">$_cc</option>";
             }else{
