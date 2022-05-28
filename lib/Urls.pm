@@ -8247,10 +8247,10 @@ use HTML::Entities;
         my $query                    = $db->prepare($sql);
         my $result;
         eval {
-            $result                  = $query->execute($cc);
+            $result                  = $query->execute();
         };
         if($@){
-            push @msgs, "Error: UPDATE countries failed: $@";
+            push @msgs, "Error: SELECT countries failed: $@";
             $return  = 0;
         }
         if($result && $result != 0){
@@ -8261,7 +8261,7 @@ use HTML::Entities;
                 $r                  = $query->fetchrow_hashref();
             }
         }else{
-            push @msgs, "Error: UPDATE countries failed: $sql";
+            push @msgs, "Error: SELECT countries failed: $sql";
             $return = 0;
         }
         $query->finish();
