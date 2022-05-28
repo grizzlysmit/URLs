@@ -8239,6 +8239,8 @@ use HTML::Entities;
         $session{page_length} = $page_length;
 
         my @country;
+        my @msgs;
+        my $return = 1;
         my $sql  = "SELECT c.cc, c._flag\n";
         $sql    .= "FROM countries c\n";
         $sql    .= "GROUP BY c.cc, c._flag\n";
