@@ -8269,6 +8269,7 @@ use HTML::Entities;
         #my ($self,    $cfg, $debug, $_session, $db, $fun,                  $button_msg,                  $dont_do_form, @msgs) = @_;
         $self->message($cfg, $debug, \%session, $db, 'countries_transfer', 'Transfer some more countries', $return,       @msgs) if @msgs;
         return $return unless $return;
+        $self->log(Data::Dumper->Dump([$submit, $cc], [qw(submit cc)]));
         if($submit && $submit eq 'Update' && $cc){
             my @msgs;
             my $return = 1;
