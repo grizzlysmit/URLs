@@ -7906,7 +7906,7 @@ use HTML::Entities;
         untie %session;
         $db->disconnect;
 
-        say "        <form action=\"update-countries.pl\" method=\"post\">";
+        say "        <form action=\"update-countries.pl\" method=\"post\" class=\"exh\">";
         say "            <h1>Update Countries</h1>";
         say "            <table>";
         say "                <tr>";
