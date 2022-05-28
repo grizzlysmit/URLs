@@ -6266,7 +6266,7 @@ use HTML::Entities;
         say "            </tr>";
         say "            <tr>";
         say "                <td>";
-        say "                    <form action=\"countries-transfer.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Update Countries\"/></form>";
+        say "                    <form action=\"countries-transfer.pl\" method=\"post\"><input type=\"submit\" name=\"submit\" id=\"submit\" value=\"Countries Transfer\"/></form>";
         say "                </td>";
         say "            </tr>";
         say "            <tr>";
@@ -8255,6 +8255,7 @@ use HTML::Entities;
         }
         if($result && $result != 0){
             my $r                   = $query->fetchrow_hashref();
+            $self->log(Data::Dumper->Dump([$query, $result, $r, $sql], [qw(query result r sql)]));
             while($r){
                 push @country, $r;
                 $r                  = $query->fetchrow_hashref();
@@ -8263,7 +8264,14 @@ use HTML::Entities;
             push @msgs, "Error: UPDATE countries failed: $sql";
             $return = 0;
         }
+        $query->finish();
+        $self->log(Data::Dumper->Dump([\@country], [qw(@country)]));
+        #my ($self,    $cfg, $debug, $_session, $db, $fun,                  $button_msg,                  $dont_do_form, @msgs) = @_;
+        $self->message($cfg, $debug, \%session, $db, 'countries_transfer', 'Transfer some more countries', $return,       @msgs) if @msgs;
+        return $return unless $return;
         if($submit && $submit eq 'Update' && $cc){
+            my @msgs;
+            my $return = 1;
             my @countries;
             my $sql  = "SELECT c.id, c.cc, c.prefix, c._name, _flag, _escape, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder\n";
             $sql    .= "FROM countries c\n";
@@ -8307,7 +8315,7 @@ use HTML::Entities;
         $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $landline_placeholder;
         $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $mobile_placeholder;
 
-        say "        <form action=\"update-countries.pl\" method=\"post\">";
+        say "        <form action=\"countries-transfer.pl\" method=\"post\">";
         say "            <h1>Update Country</h1>";
         say "            <table>";
         say "                <tr>";
