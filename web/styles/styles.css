@@ -49,8 +49,12 @@ label {
 .ex {
     width: 100%;
 }
+html, body {
+    min-height: 100% !important;
+    height: 100%;
+}
 .exh {
-    height: 2ex;
+    height: 100% !important;
 }
 .outter {
     width: 100%;
