@@ -8347,7 +8347,7 @@ use HTML::Entities;
         }
         say "                        </select>";
         say "                        <script>";
-        say "                            function countries_onchange() {";
+        say "                            function country_onchange() {";
         say "                                var country   = {";
         for my $row (@country){
             my $_cc     = $row->{cc};
