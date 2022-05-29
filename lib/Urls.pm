@@ -8275,14 +8275,14 @@ use HTML::Entities;
         if($submit && $submit eq 'Update' && $cc){
             my @msgs;
             my $return = 1;
-            my @countries;
+            my %countries;
             my $sql  = "SELECT c.id, c.cc, c.prefix, c._name, _flag, _escape, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder\n";
             $sql    .= "FROM countries c\n";
-            $sql    .= "WHERE c.cc = ?\n";
+            $sql    .= "WHERE c.prefix LIKE ?\n";
             my $query                    = $db->prepare($sql);
             my $result;
             eval {
-                $result                  = $query->execute($cc);
+                $result                  = $query->execute("+$prefix%");
             };
             if($@){
                 push @msgs, "Error: UPDATE countries failed: $@";
@@ -8291,32 +8291,93 @@ use HTML::Entities;
             if($result && $result != 0){
                 my $r                   = $query->fetchrow_hashref();
                 while($r){
-                    push @countries, $r;
-                    if($r->{cc} eq $cc){
-                        my $_name = $r->{_name};
-                        if($_name =~ m/^([^=]+)=> .*$/){
-                            $name = $1;
-                            $name =~ s/\s+$//;
+                    my $cc             = $r->{cc};
+                    my $distinguishing = $r->{prefix};
+                    $distinguishing    =~ s/^+$prefix//;
+                    my $_name          = $r->{_name};
+                    my $name;
+                    my $region;
+                    my $_flag          = $r->{_flag};
+                    my $escape         = $r->{_escape};
+                    $countries{$cc}    = { _flag => $_flag, _escape => $escape, country_regions => [ ], } unless exists $countries{$cc};
+                    if($_name =~ m/^\s*([^=]+)\s*(?:=>\s*(.*)\s*)?$/){
+                        $name   = $1;
+                        $region = $2;
+                        $name   =~ s/\s+$//;
+                        $name   =~ s/^\s+//;
+                        if(defined $region){
+                            $region =~ s/\s+$//;
+                            $region =~ s/^\s+//;
                         }
+                        $countries{$cc}->{_name} = $name;
+                        my $landline_pattern     = $r->{landline_pattern};
+                        my $mobile_pattern       = $r->{mobile_pattern};
+                        my $landline_title       = $r->{landline_title};
+                        my $mobile_title         = $r->{mobile_title};
+                        my $landline_placeholder = $r->{landline_placeholder};
+                        my $mobile_placeholder   = $r->{mobile_placeholder};
+                        push @{$countries{$cc}->{country_regions}}, {   distinguishing => $distinguishing,
+                                                                        region => $region,
+                                                                        landline_pattern => $landline_pattern,
+                                                                        mobile_pattern => $mobile_pattern,
+                                                                        landline_title => $landline_title,
+                                                                        mobile_title => $mobile_title,
+                                                                        landline_placeholder => $landline_placeholder,
+                                                                        mobile_placeholder => $mobile_placeholder,
+                                                                    };
                     }
                     $r                  = $query->fetchrow_hashref();
                 }
                 $query->finish();
-                $sql  = "INSERT INTO country(cc, _name, _flag, _escape, prefix)\n";
-                $sql .= "VALUES(?, ?, ?, ?, ?)\n";
-                $sql .= "ON CONFLICT DO NOTHING\n";
-                $sql .= "RETURNING id\n";
-                eval {
-                    $result                  = $query->execute($cc, $name, $_flag, $_escape);
-                };
-                if($@){
-                    push @msgs, "Error: INSERT INTO country failed: $@";
-                    $return  = 0;
-                }
-                if($result && $result != 0){
-                }else{
-                    push @msgs, "Error: INSERT INTO country failed: $sql";
-                    $return  = 0;
+                for my $cc (keys %countries){
+                    my $name             = $countries{$cc}->{_name};
+                    my $_flag            = $countries{$cc}->{_flag};
+                    my $_escape          = $countries{$cc}->{_escape};
+                    my $country_regions  = $countries{$cc}->{country_regions};
+                    $sql  = "INSERT INTO country(cc, _name, _flag, _escape, prefix)\n";
+                    $sql .= "VALUES(?, ?, ?, ?, ?)\n";
+                    $sql .= "ON CONFLICT DO NOTHING\n";
+                    $sql .= "RETURNING id\n";
+                    eval {
+                        $result              = $query->execute($cc, $name, $_flag, $_escape);
+                    };
+                    if($@){
+                        push @msgs, "Error: INSERT INTO country failed: $@";
+                        $return  = 0;
+                    }
+                    if($result && $result != 0){
+                        $r                   = $query->fetchrow_hashref();
+                        my $cc_id            = $r->{id};
+                        $query->finish();
+                        for my $row (@{$country_regions}){
+                            my $distinguishing       = $row->{distinguishing};
+                            my $landline_pattern     = $row->{landline_pattern};
+                            my $mobile_pattern       = $row->{mobile_pattern};
+                            my $landline_title       = $row->{landline_title};
+                            my $mobile_title         = $row->{mobile_title};
+                            my $landline_placeholder = $row->{landline_placeholder};
+                            my $mobile_placeholder   = $row->{mobile_placeholder};
+                            my $region               = $row->{region};
+                            $sql .= "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region)\n";
+                            $sql  = "VALUES(                       ?,              ?,               ?,               ?,                ?,             ?,             ?,                  ?,               ?)\n";
+                            $sql  = "RETURNING id, country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region;\n";
+                            eval {
+                                $result           = $query->execute($cc_id, $distinguishing, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $region);
+                            };
+                            if($@){
+                                push @msgs, "Error: INSERT INTO country_regions failed: $@";
+                                $return  = 0;
+                            }
+                            if($result && $result != 0){
+                            }else{
+                                push @msgs, "Error: INSERT INTO country_regions failed: $sql";
+                                $return  = 0;
+                            }
+                        }
+                    }else{
+                        push @msgs, "Error: INSERT INTO country failed: $sql";
+                        $return  = 0;
+                    }
                 }
             }else{
                 push @msgs, "Error: UPDATE countries failed: $sql";
