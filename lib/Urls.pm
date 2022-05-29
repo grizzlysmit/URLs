@@ -8293,6 +8293,8 @@ use HTML::Entities;
                 while($r){
                     my $cc             = $r->{cc};
                     my $distinguishing = $r->{prefix};
+                    $self->log(Data::Dumper->Dump([$r, $cc, $distinguishing], [qw(r cc distinguishing)]));
+                    return 1;
                     $distinguishing    =~ s/^+$prefix//;
                     my $_name          = $r->{_name};
                     my $name;
@@ -8329,6 +8331,7 @@ use HTML::Entities;
                     $r                  = $query->fetchrow_hashref();
                 }
                 $query->finish();
+                $self->log(Data::Dumper->Dump([\%countries], [qw(%countries)]));
                 for my $cc (keys %countries){
                     my $name             = $countries{$cc}->{_name};
                     my $_flag            = $countries{$cc}->{_flag};
@@ -8338,8 +8341,9 @@ use HTML::Entities;
                     $sql .= "VALUES(?, ?, ?, ?, ?)\n";
                     $sql .= "ON CONFLICT DO NOTHING\n";
                     $sql .= "RETURNING id\n";
+                    $query               = $db->prepare($sql);
                     eval {
-                        $result              = $query->execute($cc, $name, $_flag, $_escape);
+                        $result              = $query->execute($cc, $name, $_flag, $_escape, $prefix);
                     };
                     if($@){
                         push @msgs, "Error: INSERT INTO country failed: $@";
@@ -8361,6 +8365,7 @@ use HTML::Entities;
                             $sql .= "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region)\n";
                             $sql  = "VALUES(                       ?,              ?,               ?,               ?,                ?,             ?,             ?,                  ?,               ?)\n";
                             $sql  = "RETURNING id, country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region;\n";
+                            $query               = $db->prepare($sql);
                             eval {
                                 $result           = $query->execute($cc_id, $distinguishing, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $region);
                             };
