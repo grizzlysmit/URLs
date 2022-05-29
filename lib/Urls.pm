@@ -8294,7 +8294,7 @@ use HTML::Entities;
                     my $cc             = $r->{cc};
                     my $distinguishing = $r->{prefix};
                     $self->log(Data::Dumper->Dump([$r, $cc, $distinguishing], [qw(r cc distinguishing)]));
-                    $distinguishing    =~ s/^+$prefix//;
+                    $distinguishing    =~ s/^\+$prefix//;
                     my $_name          = $r->{_name};
                     my $name;
                     my $region;
