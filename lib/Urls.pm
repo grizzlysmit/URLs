@@ -8285,7 +8285,7 @@ use HTML::Entities;
                 $result                  = $query->execute("+$prefix%");
             };
             if($@){
-                push @msgs, "Error: UPDATE countries failed: $@";
+                push @msgs, "Error: SELECT countries failed: $@";
                 $return  = 0;
             }
             if($result && $result != 0){
@@ -8375,12 +8375,14 @@ use HTML::Entities;
                             }
                         }
                     }else{
+                        $query->finish();
                         push @msgs, "Error: INSERT INTO country failed: $sql";
                         $return  = 0;
                     }
                 }
             }else{
-                push @msgs, "Error: UPDATE countries failed: $sql";
+                $query->finish();
+                push @msgs, "Error: SELECT countries failed: $sql";
                 $return = 0;
             }
             $query->finish();
