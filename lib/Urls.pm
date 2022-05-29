@@ -8334,7 +8334,7 @@ use HTML::Entities;
         $cc                   = 'US' unless defined $cc;
         $prefix               = 1 unless defined $prefix;
         $name                 = 'United States' unless defined $name;
-        $_flag                = '/flags/AU.png' unless $_flag;
+        $_flag                = '/flags/US.png' unless $_flag;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
         $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
