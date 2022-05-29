@@ -8245,7 +8245,7 @@ use HTML::Entities;
         my $sql  = "SELECT c.cc, c._flag, SUBSTRING(c._name, 0, (CASE WHEN STRPOS(c._name, ' =>') = 0 THEN CHAR_LENGTH(c._name) + 1 ELSE STRPOS(c._name, ' =>') END)) c_name\n";
         $sql    .= "FROM countries c\n";
         $sql    .= "GROUP BY c.cc, c._flag, c_name\n";
-        $sql    .= "ORDER BY c.cc\n";
+        $sql    .= "ORDER BY c_name\n";
         my $query                    = $db->prepare($sql);
         my $result;
         eval {
