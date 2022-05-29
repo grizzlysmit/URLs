@@ -8226,6 +8226,7 @@ use HTML::Entities;
         my $prefix               = $req->param('prefix');
         my $name                 = $req->param('name');
         my $_flag                = $req->param('_flag');
+        my $_escape              = $req->param('_escape');
         my $landline_pattern     = $req->param('landline_pattern');
         my $mobile_pattern       = $req->param('mobile_pattern');
         my $landline_title       = $req->param('landline_title');
@@ -8241,9 +8242,10 @@ use HTML::Entities;
         my @country;
         my @msgs;
         my $return = 1;
-        my $sql  = "SELECT c.cc, c._flag\n";
+        my $sql  = "SELECT c.cc, c._flag, SUBSTRING(c._name, 0, (CASE WHEN STRPOS(c._name, ' =>') = 0 THEN CHAR_LENGTH(c._name) + 1 ELSE STRPOS(c._name, ' =>') END)) c_name\n";
         $sql    .= "FROM countries c\n";
-        $sql    .= "GROUP BY c.cc, c._flag\n";
+        $sql    .= "GROUP BY c.cc, c._flag, c_name\n";
+        $sql    .= "ORDER BY c.cc\n";
         my $query                    = $db->prepare($sql);
         my $result;
         eval {
@@ -8290,7 +8292,31 @@ use HTML::Entities;
                 my $r                   = $query->fetchrow_hashref();
                 while($r){
                     push @countries, $r;
+                    if($r->{cc} eq $cc){
+                        my $_name = $r->{_name};
+                        if($_name =~ m/^([^=]+)=> .*$/){
+                            $name = $1;
+                            $name =~ s/\s+$//;
+                        }
+                    }
                     $r                  = $query->fetchrow_hashref();
+                }
+                $query->finish();
+                $sql  = "INSERT INTO country(cc, _name, _flag, _escape, prefix)\n";
+                $sql .= "VALUES(?, ?, ?, ?, ?)\n";
+                $sql .= "ON CONFLICT DO NOTHING\n";
+                $sql .= "RETURNING id\n";
+                eval {
+                    $result                  = $query->execute($cc, $name, $_flag, $_escape);
+                };
+                if($@){
+                    push @msgs, "Error: INSERT INTO country failed: $@";
+                    $return  = 0;
+                }
+                if($result && $result != 0){
+                }else{
+                    push @msgs, "Error: INSERT INTO country failed: $sql";
+                    $return  = 0;
                 }
             }else{
                 push @msgs, "Error: UPDATE countries failed: $sql";
@@ -8305,7 +8331,7 @@ use HTML::Entities;
         untie %session;
         $db->disconnect;
 
-        $cc                   = 'AU' unless defined $cc;
+        $cc                   = 'US' unless defined $cc;
         $prefix               = 1 unless defined $prefix;
         $name                 = '' unless defined $name;
         $_flag                = '/flags/AU.png' unless $_flag;
@@ -8338,11 +8364,12 @@ use HTML::Entities;
         for my $row (@country){
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
+            my $c_name  = $row->{c_name};
             if($_cc eq $cc){
                 #$flag   = $_flag;
-                say "                                <option value=\"$_cc\" data-image=\"$_flag\" selected=\"selected\">$_cc</option>";
+                say "                                <option value=\"$_cc\" data-image=\"$_flag\" selected=\"selected\">$c_name: $_cc</option>";
             }else{
-                say "                                <option value=\"$_cc\" data-image=\"$_flag\">$_cc</option>";
+                say "                                <option value=\"$_cc\" data-image=\"$_flag\">$c_name: $_cc</option>";
             }
         }
         say "                        </select>";
@@ -8352,18 +8379,22 @@ use HTML::Entities;
         for my $row (@country){
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
-            say "                                                    \"$_cc\": \"$_flag\",";
+            my $c_name  = $row->{c_name};
+            say "                                                    \"$_cc\": { \"_flag\": \"$_flag\", \"c_name\": \"$c_name\", },";
         }
         say "                                                }";
         say "                                var cc_id_elt = document.getElementById('cc');";
         say "                                var cc = cc_id_elt.value;";
         #say "                                alert(\"countries_id == \" + countries_id);";
-        say "                                var flag = country[cc];";
+        say "                                var flag = country[cc]['_flag'];";
+        say "                                var name = country[cc]['c_name'];";
         say "                                var flag_elt = document.getElementById('_flag');";
         say "                                var flag_img_elt = document.getElementById('flag_img');";
+        say "                                var name_elt     = document.getElementById('name');";
         say "                                flag_elt.value = flag;";
         say "                                flag_img_elt.setAttribute('src', flag);";
         say "                                flag_img_elt.setAttribute('alt', flag);";
+        say "                                name_elt.value = name;";
         say "                            }";
         say "                        </script>";
         say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
@@ -8391,6 +8422,18 @@ use HTML::Entities;
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"_flag\" id=\"_flag\" value=\"$_flag\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        my $val = "";
+        if(defined $_escape){
+            my $val = "value=\"$_escape\"";
+        }
+        say "                    <td>";
+        say "                        <label for=\"_escape\">Escape:</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"_escape\" id=\"_escape\" size=\"120\" $val/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
