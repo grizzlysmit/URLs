@@ -8361,9 +8361,9 @@ use HTML::Entities;
                             my $landline_placeholder = $row->{landline_placeholder};
                             my $mobile_placeholder   = $row->{mobile_placeholder};
                             my $region               = $row->{region};
-                            $sql .= "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region)\n";
-                            $sql  = "VALUES(                       ?,              ?,               ?,               ?,                ?,             ?,             ?,                  ?,               ?)\n";
-                            $sql  = "RETURNING id, country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region;\n";
+                            $sql  = "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region)\n";
+                            $sql .= "VALUES(                       ?,              ?,               ?,               ?,                ?,             ?,             ?,                  ?,               ?)\n";
+                            $sql .= "RETURNING id, country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder, region;\n";
                             $query               = $db->prepare($sql);
                             eval {
                                 $result           = $query->execute($cc_id, $distinguishing, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $region);
