@@ -7586,7 +7586,7 @@ use HTML::Entities;
             my $return = 1;
             my $sql               = "INSERT INTO country(cc, prefix, _name, _escape, _flag)\n";
             $sql                 .= "VALUES(?, ?, ?, ?, ?)\n"; 
-            $sql                 .= "ON CONFLICT DO NOTHING\n";
+            $sql                 .= "ON CONFLICT (cc) DO UPDATE SET _flag = EXCLUDED._flag\n";
             $sql                 .= "RETURNING id, cc, prefix, _name, _escape, _flag;\n";
             my $query             = $db->prepare($sql);
             my $result;
@@ -7598,7 +7598,7 @@ use HTML::Entities;
                 push @msgs, "Error: INSERT INTO country failed: $@";
                 $return  = 0;
             }
-            if($result){
+            if($result && $result != 0){
                 my $r                   = $query->fetchrow_hashref();
                 my $cc_id               = $r->{id};
                 $query->finish();
