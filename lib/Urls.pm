@@ -7583,7 +7583,7 @@ use HTML::Entities;
         if($submit && $submit eq 'Insert'){
             my @msgs;
             my $return = 1;
-            for my $prefix (@prefixes){
+            for my $distinguishing (@prefixes){
                 my $landline_pattern_tmp     = $landline_pattern;
                 my $mobile_pattern_tmp       = $mobile_pattern;
                 my $landline_title_tmp       = $landline_title;
@@ -7591,15 +7591,15 @@ use HTML::Entities;
                 my $landline_placeholder_tmp = $landline_placeholder;
                 my $mobile_placeholder_tmp   = $mobile_placeholder;
                 $landline_pattern_tmp     =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_pattern_tmp     =~ s/\{prefix\}/$prefix/g;
+                $landline_pattern_tmp     =~ s/\{distinguishing\}/$distinguishing/g;
                 $mobile_pattern_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_pattern_tmp       =~ s/\{prefix\}/$prefix/g;
+                $mobile_pattern_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
                 $landline_title_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_title_tmp       =~ s/\{prefix\}/$prefix/g;
+                $landline_title_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
                 $mobile_title_tmp         =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_title_tmp         =~ s/\{prefix\}/$prefix/g;
+                $mobile_title_tmp         =~ s/\{distinguishing\}/$distinguishing/g;
                 $landline_placeholder_tmp =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_placeholder_tmp =~ s/\{prefix\}/$prefix/g;
+                $landline_placeholder_tmp =~ s/\{distinguishing\}/$distinguishing/g;
                 $mobile_placeholder_tmp   =~ s/\{country-prefix\}/$country_prefix/g;
                 $mobile_placeholder_tmp   =~ s/\{prefix\}/$prefix/g;
                 $region               = '' unless defined $region;
