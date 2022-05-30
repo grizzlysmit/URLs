@@ -7628,6 +7628,7 @@ use HTML::Entities;
                     $sql  = "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
                     $sql .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?)\n";
                     $sql .= "RETURNING id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+                    $query             = $db->prepare($sql);
                     eval {
                         $result  = $query->execute($cc_id, $distinguishing, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
                     };
