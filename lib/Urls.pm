@@ -7601,20 +7601,17 @@ use HTML::Entities;
                 $landline_placeholder_tmp =~ s/\{country-prefix\}/$country_prefix/g;
                 $landline_placeholder_tmp =~ s/\{distinguishing\}/$distinguishing/g;
                 $mobile_placeholder_tmp   =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_placeholder_tmp   =~ s/\{prefix\}/$prefix/g;
+                $mobile_placeholder_tmp   =~ s/\{distinguishing\}/$distinguishing/g;
                 $region               = '' unless defined $region;
                 $region               =~ s/^\s+//;
                 $region               =~ s/\s+$//;
-                my $name_region       = $name;
-                $name_region         .= " => $region" if $region;
-                my $rprefix           = "+$country_prefix$prefix";
-                my $sql               = "INSERT INTO countries(cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
+                my $sql               = "INSERT INTO country(cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
                 $sql                 .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n"; 
                 $sql                 .= "RETURNING id, cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
                 my $query             = $db->prepare($sql);
                 my $result;
                 eval {
-                    $result  = $query->execute($cc, $rprefix, $name_region, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
+                    $result  = $query->execute($cc, $country_prefix, $name, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
                 };
                 if($@){
                     push @msgs, "Error: INSERT INTO countries failed: $@";
