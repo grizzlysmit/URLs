@@ -7653,11 +7653,11 @@ use HTML::Entities;
             return $return;
         }
 
-        $name                 = 'Candda' unless defined $name;
+        $name                 = 'Australia' unless defined $name;
         $region               = '' unless defined $region;
-        $cc                   = 'CA' unless defined $cc;
-        $country_prefix       = '1' unless defined $country_prefix;
-        $_escape              = '' unless defined $_escape;
+        $cc                   = 'AU' unless defined $cc;
+        $country_prefix       = '61' unless defined $country_prefix;
+        $_escape              = '0' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{distinguishing}[ -]?[2-9]\d{3}[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+{country-prefix}|0)?4\d{2}[ -]?\d{3}[ -]?\d{3}' unless defined $mobile_pattern;
         $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{distinguishing}-9567-2876 or (02) 9567 2876 or 0{distinguishing}95672876.' unless defined $landline_title;
