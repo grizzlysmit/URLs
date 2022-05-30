@@ -7709,7 +7709,7 @@ use HTML::Entities;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"_escape\">Country Prefix: </label>";
+        say "                        <label for=\"_escape\">Escape Code: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"_escape\" id=\"_escape\" placeholder=\"0\" pattern=\"[0-9]{0,1}\" title=\"only 0-9 allowed\" value=\"$_escape\"/>";
