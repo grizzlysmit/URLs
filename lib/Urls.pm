@@ -7560,6 +7560,7 @@ use HTML::Entities;
 
         my $submit               = $req->param('submit');
         my $name                 = $req->param('name');
+        my $_escape              = $req->param('_escape');
         my $region               = $req->param('region');
         my $cc                   = $req->param('cc');
         my $country_prefix       = $req->param('country_prefix');
@@ -7583,46 +7584,69 @@ use HTML::Entities;
         if($submit && $submit eq 'Insert'){
             my @msgs;
             my $return = 1;
-            for my $distinguishing (@prefixes){
-                my $landline_pattern_tmp     = $landline_pattern;
-                my $mobile_pattern_tmp       = $mobile_pattern;
-                my $landline_title_tmp       = $landline_title;
-                my $mobile_title_tmp         = $mobile_title;
-                my $landline_placeholder_tmp = $landline_placeholder;
-                my $mobile_placeholder_tmp   = $mobile_placeholder;
-                $landline_pattern_tmp     =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_pattern_tmp     =~ s/\{distinguishing\}/$distinguishing/g;
-                $mobile_pattern_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_pattern_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
-                $landline_title_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_title_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
-                $mobile_title_tmp         =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_title_tmp         =~ s/\{distinguishing\}/$distinguishing/g;
-                $landline_placeholder_tmp =~ s/\{country-prefix\}/$country_prefix/g;
-                $landline_placeholder_tmp =~ s/\{distinguishing\}/$distinguishing/g;
-                $mobile_placeholder_tmp   =~ s/\{country-prefix\}/$country_prefix/g;
-                $mobile_placeholder_tmp   =~ s/\{distinguishing\}/$distinguishing/g;
-                $region               = '' unless defined $region;
-                $region               =~ s/^\s+//;
-                $region               =~ s/\s+$//;
-                my $sql               = "INSERT INTO country(cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
-                $sql                 .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n"; 
-                $sql                 .= "RETURNING id, cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
-                my $query             = $db->prepare($sql);
-                my $result;
-                eval {
-                    $result  = $query->execute($cc, $country_prefix, $name, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
-                };
-                if($@){
-                    push @msgs, "Error: INSERT INTO countries failed: $@";
-                    $return  = 0;
-                }
-                if($result && $result != 0){
-                    push @msgs, "INSERT INTO countries succeeded: $name => $region, $cc, $country_prefix => $distinguishing";
-                }else{
-                    push @msgs, "Error: INSERT INTO countries failed: $sql";
-                    $return = 0;
-                }
+            my $sql               = "INSERT INTO country(cc, prefix, _name, _escape, _flag)\n";
+            $sql                 .= "VALUES(?, ?, ?, ?, ?)\n"; 
+            $sql                 .= "ON CONFLICT DO NOTHING\n";
+            $sql                 .= "RETURNING id, cc, prefix, _name, _escape, _flag;\n";
+            my $query             = $db->prepare($sql);
+            my $result;
+            $_escape              = undef unless $_escape;
+            eval {
+                $result  = $query->execute($cc, "+$country_prefix", $name, $_escape, $flag);
+            };
+            if($@){
+                push @msgs, "Error: INSERT INTO country failed: $@";
+                $return  = 0;
+            }
+            if($result && $result != 0){
+                my $r                   = $query->fetchrow_hashref();
+                my $cc_id               = $r->{id};
+                $query->finish();
+                for my $distinguishing (@prefixes){
+                    my $landline_pattern_tmp     = $landline_pattern;
+                    my $mobile_pattern_tmp       = $mobile_pattern;
+                    my $landline_title_tmp       = $landline_title;
+                    my $mobile_title_tmp         = $mobile_title;
+                    my $landline_placeholder_tmp = $landline_placeholder;
+                    my $mobile_placeholder_tmp   = $mobile_placeholder;
+                    $landline_pattern_tmp     =~ s/\{country-prefix\}/$country_prefix/g;
+                    $landline_pattern_tmp     =~ s/\{distinguishing\}/$distinguishing/g;
+                    $mobile_pattern_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
+                    $mobile_pattern_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
+                    $landline_title_tmp       =~ s/\{country-prefix\}/$country_prefix/g;
+                    $landline_title_tmp       =~ s/\{distinguishing\}/$distinguishing/g;
+                    $mobile_title_tmp         =~ s/\{country-prefix\}/$country_prefix/g;
+                    $mobile_title_tmp         =~ s/\{distinguishing\}/$distinguishing/g;
+                    $landline_placeholder_tmp =~ s/\{country-prefix\}/$country_prefix/g;
+                    $landline_placeholder_tmp =~ s/\{distinguishing\}/$distinguishing/g;
+                    $mobile_placeholder_tmp   =~ s/\{country-prefix\}/$country_prefix/g;
+                    $mobile_placeholder_tmp   =~ s/\{distinguishing\}/$distinguishing/g;
+                    $region               = '' unless defined $region;
+                    $region               =~ s/^\s+//;
+                    $region               =~ s/\s+$//;
+                    push @msgs, "INSERT INTO country succeeded: $name => $region, $cc, +$country_prefix => $distinguishing";
+                    $sql  = "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
+                    $sql .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?)\n";
+                    $sql .= "RETURNING id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+                    eval {
+                        $result  = $query->execute($cc_id, $distinguishing, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
+                    };
+                    if($@){
+                        push @msgs, "Error: INSERT INTO country_regions failed: $@";
+                        $return  = 0;
+                    }
+                    if($result && $result != 0){
+                        my $r                   = $query->fetchrow_hashref();
+                        push @msgs, "INSERT INTO country_regions succeeded: $name => $region, $cc, +$country_prefix => $distinguishing";
+                    }else{
+                        push @msgs, "Error: INSERT INTO country_regions failed: $sql";
+                        $return  = 0;
+                    }
+                    $query->finish();
+                } # for my $distinguishing (@prefixes) #
+            }else{
+                push @msgs, "Error: INSERT INTO country failed: $sql";
+                $return = 0;
             }
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
             $self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
@@ -7633,6 +7657,7 @@ use HTML::Entities;
         $region               = '' unless defined $region;
         $cc                   = 'CA' unless defined $cc;
         $country_prefix       = '1' unless defined $country_prefix;
+        $_escape              = '' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
         $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
@@ -7680,6 +7705,14 @@ use HTML::Entities;
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"country_prefix\" id=\"country_prefix\" placeholder=\"222\" pattern=\"[0-9]+\" title=\"only 0-9 allowed\" value=\"$country_prefix\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"_escape\">Country Prefix: </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"_escape\" id=\"_escape\" placeholder=\"0\" pattern=\"[0-9]{0,1}\" title=\"only 0-9 allowed\" value=\"$_escape\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
