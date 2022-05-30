@@ -7658,12 +7658,12 @@ use HTML::Entities;
         $cc                   = 'CA' unless defined $cc;
         $country_prefix       = '1' unless defined $country_prefix;
         $_escape              = '' unless defined $_escape;
-        $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $landline_pattern;
-        $mobile_pattern       = '(?:\+?{country-prefix}[ -]?)?{prefix}[ -]?[2-9]\d{2}[ -]?\d{4}' unless defined $mobile_pattern;
-        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $landline_title;
-        $mobile_title         = 'Only +digits or local formats allowed i.e. +{country-prefix}{prefix}-234-1234 or {country-prefix}{prefix} 234 1234 or {prefix}-234-1234.' unless defined $mobile_title;
-        $landline_placeholder = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $landline_placeholder;
-        $mobile_placeholder   = '+{country-prefix}-{prefix}-234-1234|{country-prefix} {prefix} 234 1234|{prefix} 234 1234' unless defined $mobile_placeholder;
+        $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{distinguishing}[ -]?[2-9]\d{3}[ -]?\d{4}' unless defined $landline_pattern;
+        $mobile_pattern       = '(?:\+{country-prefix}|0)?4\d{2}[ -]?\d{3}[ -]?\d{3}' unless defined $mobile_pattern;
+        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{distinguishing}-9567-2876 or (02) 9567 2876 or 0{distinguishing}95672876.' unless defined $landline_title;
+        $mobile_title         = 'Only +digits or local formats allowed. i.e. +{country-prefix}438-567-876 or 0438 567 876 or 0438567876' unless defined $mobile_title;
+        $landline_placeholder = '+{country-prefix}{distinguishing}-9567-2876|(0{distinguishing}) 9567 2876|0{distinguishing}95672876' unless defined $landline_placeholder;
+        $mobile_placeholder   = '+{country-prefix}438-567-876|0438 567 876|0438567876' unless defined $mobile_placeholder;
         $list                 = '' unless defined $list;
 
         $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
