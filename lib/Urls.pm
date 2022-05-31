@@ -3996,6 +3996,8 @@ use HTML::Entities;
             }
         }
         say "                        </select>";
+        $cc_id          = '' unless defined $cc_id;
+        $cr_id          = '' unless defined $cr_id;
 
         #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
         say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
