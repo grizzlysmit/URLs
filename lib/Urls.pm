@@ -2913,7 +2913,7 @@ use HTML::Entities;
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
-        $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN countries c ON pd.countries_id = c.id\n";
+        $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id\n";
         $sql    .= "ORDER BY p.username, pd.given, pd._family\n";
         my $query  = $db->prepare($sql);
         my $result;
@@ -7898,6 +7898,7 @@ use HTML::Entities;
 
         if($submit && $submit eq 'Update' && $cc_id){
             my @msgs;
+            my $distinguishing;
             my $return = 1;
             my $sql                      = "UPDATE countries SET cc = ?, prefix = ?, _name =?, _flag = ?, landline_pattern = ?, mobile_pattern = ?, landline_title = ?, mobile_title = ?, landline_placeholder = ?, mobile_placeholder = ?\n";
             $sql                        .= "WHERE id = ?\n"; 
