@@ -4047,9 +4047,9 @@ use HTML::Entities;
                 say "                                                              \"mobile_title\": \"$mob_title\",";
                 say "                                                              \"landline_placeholder\": \"$lndl_placeholder\",";
                 say "                                                              \"mobile_placeholder\": \"$mob_placeholder\" },";
-                say "                                                          }";
+                say "                                                          },";
             }
-            say "                                                      }";
+            say "                                                      },";
         }
         say "                                };";
         say "                            function country_onchange() {";
