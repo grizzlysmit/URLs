@@ -4011,6 +4011,7 @@ use HTML::Entities;
             my $_flag            = $row->{_flag};
             my $_prefix          = $row->{prefix};
             my $_escape          = $row->{_escape};
+            my $country_regions  = $row->{country_regions};
             $_escape = '' unless defined $_escape;
             say "                                        \"$cc_id\": { \"_name\": \"$name\",";
             say "                                                      \"cc\": \"$_cc\",";
