@@ -3799,18 +3799,18 @@ use HTML::Entities;
 
         $sql  = "SELECT\n";
         $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
-        $sql .= "FROM countries c\n";
+        $sql .= "FROM country c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute();
         };
         if($@){
-            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            push @msgs, "SELECT FROM country failed: $@", "\$sql == $sql";
             $return = 0;
         }
         unless($result){
-            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            push @msgs, "SELECT FROM country failed: \$sql == $sql";
             return $return;
         }
         $r      = $query->fetchrow_hashref();
@@ -3822,7 +3822,7 @@ use HTML::Entities;
         }
         $query->finish();
         $sql  = "SELECT\n";
-        $sql .= "    cr.id, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql .= "    cr.id cr_id, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
         $sql .= "    cr.landline_title, cr.mobile_title, cr.landline_placeholder, cr.mobile_placeholder\n";
         $sql .= "FROM country_regions cr\n";
         $query  = $db->prepare($sql);
@@ -3830,17 +3830,17 @@ use HTML::Entities;
             $result = $query->execute();
         };
         if($@){
-            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            push @msgs, "SELECT FROM country_regions failed: $@", "\$sql == $sql";
             $return = 0;
         }
         unless($result){
-            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            push @msgs, "SELECT FROM country_regions failed: \$sql == $sql";
             return $return;
         }
         $r      = $query->fetchrow_hashref();
         while($r){
             my $country_id = $r->{country_id};
-            push @{$countries{$r->{$country_id}}->{country_regions}}, $r;
+            push @{$countries{$country_id}->{country_regions}}, $r;
             $r      = $query->fetchrow_hashref();
         }
         unless($return){
@@ -4081,7 +4081,7 @@ use HTML::Entities;
         say "                                var cr_id_elt              = document.getElementById('country_region_id');";
         say "                                for(let reg in country_regions){";
         say "                                    var opt = document.createElement(\"OPTION\");";
-        say "                                    opt.value = country_regions[reg][];";
+        say "                                    opt.value = country_regions[reg]['region'];";
         say "                                    ";
         say "                                }";
         say "                            }";
