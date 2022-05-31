@@ -3128,15 +3128,15 @@ use HTML::Entities;
 
 
     sub getphonedetails {
-        my ($self, $countries_id, $cc, $prefix, $db) = @_;
+        my ($self, $cr_id, $cc, $prefix, $db) = @_;
         my ($_escape, $mobile_pattern, $landline_pattern, $return, @msgs);
         $return = 1;
         my $sql  = "SELECT c.landline_pattern, c.mobile_pattern, c._escape FROM countries c\n";
-        $sql    .= "WHERE c.id = ?;\n";
+        $sql    .= "WHERE c.cr_id = ?;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($countries_id);
+            $result = $query->execute($cr_id);
         };
         if($@){
             push @msgs, "SELECT FROM countries failed: $@";
@@ -3250,7 +3250,8 @@ use HTML::Entities;
         my $isadmin;
         my $cc;
         my $prefix;
-        my $countries_id;
+        my $country_id;
+        my $cr_id;
         my $group_id;
         my $email_id;
         my $residential_address_id;
@@ -3290,7 +3291,8 @@ use HTML::Entities;
             $admin                  = $req->param('admin');
             $cc                     = $req->param('cc');
             $prefix                 = $req->param('prefix');
-            $countries_id           = $req->param('countries_id');
+            $country_id             = $req->param('country_id');
+            $cr_id                  = $req->param('cr_id');
             $group_id               = $req->param('group_id');
             $email_id               = $req->param('email_id');
             $residential_address_id = $req->param('residential_address_id');
@@ -3328,11 +3330,11 @@ use HTML::Entities;
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
             $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id, pd.country_id,\n";
-            $sql               .= "c.cc, c.prefix,\n";
+            $sql               .= "c.cc, c.prefix, cr.id cr_id,\n";
             $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN country c ON pd.country_id = c.id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions cr ON cr.country_id = c.id\n";
             $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
             $sql               .= "WHERE p.id = ?\n";
             my $query  = $db->prepare($sql);
@@ -3390,7 +3392,8 @@ use HTML::Entities;
             $display_name           = $r->{display_name};
             $cc                     = $r->{cc};
             $prefix                 = $r->{prefix};
-            $countries_id           = $r->{countries_id};
+            $country_id             = $r->{country_id};
+            $cr_id                  = $r->{cr_id};
             $admin                  = $r->{_admin};
             $group_id               = $r->{group_id};
             $email_id               = $r->{email_id};
@@ -3487,18 +3490,18 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
             my $_mobile_pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
             my $_landline_pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
-            if(defined $countries_id){
+            if(defined $country_id){
                 my @msgs;
                 my $return = 1;
-                my $_sql  = "SELECT landline_pattern, mobile_pattern FROM countries c\n";
+                my $_sql  = "SELECT landline_pattern, mobile_pattern FROM country_regions c\n";
                 $_sql    .= "WHERE c.id = ?\n";
                 my $_query  = $db->prepare($_sql);
                 my $_result;
                 eval {
-                    $_result = $_query->execute($countries_id);
+                    $_result = $_query->execute($cr_id);
                 };
                 if($@){
-                    push @msgs, "SELECT FROM countries failed: $@";
+                    push @msgs, "SELECT FROM country_regions failed: $@";
                     $return = 0;
                 }
                 my $line = __LINE__;
@@ -3508,7 +3511,7 @@ use HTML::Entities;
                     $_mobile_pattern = $_r->{mobile_pattern};
                     $_landline_pattern = $_r->{landline_pattern};
                 }else{
-                    push @msgs, "SELECT FROM countries failed: $_sql";
+                    push @msgs, "SELECT FROM country_regions failed: $_sql";
                     $return = 0;
                 }
                 $_query->finish();
@@ -3606,7 +3609,7 @@ use HTML::Entities;
                             $line = __LINE__;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($return_phone, @msgs_phone);
-                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($countries_id, $cc, $prefix, $db);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($cr_id, $cc, $prefix, $db);
                             $return = 0 unless $return_phonedetails;
                             push @msgs, @msgs_phonedetails;
                             if($mobile){
@@ -3650,7 +3653,7 @@ use HTML::Entities;
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
                             if($return){
-                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $db);
+                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $cr_id, $passwd_details_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -3792,11 +3795,10 @@ use HTML::Entities;
         }
         $query->finish();
 
-        my @countries;
+        my %countries;
 
         $sql  = "SELECT\n";
-        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.landline_pattern, c.mobile_pattern,\n";
-        $sql .= "c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, \n";
         $sql .= "FROM countries c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
@@ -3813,10 +3815,34 @@ use HTML::Entities;
         }
         $r      = $query->fetchrow_hashref();
         while($r){
-            push @countries, $r;
+            my $cc_id = $r->{id};
+            $r->{country_regions} = [];
+            $countries{$cc_id} = $r;
             $r      = $query->fetchrow_hashref();
         }
         $query->finish();
+        $sql  = "SELECT\n";
+        $sql .= "    cr.id, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql .= "    cr.landline_title, cr.mobile_title, cr.landline_placeholder, cr.mobile_placeholder\n";
+        $sql .= "FROM country_regions cr\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            return $return;
+        }
+        $r      = $query->fetchrow_hashref();
+        while($r){
+            my $country_id = $r->{country_id};
+            push @{$countries{$r->{$country_id}}->{country_regions}}, $r;
+            $r      = $query->fetchrow_hashref();
+        }
         unless($return){
             $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
         }
@@ -3953,65 +3979,79 @@ use HTML::Entities;
         my $landline_pattern;
         my $landline_placeholder;
         my $flag;
-        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
-        for my $row (@countries){
+        say "                        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
+        while(($key, $row) = each (%countries)){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
             my $_cc     = $row->{cc};
             my $_flag   = $row->{_flag};
             my $_prefix = $row->{prefix};
             #$name       =~ s/\s/&nbsp;/g;
-            if($cc_id == $countries_id){
+            if($cc_id == $country_id){
                 $flag   = $_flag;
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
+                say "                            <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
             }else{
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
+                say "                            <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
             }
         }
         say "                        </select>";
 
+        #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
+        say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
+        say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
+        say "                        </select>";
+
         say "                        <script>";
-        say "                            function countries_onchange() {";
-        say "                                var countries = {";
-        for my $row (@countries){
+        say "                            var countries = {";
+        while(($key, $row) = each (%countries)){
             my $cc_id            = $row->{id};
             my $_cc              = $row->{cc};
             my $name             = $row->{_name};
             my $_flag            = $row->{_flag};
             my $_prefix          = $row->{prefix};
             my $_escape          = $row->{_escape};
-            my $lndl_pattern     = $row->{landline_pattern};
-            my $mob_pattern      = $row->{mobile_pattern};
-            my $lndl_title       = $row->{landline_title};
-            my $mob_title        = $row->{mobile_title};
-            my $lndl_placeholder = $row->{landline_placeholder};
-            my $mob_placeholder  = $row->{mobile_placeholder};
             $_escape = '' unless defined $_escape;
-            if($countries_id == $cc_id){
-                $mobile_title         = $mob_title;
-                $mobile_pattern       = $mob_pattern;
-                $mobile_placeholder   = $mob_placeholder;
-                $landline_title       = $lndl_title;
-                $landline_pattern     = $lndl_pattern;
-                $landline_placeholder = $lndl_placeholder;
+            say "                                        \"$cc_id\": { \"_name\": \"$name\",";
+            say "                                                      \"cc\": \"$_cc\",";
+            say "                                                      \"prefix\": \"$_prefix\",";
+            say "                                                      \"_flag\": \"$_flag\",";
+            say "                                                      \"_escape\": \"$_escape\",";
+            say "                                                      \"country_regions\": {";
+            for my $region_r (@{$country_regions}){
+                my $_cr_id           = $region_r->{id};
+                my $distinguishing   = $region_r->{distinguishing};
+                my $country_regions  = $region_r->{country_regions};
+                my $lndl_pattern     = $region_r->{landline_pattern};
+                my $mob_pattern      = $region_r->{mobile_pattern};
+                my $lndl_title       = $region_r->{landline_title};
+                my $mob_title        = $region_r->{mobile_title};
+                my $lndl_placeholder = $region_r->{landline_placeholder};
+                my $mob_placeholder  = $region_r->{mobile_placeholder};
+                if($country_id == $cc_id && $cr_id = $_cr_id){
+                    $mobile_title         = $mob_title;
+                    $mobile_pattern       = $mob_pattern;
+                    $mobile_placeholder   = $mob_placeholder;
+                    $landline_title       = $lndl_title;
+                    $landline_pattern     = $lndl_pattern;
+                    $landline_placeholder = $lndl_placeholder;
+                }
+                $lndl_pattern             =~ s/\\/\\\\/g;
+                $mob_pattern              =~ s/\\/\\\\/g;
+                say "                                                          \"$_cr_id\": {";
+                say "                                                              \"landline_pattern\": \"$lndl_pattern\",";
+                say "                                                              \"mobile_pattern\": \"$mob_pattern\",";
+                say "                                                              \"landline_title\": \"$lndl_title\",";
+                say "                                                              \"mobile_title\": \"$mob_title\",";
+                say "                                                              \"landline_placeholder\": \"$lndl_placeholder\",";
+                say "                                                              \"mobile_placeholder\": \"$mob_placeholder\" },";
+                say "                                                          }";
             }
-            $lndl_pattern             =~ s/\\/\\\\/g;
-            $mob_pattern              =~ s/\\/\\\\/g;
-            say "                                            \"$cc_id\": { \"_name\": \"$name\",";
-            say "                                                          \"cc\": \"$_cc\",";
-            say "                                                          \"prefix\": \"$_prefix\",";
-            say "                                                          \"_flag\": \"$_flag\",";
-            say "                                                          \"_escape\": \"$_escape\",";
-            say "                                                          \"landline_pattern\": \"$lndl_pattern\",";
-            say "                                                          \"mobile_pattern\": \"$mob_pattern\",";
-            say "                                                          \"landline_title\": \"$lndl_title\",";
-            say "                                                          \"mobile_title\": \"$mob_title\",";
-            say "                                                          \"landline_placeholder\": \"$lndl_placeholder\",";
-            say "                                                          \"mobile_placeholder\": \"$mob_placeholder\" },";
+            say "                                                      }";
         }
-        say "                                    };";
-        say "                                var cc_id_elt = document.getElementById('countries_id');";
-        say "                                var countries_id = cc_id_elt.value;";
+        say "                                };";
+        say "                            function country_onchange() {";
+        say "                                var cc_id_elt              = document.getElementById('country_id');";
+        say "                                var country_id             = cc_id_elt.value;";
         #say "                                alert(\"countries_id == \" + countries_id);";
         say "                                ";
         say "                                if(countries_id == 0) return; // should never happen //"; 
@@ -4021,17 +4061,39 @@ use HTML::Entities;
         say "                                var name                   = countries[countries_id]['_name'];";
         say "                                var _escape                = countries[countries_id]['_escape'];";
         say "                                var _flag                  = countries[countries_id]['_flag'];";
-        say "                                var landline_pattern       = countries[countries_id]['landline_pattern'];";
-        say "                                var mobile_pattern         = countries[countries_id]['mobile_pattern'];";
-        say "                                var landline_title         = countries[countries_id]['landline_title'];";
-        say "                                var mobile_title           = countries[countries_id]['mobile_title'];";
-        say "                                var landline_placeholder   = countries[countries_id]['landline_placeholder'];";
-        say "                                var mobile_placeholder     = countries[countries_id]['mobile_placeholder'];";
+        say "                                var country_regions        = countries[countries_id]['country_regions'];";
         say "                                // The objects to change //";
         say "                                var hdn_cc                 = document.getElementById(\"cc\");";
         say "                                hdn_cc.value               = cc;";
         say "                                var hdn_prefix             = document.getElementById(\"prefix\");";
         say "                                hdn_prefix.value           = prefix;";
+        say "                                var input_country          = document.getElementById(\"country\");";
+        say "                                input_country.value        = name;";
+        say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
+        say "                                input_postal_country.value = name;";
+        say "                                var opts                   = document.getElementsByClassName('country_regions_opts');";
+        say "                                 for(let opt of opts){";
+        say "                                    opt.remove();";
+        say "                                }";
+        say "                                var cr_id_elt              = document.getElementById('country_region_id');";
+        say "                                for(let reg in country_regions){";
+        say "                                    var opt = document.createElement(\"OPTION\");";
+        say "                                    opt.value = country_regions[reg][];";
+        say "                                    ";
+        say "                                }";
+        say "                            }";
+        say "                            function country_region_onchange() {";
+        say "                                var cc_id_elt              = document.getElementById('country_id');";
+        say "                                var country_id             = cc_id_elt.value;";
+        say "                                var cr_id_elt              = document.getElementById('country_region_id');";
+        say "                                var country_region_id      = cr_id_elt.value;";
+        say "                                var country_regions        = countries[countries_id]['country_regions'];";
+        say "                                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
+        say "                                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
+        say "                                var landline_title         = country_regions[cr_id]['landline_title'];";
+        say "                                var mobile_title           = country_regions[cr_id]['mobile_title'];";
+        say "                                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
+        say "                                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
         say "                                var input_mobile           = document.getElementById(\"mobile\");";
         say "                                input_mobile.placeholder   = mobile_placeholder;";
         #say "                                alert(\"mobile_pattern == \" + mobile_pattern);";
@@ -4043,19 +4105,8 @@ use HTML::Entities;
         #say "                                alert(\"landline_pattern == \" + landline_pattern);";
         say "                                input_phone.setAttribute('pattern', landline_pattern);";
         say "                                input_phone.title          = landline_title;";
-        say "                                var input_country          = document.getElementById(\"country\");";
-        say "                                input_country.value        = name;";
-        say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
-        say "                                input_postal_country.value = name;";
-        #say "                                var img                    = document.getElementById(\"flag\");";
-        #say "                                img.setAttribute(\"src\", _flag);";
-        #say "                                img.setAttribute(\"alt\", _flag);";
-        #say "                                img.src                    = _flag;";
-        #say "                                img.alt                    = _flag;";
-        #say "                                alert(\"_flag == \" + _flag);";
+        say "                            ";
         say "                            }";
-        say "                            ";
-        say "                            ";
         say "                        </script>";
         say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
         say "                    </td>";
@@ -5330,7 +5381,7 @@ use HTML::Entities;
                             $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
                             my ($mobile_id, $phone_id);
                             my ($return_phone, @msgs_phone);
-                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($countries_id, $cc, $prefix, $db);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($cr_id, $cc, $prefix, $db);
                             $return = 0 unless $return_phonedetails;
                             push @msgs, @msgs_phonedetails;
                             if($mobile){
@@ -7317,7 +7368,7 @@ use HTML::Entities;
 
 
     sub update_passwd_details {
-        my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $country_region_id, $passwd_details_id, $db) = @_;
         $primary_phone_id   = undef unless $primary_phone_id;
         $secondary_phone_id = undef unless $secondary_phone_id;
         my $line = __LINE__;
@@ -7327,13 +7378,13 @@ use HTML::Entities;
         $return = 1;
         my $sql    = "UPDATE passwd_details SET display_name = ?, given = ?, _family = ?,\n";
         $sql      .= "residential_address_id = ?, postal_address_id = ?, primary_phone_id = ?,\n";
-        $sql      .= "secondary_phone_id = ?, countries_id = ?\n";
+        $sql      .= "secondary_phone_id = ?, country_id = ?, country_region_id =?\n";
         $sql      .= "WHERE id = ?\n";
         $sql      .= "RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id);
+            $result = $query->execute($display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $country_region_id, $passwd_details_id);
         };
         if($@){
             push @msgs, "UPDATE passwd_details failed: $@", "\$sql == $sql", Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $passwd_details_id, $line],
@@ -7869,6 +7920,10 @@ use HTML::Entities;
         my $prefix               = $req->param('prefix');
         my $name                 = $req->param('name');
         my $_flag                = $req->param('_flag');
+        my $_escape              = $req->param('_escape');
+        my $cr_id                = $req->param('cr_id');
+        my $region               = $req->param('region');
+        my $distinguishing       = $req->param('distinguishing');
         my $landline_pattern     = $req->param('landline_pattern');
         my $mobile_pattern       = $req->param('mobile_pattern');
         my $landline_title       = $req->param('landline_title');
@@ -7883,8 +7938,8 @@ use HTML::Entities;
 
         my @countries;
         my $sql                  = "SELECT\n";
-        $sql                    .= "    c.id, c.cc, c.prefix, c._name, c._flag, c.landline_pattern, c.mobile_pattern,\n";
-        $sql                    .= "    c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
+        $sql                    .= "    c.id, c.cc, c.prefix, c._name, c._flag, c._escape, c.cr_id, region, distinguishing, c.landline_pattern,\n";
+        $sql                    .= "    c.mobile_pattern, c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql                    .= "FROM countries c\n";
         $sql                    .= "ORDER BY c._name;\n";
         my $query                = $db->prepare($sql);
@@ -7896,28 +7951,54 @@ use HTML::Entities;
         }
         $query->finish();
 
-        if($submit && $submit eq 'Update' && $cc_id){
+        if($submit && $submit eq 'Update' && $cc_id && $cr_id){
             my @msgs;
-            my $distinguishing;
             my $return = 1;
-            my $sql                      = "UPDATE countries SET cc = ?, prefix = ?, _name =?, _flag = ?, landline_pattern = ?, mobile_pattern = ?, landline_title = ?, mobile_title = ?, landline_placeholder = ?, mobile_placeholder = ?\n";
+            my $sql                      = "UPDATE country SET cc = ?, prefix = ?, _name =?, _flag = ?, _escape = ?\n";
             $sql                        .= "WHERE id = ?\n"; 
-            $sql                        .= "RETURNING id, cc, prefix, _name, _flag, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+            $sql                        .= "RETURNING id, cc, prefix, _name, _flag, _escape;\n";
             my $query                    = $db->prepare($sql);
             my $result;
             eval {
-                $result                  = $query->execute($cc, $prefix, $name, $_flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $cc_id);
+                $result                  = $query->execute($cc, $prefix, $name, $_flag, $_escape, $cc_id);
             };
             if($@){
-                push @msgs, "Error: UPDATE countries failed: $@";
+                push @msgs, "Error: UPDATE country failed: $@";
                 $return  = 0;
             }
             if($result && $result != 0){
                 $r                   = $query->fetchrow_hashref();
-                push @msgs, "UPDATE countries: success:", Data::Dumper->Dump([$r], [qw(r)]);
+                my $NAME             = $r->{name};
+                my $CC               = $r->{cc};
+                my $PREFIX           = $r->{prefix};
+                push @msgs, "UPDATE country success: $NAME ($CC : $PREFIX)";
+                $query->finish();
+                $sql                      = "UPDATE country_regions SET country_id = ?, region = ?, distinguishing = ?, landline_pattern = ?, mobile_pattern = ?, landline_title = ?, mobile_title = ?, landline_placeholder = ?, mobile_placeholder = ?\n";
+                $sql                     .= "WHERE id = ?\n"; 
+                $sql                     .= "RETURNING id, region, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
+                $query                    = $db->prepare($sql);
+                eval {
+                    $result               = $query->execute($cc_id, $region, $distinguishing, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $cr_id);
+                };
+                if($@){
+                    push @msgs, "Error: UPDATE country_regions failed: $@";
+                    $return  = 0;
+                }
+                if($result && $result != 0){
+                    $r                   = $query->fetchrow_hashref();
+                    my $REGION           = $r->{region};
+                    my $DISTINGUISHING   = $r->{distinguishing};
+                    push @msgs, "UPDATE country_regions success: $REGION ($DISTINGUISHING)";
+                    $query->finish();
+                }else{
+                    push @msgs, "Error: UPDATE country_regions failed: $sql";
+                    $return  = 0;
+                    $query->finish();
+                }
             }else{
-                push @msgs, "Error: UPDATE countries failed: $sql";
+                push @msgs, "Error: UPDATE country failed: $sql";
                 $return = 0;
+                $query->finish();
             }
             $query->finish();
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                  $dont_do_form, @msgs) = @_;
@@ -7930,6 +8011,9 @@ use HTML::Entities;
         $prefix               = '' unless defined $prefix;
         $name                 = '' unless defined $name;
         $_flag                = '/flags/AU.png' unless $_flag;
+        $cr_id                = '' unless defined $cr_id;
+        $region               = '' unless defined $region;
+        $distinguishing       = '' unless defined $distinguishing;
         $landline_pattern     = '' unless defined $landline_pattern;
         $mobile_pattern       = '' unless defined $mobile_pattern;
         $landline_title       = '' unless defined $landline_title;
@@ -7998,6 +8082,30 @@ use HTML::Entities;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
+        say "                        <label for=\"cr_id\">Country Region</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"cr_id\" id=\"cr_id\" value=\"$cr_id\" size=\"120\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"region\">Region:</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"region\" id=\"region\" value=\"$region\" size=\"120\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"distinguishing\">Distinguishing:</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"distinguishing\" id=\"distinguishing\" value=\"$distinguishing\" size=\"120\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
         say "                        <label for=\"landline_pattern\">Landline Pattern</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
@@ -8048,21 +8156,24 @@ use HTML::Entities;
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         say "            </table>";
         say "            <table class=\"exh\">";
-        say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+        say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
         my $cnt = 0;
-        for my $region (@countries){
+        for my $region_r (@countries){
             $cnt++;
-            my $id                       = $region->{id};
-            my $cc                       = $region->{cc};
-            my $prefix                   = $region->{prefix};
-            my $name                     = $region->{_name};
-            my $_flag                    = $region->{_flag};
-            my $landline_pattern         = $region->{landline_pattern};
-            my $mobile_pattern           = $region->{mobile_pattern};
-            my $landline_title           = $region->{landline_title};
-            my $mobile_title             = $region->{mobile_title};
-            my $landline_placeholder     = $region->{landline_placeholder};
-            my $mobile_placeholder       = $region->{mobile_placeholder};
+            my $id                       = $region_r->{id};
+            my $cc                       = $region_r->{cc};
+            my $prefix                   = $region_r->{prefix};
+            my $name                     = $region_r->{_name};
+            my $_flag                    = $region_r->{_flag};
+            my $_cr_id                   = $region_r->{cr_id};
+            my $_region                  = $region_r->{region};
+            my $_distinguishing          = $region_r->{distinguishing};
+            my $landline_pattern         = $region_r->{landline_pattern};
+            my $mobile_pattern           = $region_r->{mobile_pattern};
+            my $landline_title           = $region_r->{landline_title};
+            my $mobile_title             = $region_r->{mobile_title};
+            my $landline_placeholder     = $region_r->{landline_placeholder};
+            my $mobile_placeholder       = $region_r->{mobile_placeholder};
             say "                <tr class=\"exh\">";
             say "                    <td class=\"exh\">";
             say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\">$id</div></button>";
@@ -8078,6 +8189,15 @@ use HTML::Entities;
             say "                    </td>";
             say "                    <td class=\"exh\">";
             say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\"><img src=\"$_flag\" alt=\"$_flag\"/></div></button>";
+            say "                    </td>";
+            say "                    <td class=\"exh\">";
+            say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\">$_cr_id</div></button>";
+            say "                    </td>";
+            say "                    <td class=\"exh\">";
+            say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\">$_region</div></button>";
+            say "                    </td>";
+            say "                    <td class=\"exh\">";
+            say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\">$_distinguishing</div></button>";
             say "                    </td>";
             say "                    <td class=\"exh\">";
             say "                        <button type=\"button\" class=\"ex exh\" onclick=\"on_country_click($id)\"><div class=\"exh\">$landline_pattern</div></button>";
@@ -8099,7 +8219,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "            <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+                say "            <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
             }
         }
         say "            </table>";
@@ -8107,26 +8227,30 @@ use HTML::Entities;
         say "                function on_country_click(id){";
         say "                    var countries = {";
         $cnt = 0;
-        for my $region (@countries){
+        for my $region_r (@countries){
             $cnt++;
-            my $id                       = $region->{id};
-            my $cc                       = $region->{cc};
-            my $prefix                   = $region->{prefix};
-            my $name                     = $region->{_name};
-            my $_flag                    = $region->{_flag};
-            my $landline_pattern         = $region->{landline_pattern};
+            my $id                       = $region_r->{id};
+            my $cc                       = $region_r->{cc};
+            my $prefix                   = $region_r->{prefix};
+            my $name                     = $region_r->{_name};
+            my $_flag                    = $region_r->{_flag};
+            my $_cr_id                   = $region_r->{cr_id};
+            my $_region                  = $region_r->{region};
+            my $landline_pattern         = $region_r->{landline_pattern};
             $landline_pattern            =~ s/\\/\\\\/g;
-            my $mobile_pattern           = $region->{mobile_pattern};
+            my $mobile_pattern           = $region_r->{mobile_pattern};
             $mobile_pattern              =~ s/\\/\\\\/g;
-            my $landline_title           = $region->{landline_title};
-            my $mobile_title             = $region->{mobile_title};
-            my $landline_placeholder     = $region->{landline_placeholder};
-            my $mobile_placeholder       = $region->{mobile_placeholder};
+            my $landline_title           = $region_r->{landline_title};
+            my $mobile_title             = $region_r->{mobile_title};
+            my $landline_placeholder     = $region_r->{landline_placeholder};
+            my $mobile_placeholder       = $region_r->{mobile_placeholder};
             say "                                        \"$id\": {";
             say "                                                    \"cc\": \"$cc\",";
             say "                                                    \"prefix\": \"$prefix\",";
             say "                                                    \"_name\": \"$name\",";
             say "                                                    \"_flag\": \"$_flag\",";
+            say "                                                    \"cr_id\": \"$_cr_id\",";
+            say "                                                    \"region\": \"$_region\",";
             say "                                                    \"landline_pattern\": \"$landline_pattern\",";
             say "                                                    \"mobile_pattern\": \"$mobile_pattern\",";
             say "                                                    \"landline_title\": \"$landline_title\",";
@@ -8140,6 +8264,8 @@ use HTML::Entities;
         say "                    var prefix                       = countries['' + id]['prefix'];";
         say "                    var _name                        = countries['' + id]['_name'];";
         say "                    var _flag                        = countries['' + id]['_flag'];";
+        say "                    var cr_id                        = countries['' + id]['cr_id'];";
+        say "                    var region                       = countries['' + id]['region'];";
         say "                    var landline_pattern             = countries['' + id]['landline_pattern'];";
         say "                    var mobile_pattern               = countries['' + id]['mobile_pattern'];";
         say "                    var landline_title               = countries['' + id]['landline_title'];";
@@ -8153,6 +8279,8 @@ use HTML::Entities;
         say "                    var input_name                   = document.getElementById('name');";
         say "                    var input_the_flag               = document.getElementById('the_flag');";
         say "                    var input_flag                   = document.getElementById('_flag');";
+        say "                    var input_cr_id                  = document.getElementById('cr_id');";
+        say "                    var input_region                 = document.getElementById('region');";
         say "                    var input_landline_pattern       = document.getElementById('landline_pattern');";
         say "                    var input_mobile_pattern         = document.getElementById('mobile_pattern');";
         say "                    var input_landline_title         = document.getElementById('landline_title');";
@@ -8168,6 +8296,8 @@ use HTML::Entities;
         say "                    input_the_flag.setAttribute(\"src\", _flag);";
         say "                    input_the_flag.setAttribute(\"alt\", _flag);";
         say "                    input_flag.value                 = _flag;";
+        say "                    input_cr_id.value                = cr_id;";
+        say "                    input_region.value               = region;";
         say "                    input_landline_pattern.value     = landline_pattern;";
         say "                    input_mobile_pattern.value       = mobile_pattern;";
         say "                    input_landline_title.value       = landline_title;";
