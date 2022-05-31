@@ -3996,8 +3996,6 @@ use HTML::Entities;
             }
         }
         say "                        </select>";
-        $cc_id          = '' unless defined $cc_id;
-        $cr_id          = '' unless defined $cr_id;
 
         #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
         say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
@@ -4014,7 +4012,8 @@ use HTML::Entities;
             my $_prefix          = $row->{prefix};
             my $_escape          = $row->{_escape};
             my $country_regions  = $row->{country_regions};
-            $_escape = '' unless defined $_escape;
+            $_escape             = '' unless defined $_escape;
+            $cc_id               = '' unless defined $cc_id;
             say "                                        \"$cc_id\": { \"_name\": \"$name\",";
             say "                                                      \"cc\": \"$_cc\",";
             say "                                                      \"prefix\": \"$_prefix\",";
