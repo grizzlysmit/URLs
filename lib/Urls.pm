@@ -4021,7 +4021,7 @@ use HTML::Entities;
             say "                                                      \"_escape\": \"$_escape\",";
             say "                                                      \"country_regions\": {";
             for my $region_r (@{$country_regions}){
-                my $_cr_id           = $region_r->{id};
+                my $_cr_id           = $region_r->{cr_id};
                 my $distinguishing   = $region_r->{distinguishing};
                 my $country_regions  = $region_r->{country_regions};
                 my $lndl_pattern     = $region_r->{landline_pattern};
