@@ -3332,7 +3332,7 @@ use HTML::Entities;
             $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN countries c ON pd.countries_id = c.id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN country c ON pd.country_id = c.id\n";
             $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
             $sql               .= "WHERE p.id = ?\n";
             my $query  = $db->prepare($sql);
