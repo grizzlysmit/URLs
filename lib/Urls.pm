@@ -3980,6 +3980,7 @@ use HTML::Entities;
         my $landline_placeholder;
         my $flag;
         say "                        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
+        my ($key, $row);
         while(($key, $row) = each (%countries)){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
