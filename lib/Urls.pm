@@ -5552,7 +5552,7 @@ use HTML::Entities;
         my @countries;
 
         $sql  = "SELECT\n";
-        $sql .= "    c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.cc_id, distinguishing, c.landline_pattern,\n";
+        $sql .= "    c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.cr_id, distinguishing, c.landline_pattern,\n";
         $sql .= "    c.mobile_pattern, c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
         $sql .= "FROM countries c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
