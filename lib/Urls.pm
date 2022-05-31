@@ -4029,7 +4029,7 @@ use HTML::Entities;
                 my $mob_title        = $region_r->{mobile_title};
                 my $lndl_placeholder = $region_r->{landline_placeholder};
                 my $mob_placeholder  = $region_r->{mobile_placeholder};
-                if($country_id == $cc_id && $cr_id = $_cr_id){
+                if($country_id == $cc_id && $cr_id == $_cr_id){
                     $mobile_title         = $mob_title;
                     $mobile_pattern       = $mob_pattern;
                     $mobile_placeholder   = $mob_placeholder;
@@ -7374,8 +7374,8 @@ use HTML::Entities;
         $primary_phone_id   = undef unless $primary_phone_id;
         $secondary_phone_id = undef unless $secondary_phone_id;
         my $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $passwd_details_id, $line],
-                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id countries_id passwd_details_id line)]));
+        $self->log(Data::Dumper->Dump([$display_name, $given, $family, $new_residential_address_id, $new_postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $passwd_details_id, $line],
+                [qw(display_name given family new_residential_address_id new_postal_address_id primary_phone_id secondary_phone_id country_id passwd_details_id line)]));
         my ($return, @msgs);
         $return = 1;
         my $sql    = "UPDATE passwd_details SET display_name = ?, given = ?, _family = ?,\n";
