@@ -3798,7 +3798,7 @@ use HTML::Entities;
         my %countries;
 
         $sql  = "SELECT\n";
-        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, \n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
         $sql .= "FROM countries c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
