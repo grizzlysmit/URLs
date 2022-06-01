@@ -4142,7 +4142,7 @@ use HTML::Entities;
             }
         }
         if($country_regions){
-            my @COUNTRY_REGIONS = sort { $a->{region} cmp $b->{region}  } @$country_regions;
+            my @COUNTRY_REGIONS = sort { uc($a->{region}) cmp uc($b->{region})  } @$country_regions;
             for my $region_r (@COUNTRY_REGIONS){
                 my $_cr_id           = $region_r->{cr_id};
                 my $_region          = $region_r->{region};
