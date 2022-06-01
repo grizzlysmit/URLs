@@ -4134,7 +4134,29 @@ use HTML::Entities;
         say "                    <td colspan=\"2\">";
         #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
         say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
-        say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
+        my $country_regions;
+        while(($key, $row) = each (%countries)){
+            my $cc_id            = $row->{id};
+            if($cc_id == $country_id){
+                $country_regions  = $row->{country_regions};
+            }
+        }
+        if($country_regions){
+            for my $region_r (@$country_regions){
+                my $_cr_id           = $region_r->{cr_id};
+                my $_region          = $region_r->{region};
+                $_region             = 'Whole Country' unless defined $_region;
+                my $distinguishing   = $region_r->{distinguishing};
+                $distinguishing      = '' unless defined $distinguishing;
+                if($_cr_id == $cr_id){
+                    say "                            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
+                }else{
+                    say "                            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
+                }
+            }
+        }else{
+            say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
+        }
         say "                        </select>";
         say "                    </td>";
         say "                </tr>";
