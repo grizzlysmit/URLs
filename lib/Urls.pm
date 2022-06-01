@@ -3796,6 +3796,7 @@ use HTML::Entities;
         $query->finish();
 
         my %countries;
+        my @_country;
 
         $sql  = "SELECT\n";
         $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
@@ -3815,6 +3816,7 @@ use HTML::Entities;
         }
         $r      = $query->fetchrow_hashref();
         while($r){
+            push @_country, $r;
             my $cc_id = $r->{id};
             $r->{country_regions} = [];
             $countries{$cc_id} = $r;
@@ -3980,8 +3982,7 @@ use HTML::Entities;
         my $landline_placeholder;
         my $flag;
         say "                        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
-        my ($key, $row);
-        while(($key, $row) = each (%countries)){
+        for my $row (@_country){
             my $cc_id   = $row->{id};
             my $name    = $row->{_name};
             my $_cc     = $row->{cc};
@@ -3997,13 +3998,9 @@ use HTML::Entities;
         }
         say "                        </select>";
 
-        #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
-        say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
-        say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
-        say "                        </select>";
-
         say "                        <script>";
         say "                            var countries = {";
+        my ($key, $row);
         while(($key, $row) = each (%countries)){
             my $cc_id            = $row->{id};
             my $_cc              = $row->{cc};
@@ -4125,6 +4122,17 @@ use HTML::Entities;
         say "                            }";
         say "                        </script>";
         say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"region\">region</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
+        say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
+        say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
+        say "                        </select>";
         say "                    </td>";
         say "                </tr>";
         $title   = $mobile_title;
