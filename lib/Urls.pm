@@ -4065,6 +4065,7 @@ use HTML::Entities;
         say "                                if(countries_id == 0) return; // should never happen //"; 
         say "                                // values to match countries_id //";
         say "                                var cc                     = countries[countries_id]['cc'];";
+        say "                                alert(\"cc == \" + cc);";
         say "                                var prefix                 = countries[countries_id]['prefix'];";
         say "                                var name                   = countries[countries_id]['_name'];";
         say "                                var _escape                = countries[countries_id]['_escape'];";
