@@ -4042,20 +4042,20 @@ use HTML::Entities;
                 }
                 $lndl_pattern             =~ s/\\/\\\\/g;
                 $mob_pattern              =~ s/\\/\\\\/g;
-                say "                                                        \"$_cr_id\": {";
-                say "                                                            \"cr_id\": \"$_cr_id\",";
-                say "                                                            \"distinguishing\": \"$distinguishing\",";
-                say "                                                            \"region\": \"$_region\",";
-                say "                                                            \"landline_pattern\": \"$lndl_pattern\",";
-                say "                                                            \"mobile_pattern\": \"$mob_pattern\",";
-                say "                                                            \"landline_title\": \"$lndl_title\",";
-                say "                                                            \"mobile_title\": \"$mob_title\",";
-                say "                                                            \"landline_placeholder\": \"$lndl_placeholder\",";
-                say "                                                            \"mobile_placeholder\": \"$mob_placeholder\",";
-                say "                                                        },";
+                say "                                                            \"$_cr_id\": {";
+                say "                                                                \"cr_id\": \"$_cr_id\",";
+                say "                                                                \"distinguishing\": \"$distinguishing\",";
+                say "                                                                \"region\": \"$_region\",";
+                say "                                                                \"landline_pattern\": \"$lndl_pattern\",";
+                say "                                                                \"mobile_pattern\": \"$mob_pattern\",";
+                say "                                                                \"landline_title\": \"$lndl_title\",";
+                say "                                                                \"mobile_title\": \"$mob_title\",";
+                say "                                                                \"landline_placeholder\": \"$lndl_placeholder\",";
+                say "                                                                \"mobile_placeholder\": \"$mob_placeholder\",";
+                say "                                                            },";
             }
-            say "                                                        },";
-            say "                                                    };";
+            say "                                                    },";
+            say "                                                },";
         }
         say "                                };";
         say "                            function country_onchange() {";
