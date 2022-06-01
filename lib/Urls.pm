@@ -4026,6 +4026,7 @@ use HTML::Entities;
                 my $_region          = $region_r->{region};
                 $_region             = 'Whole Country' unless defined $_region;
                 my $distinguishing   = $region_r->{distinguishing};
+                $distinguishing      = '' unless defined $distinguishing;
                 my $country_regions  = $region_r->{country_regions};
                 my $lndl_pattern     = $region_r->{landline_pattern};
                 my $mob_pattern      = $region_r->{mobile_pattern};
