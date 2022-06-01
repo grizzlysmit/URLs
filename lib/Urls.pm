@@ -8114,7 +8114,7 @@ use HTML::Entities;
         say "                        <label for=\"cr_id\">Country Region</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"cr_id\" id=\"cr_id\" value=\"$cr_id\" size=\"120\"/>";
+        say "                        <input type=\"text\" name=\"cr_id\" id=\"cr_id\" value=\"$cr_id\" readonly=\"readonly\" size=\"120\"/>";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
@@ -8185,7 +8185,7 @@ use HTML::Entities;
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         say "            </table>";
         say "            <table class=\"exh\">";
-        say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+        say "                <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>distinguishing</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
         my $cnt = 0;
         for my $region_r (@countries){
             $cnt++;
@@ -8248,7 +8248,7 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
             if($cnt % $page_length == 0){
-                say "            <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
+                say "            <tr><th>id</th><th>cc</th><th>prefix</th><th>name</th><th>flag</th><th>cr_id</th><th>region</th><th>distinguishing</th><th>landline_pattern</th><th>mobile_pattern</th><th>landline_title</th><th>mobile_title</th><th>landline_placeholder</th><th>mobile_placeholder</th></tr>";
             }
         }
         say "            </table>";
