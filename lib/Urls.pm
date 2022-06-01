@@ -3999,7 +3999,7 @@ use HTML::Entities;
         say "                        </select>";
 
         say "                        <script>";
-        say "                            var countries = {";
+        say "                            const countries = {";
         my ($key, $row);
         while(($key, $row) = each (%countries)){
             my $cc_id            = $row->{id};
