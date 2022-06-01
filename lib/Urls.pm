@@ -4060,6 +4060,7 @@ use HTML::Entities;
         say "                            function country_onchange() {";
         say "                                var cc_id_elt              = document.getElementById('country_id');";
         say "                                var country_id             = cc_id_elt.value;";
+        say "                                console.log(\`\${country_id}: \${cc_id_elt}\`);";
         say "                                ";
         say "                                if(countries_id == 0) return; // should never happen //"; 
         say "                                // values to match countries_id //";
