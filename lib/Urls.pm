@@ -3824,7 +3824,7 @@ use HTML::Entities;
         }
         $query->finish();
         $sql  = "SELECT\n";
-        $sql .= "    cr.id cr_id, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql .= "    cr.id cr_id, cr.region, cr.distinguishing, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
         $sql .= "    cr.landline_title, cr.mobile_title, cr.landline_placeholder, cr.mobile_placeholder\n";
         $sql .= "FROM country_regions cr\n";
         $query  = $db->prepare($sql);
