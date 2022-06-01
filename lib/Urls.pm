@@ -4024,6 +4024,7 @@ use HTML::Entities;
             for my $region_r (@{$country_regions}){
                 my $_cr_id           = $region_r->{cr_id};
                 my $_region          = $region_r->{region};
+                $_region             = 'Whole Country' unless defined $_region;
                 my $distinguishing   = $region_r->{distinguishing};
                 my $country_regions  = $region_r->{country_regions};
                 my $lndl_pattern     = $region_r->{landline_pattern};
