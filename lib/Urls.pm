@@ -4084,7 +4084,7 @@ use HTML::Entities;
         say "                                    opt.remove();";
         say "                                }";
         say "                                var cr_id_elt              = document.getElementById('country_region_id');";
-        #say "                                alert(\"country_id == \" + country_id);";
+        say "                                alert(\"country_id == \" + country_id);";
         say "                                for(let [key, value] of Object.entries(country_regions)){";
         say "                                    var opt        = document.createElement(\"OPTION\");";
         say "                                    opt.setAttribute('class', 'country_regions_opts');";
