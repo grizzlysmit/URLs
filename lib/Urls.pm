@@ -4155,7 +4155,7 @@ use HTML::Entities;
         say "                                console.log(\`\${landline_title}: \${landline_pattern}\`);";
         say "                                var parts = region.split(/\\s*=>\\s*/);";
         say "                                var city = '';";
-        say "                                if(parts.length() > 0){";
+        say "                                if(parts.length > 0){";
         say "                                    city   = parts[1];";
         say "                                    region = parts[0];";
         say "                                }";
