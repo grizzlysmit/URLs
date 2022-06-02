@@ -8101,8 +8101,8 @@ use HTML::Entities;
             }
             $query->finish();
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                  $dont_do_form, @msgs) = @_;
-            $self->message($cfg, $debug, \%session, $db, 'update_countries', 'Update some more countries', $return,       @msgs) if @msgs;
-            return $return unless $return;
+            $self->message($cfg, $debug, \%session, $db, 'update_countries', 'Update some more countries', undef,       @msgs) if @msgs;
+            return $return;
         }
 
         $cc_id                = '' unless defined $id;
