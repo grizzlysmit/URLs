@@ -4154,7 +4154,7 @@ use HTML::Entities;
         say "                                input_phone.title          = landline_title;";
         say "                                console.log(\`\${landline_title}: \${landline_pattern}\`);";
         say "                                var parts = region.split(/\\s*=>\\s*/);";
-        say "                                var city = '';";
+        say "                                let city = '';";
         say "                                if(parts.length > 0){";
         say "                                    city   = parts[1];";
         say "                                    region = parts[0];";
