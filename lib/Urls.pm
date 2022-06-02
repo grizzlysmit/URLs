@@ -4163,7 +4163,7 @@ use HTML::Entities;
         say "                                input_region.value         = region;";
         say "                                var input_postal_region           = document.getElementById(\"postal_region\");";
         say "                                input_postal_region.value         = region;";
-        say "                                if(city.length() > 0){";
+        say "                                if(city.length > 0){";
         say "                                    var input_city_suburb         = document.getElementById(\"city_suburb\");";
         say "                                    var input_postal_city_suburb         = document.getElementById(\"postal_city_suburb\");";
         say "                                    input_city_suburb.value = city;";
