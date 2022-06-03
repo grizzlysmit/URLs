@@ -7804,10 +7804,10 @@ use HTML::Entities;
             return $return;
         }
 
-        $name                 = 'Australia' unless defined $name;
+        $name                 = 'New Zealand' unless defined $name;
         $region               = '' unless defined $region;
-        $cc                   = 'AU' unless defined $cc;
-        $country_prefix       = '61' unless defined $country_prefix;
+        $cc                   = 'NZ' unless defined $cc;
+        $country_prefix       = '64' unless defined $country_prefix;
         $_escape              = '0' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?)?{distinguishing}[ -]?[2-9]\d{3}[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+{country-prefix}|0)?4\d{2}[ -]?\d{3}[ -]?\d{3}' unless defined $mobile_pattern;
