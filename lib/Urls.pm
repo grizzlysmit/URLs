@@ -7775,12 +7775,12 @@ use HTML::Entities;
                     $region                      =~ s/^\s+//;
                     $region                      =~ s/\s+$//;
                     push @msgs, "INSERT INTO country succeeded: $name => $region, $cc, +$country_prefix => $distinguishing";
-                    $sql  = "INSERT INTO country_regions(country_id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
-                    $sql .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?)\n";
+                    $sql  = "INSERT INTO country_regions(country_id, region, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder)\n";
+                    $sql .= "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)\n";
                     $sql .= "RETURNING id, distinguishing, landline_pattern, mobile_pattern, landline_title, mobile_title, landline_placeholder, mobile_placeholder;\n";
                     $query             = $db->prepare($sql);
                     eval {
-                        $result  = $query->execute($cc_id, $distinguishing, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
+                        $result  = $query->execute($cc_id, $region, $distinguishing, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp);
                     };
                     if($@){
                         push @msgs, "Error: INSERT INTO country_regions failed: $@";
