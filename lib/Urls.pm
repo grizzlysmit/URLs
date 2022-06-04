@@ -3965,249 +3965,20 @@ use HTML::Entities;
         say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
         say "                    </td>";
         say "                </tr>";
+        my $spec0  = [
+            { id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
+            { id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
+            { id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+            { id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+                     ]
+        my $spec1  = [
+            { id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { id => 'region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
+            { id => 'postal_region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
+                     ]
+        ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $spec0, $spec1);
         # phones 
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
-        say "                    </td>";
-        say "                    <td colspan=\"3\">";
-        say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
-        say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
-
-        my $mobile_title;
-        my $mobile_pattern;
-        my $mobile_placeholder;
-        my $landline_title;
-        my $landline_pattern;
-        my $landline_placeholder;
-        my $flag;
-        say "                        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
-        for my $row (@_country){
-            my $cc_id   = $row->{id};
-            my $name    = $row->{_name};
-            my $_cc     = $row->{cc};
-            my $_flag   = $row->{_flag};
-            my $_prefix = $row->{prefix};
-            #$name       =~ s/\s/&nbsp;/g;
-            if($cc_id == $country_id){
-                $flag   = $_flag;
-                say "                            <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
-            }else{
-                say "                            <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
-            }
-        }
-        say "                        </select>";
-
-        say "                        <script>";
-        say "                            const countries = {";
-        my ($key, $row);
-        while(($key, $row) = each (%countries)){
-            my $cc_id            = $row->{id};
-            my $_cc              = $row->{cc};
-            my $name             = $row->{_name};
-            my $_flag            = $row->{_flag};
-            my $_prefix          = $row->{prefix};
-            my $_escape          = $row->{_escape};
-            my $country_regions  = $row->{country_regions};
-            $_escape             = '' unless defined $_escape;
-            $cc_id               = '' unless defined $cc_id;
-            say "                                        \"$cc_id\": {";
-            say "                                                        \"cc\": \"$_cc\",";
-            say "                                                        \"_name\": \"$name\",";
-            say "                                                        \"prefix\": \"$_prefix\",";
-            say "                                                        \"_flag\": \"$_flag\",";
-            say "                                                        \"_escape\": \"$_escape\",";
-            say "                                                        \"country_regions\": {";
-            for my $region_r (@{$country_regions}){
-                my $_cr_id           = $region_r->{cr_id};
-                my $_region          = $region_r->{region};
-                $_region             = 'Whole Country' unless defined $_region;
-                my $distinguishing   = $region_r->{distinguishing};
-                $distinguishing      = '' unless defined $distinguishing;
-                my $country_regions  = $region_r->{country_regions};
-                my $lndl_pattern     = $region_r->{landline_pattern};
-                my $mob_pattern      = $region_r->{mobile_pattern};
-                my $lndl_title       = $region_r->{landline_title};
-                my $mob_title        = $region_r->{mobile_title};
-                my $lndl_placeholder = $region_r->{landline_placeholder};
-                my $mob_placeholder  = $region_r->{mobile_placeholder};
-                if($country_id == $cc_id && $cr_id == $_cr_id){
-                    $mobile_title         = $mob_title;
-                    $mobile_pattern       = $mob_pattern;
-                    $mobile_placeholder   = $mob_placeholder;
-                    $landline_title       = $lndl_title;
-                    $landline_pattern     = $lndl_pattern;
-                    $landline_placeholder = $lndl_placeholder;
-                }
-                $lndl_pattern             =~ s/\\/\\\\/g;
-                $mob_pattern              =~ s/\\/\\\\/g;
-                say "                                                            \"$_cr_id\": {";
-                say "                                                                \"cr_id\": \"$_cr_id\",";
-                say "                                                                \"distinguishing\": \"$distinguishing\",";
-                say "                                                                \"region\": \"$_region\",";
-                say "                                                                \"landline_pattern\": \"$lndl_pattern\",";
-                say "                                                                \"mobile_pattern\": \"$mob_pattern\",";
-                say "                                                                \"landline_title\": \"$lndl_title\",";
-                say "                                                                \"mobile_title\": \"$mob_title\",";
-                say "                                                                \"landline_placeholder\": \"$lndl_placeholder\",";
-                say "                                                                \"mobile_placeholder\": \"$mob_placeholder\",";
-                say "                                                            },";
-            }
-            say "                                                    },";
-            say "                                                },";
-        }
-        say "                                };";
-        say "                            function country_onchange() {";
-        say "                                var cc_id_elt              = document.getElementById('country_id');";
-        say "                                var country_id             = cc_id_elt.value;";
-        #say "                                console.log(\`\${country_id}: \${cc_id_elt}\`);";
-        say "                                ";
-        say "                                if(country_id == 0) return; // should never happen //"; 
-        say "                                // values to match country_id //";
-        say "                                var cc                     = countries[country_id]['cc'];";
-        say "                                var prefix                 = countries[country_id]['prefix'];";
-        say "                                var name                   = countries[country_id]['_name'];";
-        say "                                var _escape                = countries[country_id]['_escape'];";
-        say "                                var _flag                  = countries[country_id]['_flag'];";
-        say "                                var country_regions        = countries[country_id]['country_regions'];";
-        say "                                // The objects to change //";
-        say "                                var hdn_cc                 = document.getElementById(\"cc\");";
-        say "                                hdn_cc.value               = cc;";
-        say "                                var hdn_prefix             = document.getElementById(\"prefix\");";
-        say "                                hdn_prefix.value           = prefix;";
-        say "                                var input_country          = document.getElementById(\"country\");";
-        say "                                input_country.value        = name;";
-        say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
-        say "                                input_postal_country.value = name;";
-        #say "                                var opts                   = document.getElementsByClassName('country_regions_opts');";
-        #say "                                console.log('remove old options[0]');";
-        #say "                                for(let opt of opts){";
-        #say "                                    opt.remove();";
-        #say "                                    var val = opt.value;";
-        #say "                                    var html = opt.innerHTML;";
-        #say "                                    console.log(\`\${html}: \${val}\`);";
-        #say "                                }";
-        say "                                var cr_id_elt              = document.getElementById('country_region_id');";
-        #say "                                console.log(\`\${region}: \${country_id}\`);";
-        say "                                var sortable = Object.values(country_regions);";
-        #say "                                for(let [key, value] of Object.entries(country_regions)){";
-        #say "                                    console.log(\`\${key}: \${value}\`);";
-        #say "                                    sortable.push(value);";
-        #say "                                }";
-        #say "                                console.log('Before Sorting');";
-        #say "                                for(let value of sortable){";
-        #say "                                    region         = value['region'];";
-        #say "                                    distinguishing = value['distinguishing'];";
-        #say "                                    console.log(\`\${region}: \${distinguishing}\`);";
-        #say "                                }";
-        say "                                sortable.sort(function(a, b) {";
-        say "                                    var x = a.region.toLowerCase();";
-        say "                                    var y = b.region.toLowerCase();";
-        say "                                    if(x < y) { return -1; }";
-        say "                                    if(x > y) { return 1; }";
-        say "                                    return 0;";
-        say "                                });";
-        #say "                                console.log('remove old options[1]');";
-        #say "                                var opts                   = document.getElementsByClassName('country_regions_opts');";
-        #say "                                for(let opt of opts){";
-        #say "                                    opt.remove();";
-        #say "                                    var val = opt.value;";
-        #say "                                    var html = opt.innerHTML;";
-        #say "                                    console.log(\`\${html}: \${val}\`);";
-        #say "                                }";
-        say "                                cr_id_elt.innerHTML = '';";
-        #say "                                console.log('After Sorting');";
-        say "                                for(let value of sortable){";
-        say "                                    var opt        = document.createElement(\"OPTION\");";
-        say "                                    opt.setAttribute('class', 'country_regions_opts');";
-        say "                                    opt.value      = value['cr_id'];";
-        say "                                    region         = value['region'];";
-        say "                                    distinguishing = value['distinguishing'];";
-        say "                                    opt.innerHTML  = region + \" (\" + distinguishing + ')';";
-        #say "                                    console.log(\`\${region}: \${distinguishing}\`);";
-        say "                                    cr_id_elt.appendChild(opt);";
-        say "                                }";
-        say "                            }";
-        say "                            function country_region_onchange() {";
-        say "                                var cc_id_elt              = document.getElementById('country_id');";
-        say "                                var country_id             = cc_id_elt.value;";
-        say "                                var cr_id_elt              = document.getElementById('country_region_id');";
-        say "                                var cr_id                  = cr_id_elt.value;";
-        say "                                console.log(\`\${country_id}: \${cr_id}\`);";
-        say "                                var country_regions        = countries[country_id]['country_regions'];";
-        say "                                var region                 = country_regions[cr_id]['region'];";
-        say "                                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
-        say "                                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
-        say "                                var landline_title         = country_regions[cr_id]['landline_title'];";
-        say "                                var mobile_title           = country_regions[cr_id]['mobile_title'];";
-        say "                                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
-        say "                                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
-        say "                                console.log(\`\${landline_pattern}: \${mobile_pattern}\`);";
-        say "                                var input_mobile           = document.getElementById(\"mobile\");";
-        say "                                input_mobile.placeholder   = mobile_placeholder;";
-        #say "                                alert(\"mobile_pattern == \" + mobile_pattern);";
-        say "                                input_mobile.setAttribute('pattern', mobile_pattern);";
-        say "                                input_mobile.title         = mobile_title;";
-        say "                                var input_phone            = document.getElementById(\"phone\");";
-        say "                                input_phone.placeholder    = landline_placeholder;";
-        say "                                input_phone.setAttribute('pattern', landline_pattern);";
-        say "                                input_phone.title          = landline_title;";
-        say "                                console.log(\`\${landline_title}: \${landline_pattern}\`);";
-        say "                                var parts = region.split(/\\s*=>\\s*/);";
-        say "                                let city = '';";
-        say "                                region = parts[0];";
-        say "                                if(parts.length > 1){";
-        say "                                    city   = parts[1];";
-        say "                                }";
-        say "                                var input_region           = document.getElementById(\"region\");";
-        say "                                input_region.value         = region;";
-        say "                                var input_postal_region           = document.getElementById(\"postal_region\");";
-        say "                                input_postal_region.value         = region;";
-        say "                                if(city.length > 0){";
-        say "                                    var input_city_suburb         = document.getElementById(\"city_suburb\");";
-        say "                                    var input_postal_city_suburb         = document.getElementById(\"postal_city_suburb\");";
-        say "                                    input_city_suburb.value = city;";
-        say "                                    input_postal_city_suburb.value = city;";
-        say "                                }";
-        say "                            }";
-        say "                        </script>";
-        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
-        say "                    </td>";
-        say "                </tr>";
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"region\">region</label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        #say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
-        say "                        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
-        my $country_regions;
-        while(($key, $row) = each (%countries)){
-            my $cc_id            = $row->{id};
-            if($cc_id == $country_id){
-                $country_regions  = $row->{country_regions};
-            }
-        }
-        if($country_regions){
-            my @COUNTRY_REGIONS = sort { uc($a->{region}) cmp uc($b->{region})  } @$country_regions;
-            for my $region_r (@COUNTRY_REGIONS){
-                my $_cr_id           = $region_r->{cr_id};
-                my $_region          = $region_r->{region};
-                $_region             = 'Whole Country' unless defined $_region;
-                my $distinguishing   = $region_r->{distinguishing};
-                $distinguishing      = '' unless defined $distinguishing;
-                if($_cr_id == $cr_id){
-                    say "                            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
-                }else{
-                    say "                            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
-                }
-            }
-        }else{
-            say "                            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
-        }
-        say "                        </select>";
-        say "                    </td>";
-        say "                </tr>";
         $title   = $mobile_title;
         $pattern = $mobile_pattern;
         my $placeholder = $mobile_placeholder;
@@ -4548,6 +4319,230 @@ use HTML::Entities;
 
         return 1;
     } ## --- end sub user_details
+
+
+    sub add_country_region_dropdowns {
+        my ($self, $indent, $_countries, $country_id, $cr_id, $spec0, $spec1) = @_;
+        my %countries = %{$_countries};
+        $indent = 0 if $indent < 0;
+        $indent = ' ' x $indent;
+        say "$indent<tr>";
+        say "$indent    <td>";
+        say "$indent        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
+        say "$indent    </td>";
+        say "$indent    <td colspan=\"3\">";
+        say "$indent        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
+        say "$indent        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
+
+        my $mobile_title;
+        my $mobile_pattern;
+        my $mobile_placeholder;
+        my $landline_title;
+        my $landline_pattern;
+        my $landline_placeholder;
+        my $flag;
+        say "$indent        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
+        for my $row (@_country){
+            my $cc_id   = $row->{id};
+            my $name    = $row->{_name};
+            my $_cc     = $row->{cc};
+            my $_flag   = $row->{_flag};
+            my $_prefix = $row->{prefix};
+            #$name       =~ s/\s/&nbsp;/g;
+            if($cc_id == $country_id){
+                $flag   = $_flag;
+                say "$indent            <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
+            }else{
+                say "$indent            <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
+            }
+        }
+        say "$indent        </select>";
+
+        say "$indent        <script>";
+        say "$indent            const countries = {";
+        my ($key, $row);
+        while(($key, $row) = each (%countries)){
+            my $cc_id            = $row->{id};
+            my $_cc              = $row->{cc};
+            my $name             = $row->{_name};
+            my $_flag            = $row->{_flag};
+            my $_prefix          = $row->{prefix};
+            my $_escape          = $row->{_escape};
+            my $country_regions  = $row->{country_regions};
+            $_escape             = '' unless defined $_escape;
+            $cc_id               = '' unless defined $cc_id;
+            say "$indent                        \"$cc_id\": {";
+            say "$indent                                        \"cc\": \"$_cc\",";
+            say "$indent                                        \"_name\": \"$name\",";
+            say "$indent                                        \"prefix\": \"$_prefix\",";
+            say "$indent                                        \"_flag\": \"$_flag\",";
+            say "$indent                                        \"_escape\": \"$_escape\",";
+            say "$indent                                        \"country_regions\": {";
+            for my $region_r (@{$country_regions}){
+                my $_cr_id           = $region_r->{cr_id};
+                my $_region          = $region_r->{region};
+                $_region             = 'Whole Country' unless defined $_region;
+                my $distinguishing   = $region_r->{distinguishing};
+                $distinguishing      = '' unless defined $distinguishing;
+                my $country_regions  = $region_r->{country_regions};
+                my $lndl_pattern     = $region_r->{landline_pattern};
+                my $mob_pattern      = $region_r->{mobile_pattern};
+                my $lndl_title       = $region_r->{landline_title};
+                my $mob_title        = $region_r->{mobile_title};
+                my $lndl_placeholder = $region_r->{landline_placeholder};
+                my $mob_placeholder  = $region_r->{mobile_placeholder};
+                if($country_id == $cc_id && $cr_id == $_cr_id){
+                    $mobile_title         = $mob_title;
+                    $mobile_pattern       = $mob_pattern;
+                    $mobile_placeholder   = $mob_placeholder;
+                    $landline_title       = $lndl_title;
+                    $landline_pattern     = $lndl_pattern;
+                    $landline_placeholder = $lndl_placeholder;
+                }
+                $lndl_pattern             =~ s/\\/\\\\/g;
+                $mob_pattern              =~ s/\\/\\\\/g;
+                say "$indent                                            \"$_cr_id\": {";
+                say "$indent                                                \"cr_id\": \"$_cr_id\",";
+                say "$indent                                                \"distinguishing\": \"$distinguishing\",";
+                say "$indent                                                \"region\": \"$_region\",";
+                say "$indent                                                \"landline_pattern\": \"$lndl_pattern\",";
+                say "$indent                                                \"mobile_pattern\": \"$mob_pattern\",";
+                say "$indent                                                \"landline_title\": \"$lndl_title\",";
+                say "$indent                                                \"mobile_title\": \"$mob_title\",";
+                say "$indent                                                \"landline_placeholder\": \"$lndl_placeholder\",";
+                say "$indent                                                \"mobile_placeholder\": \"$mob_placeholder\",";
+                say "$indent                                            },";
+            }
+            say "$indent                                    },";
+            say "$indent                                },";
+        }
+        say "$indent                };";
+        say "$indent            function country_onchange() {";
+        say "$indent                var cc_id_elt              = document.getElementById('country_id');";
+        say "$indent                var country_id             = cc_id_elt.value;";
+        #say "$indent                console.log(\`\${country_id}: \${cc_id_elt}\`);";
+        say "$indent                ";
+        say "$indent                if(country_id == 0) return; // should never happen //"; 
+        say "$indent                // values to match country_id //";
+        say "$indent                var cc                     = countries[country_id]['cc'];";
+        say "$indent                var prefix                 = countries[country_id]['prefix'];";
+        say "$indent                var name                   = countries[country_id]['_name'];";
+        say "$indent                var _escape                = countries[country_id]['_escape'];";
+        say "$indent                var _flag                  = countries[country_id]['_flag'];";
+        say "$indent                var country_regions        = countries[country_id]['country_regions'];";
+        say "$indent                // The objects to change //";
+        say "$indent                var hdn_cc                 = document.getElementById(\"cc\");";
+        say "$indent                hdn_cc.value               = cc;";
+        say "$indent                var hdn_prefix             = document.getElementById(\"prefix\");";
+        say "$indent                hdn_prefix.value           = prefix;";
+        say "$indent                var input_country          = document.getElementById(\"country\");";
+        say "$indent                input_country.value        = name;";
+        say "$indent                var input_postal_country   = document.getElementById(\"postal_country\");";
+        say "$indent                input_postal_country.value = name;";
+        say "$indent                var cr_id_elt              = document.getElementById('country_region_id');";
+        say "$indent                var sortable = Object.values(country_regions);";
+        say "$indent                sortable.sort(function(a, b) {";
+        say "$indent                    var x = a.region.toLowerCase();";
+        say "$indent                    var y = b.region.toLowerCase();";
+        say "$indent                    if(x < y) { return -1; }";
+        say "$indent                    if(x > y) { return 1; }";
+        say "$indent                    return 0;";
+        say "$indent                });";
+        say "$indent                cr_id_elt.innerHTML = '';";
+        #say "$indent                console.log('After Sorting');";
+        say "$indent                for(let value of sortable){";
+        say "$indent                    var opt        = document.createElement(\"OPTION\");";
+        say "$indent                    opt.setAttribute('class', 'country_regions_opts');";
+        say "$indent                    opt.value      = value['cr_id'];";
+        say "$indent                    region         = value['region'];";
+        say "$indent                    distinguishing = value['distinguishing'];";
+        say "$indent                    opt.innerHTML  = region + \" (\" + distinguishing + ')';";
+        #say "$indent                    console.log(\`\${region}: \${distinguishing}\`);";
+        say "$indent                    cr_id_elt.appendChild(opt);";
+        say "$indent                }";
+        say "$indent            }";
+        say "$indent            function country_region_onchange() {";
+        say "$indent                var cc_id_elt              = document.getElementById('country_id');";
+        say "$indent                var country_id             = cc_id_elt.value;";
+        say "$indent                var cr_id_elt              = document.getElementById('country_region_id');";
+        say "$indent                var cr_id                  = cr_id_elt.value;";
+        say "$indent                console.log(\`\${country_id}: \${cr_id}\`);";
+        say "$indent                var country_regions        = countries[country_id]['country_regions'];";
+        say "$indent                var region                 = country_regions[cr_id]['region'];";
+        say "$indent                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
+        say "$indent                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
+        say "$indent                var landline_title         = country_regions[cr_id]['landline_title'];";
+        say "$indent                var mobile_title           = country_regions[cr_id]['mobile_title'];";
+        say "$indent                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
+        say "$indent                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
+        say "$indent                console.log(\`\${landline_pattern}: \${mobile_pattern}\`);";
+        say "$indent                var input_mobile           = document.getElementById(\"mobile\");";
+        say "$indent                input_mobile.placeholder   = mobile_placeholder;";
+        #say "$indent                alert(\"mobile_pattern == \" + mobile_pattern);";
+        say "$indent                input_mobile.setAttribute('pattern', mobile_pattern);";
+        say "$indent                input_mobile.title         = mobile_title;";
+        say "$indent                var input_phone            = document.getElementById(\"phone\");";
+        say "$indent                input_phone.placeholder    = landline_placeholder;";
+        say "$indent                input_phone.setAttribute('pattern', landline_pattern);";
+        say "$indent                input_phone.title          = landline_title;";
+        say "$indent                console.log(\`\${landline_title}: \${landline_pattern}\`);";
+        say "$indent                var parts = region.split(/\\s*=>\\s*/);";
+        say "$indent                let city = '';";
+        say "$indent                region = parts[0];";
+        say "$indent                if(parts.length > 1){";
+        say "$indent                    city   = parts[1];";
+        say "$indent                }";
+        say "$indent                var input_region           = document.getElementById(\"region\");";
+        say "$indent                input_region.value         = region;";
+        say "$indent                var input_postal_region           = document.getElementById(\"postal_region\");";
+        say "$indent                input_postal_region.value         = region;";
+        say "$indent                if(city.length > 0){";
+        say "$indent                    var input_city_suburb          = document.getElementById(\"city_suburb\");";
+        say "$indent                    var input_postal_city_suburb   = document.getElementById(\"postal_city_suburb\");";
+        say "$indent                    input_city_suburb.value = city;";
+        say "$indent                    input_postal_city_suburb.value = city;";
+        say "$indent                }";
+        say "$indent            }";
+        say "$indent        </script>";
+        say "$indent        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
+        say "$indent    </td>";
+        say "$indent</tr>";
+        say "$indent<tr>";
+        say "$indent    <td>";
+        say "$indent        <label for=\"region\">region</label>";
+        say "$indent    </td>";
+        say "$indent    <td colspan=\"2\">";
+        #say "$indent        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\" is=\"ms-dropdown\">";
+        say "$indent        <select name=\"country_region_id\" id=\"country_region_id\" onchange=\"country_region_onchange()\">";
+        my $country_regions;
+        while(($key, $row) = each (%countries)){
+            my $cc_id            = $row->{id};
+            if($cc_id == $country_id){
+                $country_regions  = $row->{country_regions};
+            }
+        }
+        if($country_regions){
+            my @COUNTRY_REGIONS = sort { uc($a->{region}) cmp uc($b->{region})  } @$country_regions;
+            for my $region_r (@COUNTRY_REGIONS){
+                my $_cr_id           = $region_r->{cr_id};
+                my $_region          = $region_r->{region};
+                $_region             = 'Whole Country' unless defined $_region;
+                my $distinguishing   = $region_r->{distinguishing};
+                $distinguishing      = '' unless defined $distinguishing;
+                if($_cr_id == $cr_id){
+                    say "$indent            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
+                }else{
+                    say "$indent            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
+                }
+            }
+        }else{
+            say "$indent            <option class=\"country_regions_opts\" value=\"\" selected=\"selected\">Not Filled in yet</option>";
+        }
+        say "$indent        </select>";
+        say "$indent    </td>";
+        say "$indent</tr>";
+        return 1;
+    } ## --- end sub add_country_region_dropdowns
 
 
     sub getgroup_id {
