@@ -7811,7 +7811,7 @@ use HTML::Entities;
         $_escape              = '0' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?){distinguishing}[ -]?75\d[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+{country-prefix}|0)(?:(?:2\d|85|86|96)\d{2})[ -]?\d{3}[ -]?\d{3}' unless defined $mobile_pattern;
-        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{distinguishing}-9567-2876 or (0{distinguishing}) 756 2876 or 0{distinguishing}7562876.' unless defined $landline_title;
+        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{distinguishing}-956-2876 or (0{distinguishing}) 756 2876 or 0{distinguishing}7562876.' unless defined $landline_title;
         $mobile_title         = 'Only +digits or local formats allowed. i.e. +{country-prefix}260-567-876 or 0260 567 876 or 0260567876' unless defined $mobile_title;
         $landline_placeholder = '+{country-prefix}{distinguishing}-756-2876|(0{distinguishing}) 756 2876|0{distinguishing}7562876' unless defined $landline_placeholder;
         $mobile_placeholder   = '+{country-prefix}268-560-876|0260 567 876|0260567876' unless defined $mobile_placeholder;
