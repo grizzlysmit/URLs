@@ -4488,7 +4488,7 @@ use HTML::Entities;
                 }
                 #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
             }elsif($type eq 'calulated'){
-                my $id       = $row->{id};
+                my $_id       = $row->{id};
                 my $inputval = $row->{inputval};
                 my $tag      = $row->{tag};
                 my @fields   = @{$row->{fields}};
@@ -4498,30 +4498,30 @@ use HTML::Entities;
                     say "$indent                }";
                     $if_open = undef;
                 }
-                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                say "$indent                var ${tag}_$_id                    = document.getElementById(\"$_id\");";
                 for my $field (@fields){
                     if($if_open){
                         if($if){
                             if($last_if ne $if){
                                 say "$indent                }"; # end if #
                                 say "$indent                if($if){"; # start new if #
-                                say "$indent                    ${tag}_$id.$field               = $inputval;";
+                                say "$indent                    ${tag}_$_id.$field               = $inputval;";
                                 $if_open = 1;
                             }else{
-                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
+                                say "$indent                    ${tag}_$_id.$field               = $inputval;"; # continue if #
                             }
                         }else{
                             say "$indent                }";
                             $if_open = undef; # end if #
-                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                            say "$indent                ${tag}_$_id.$field               = $inputval;"; # no if #
                         }
                     }else{
                         if($if){
                             say "$indent                if($if){";
-                            say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
+                            say "$indent                    ${tag}_$_id.$field               = $inputval;"; # start if #
                             $if_open = 1;
                         }else{
-                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                            say "$indent                ${tag}_$_id.$field               = $inputval;"; # no if #
                         }
                     }
                 }
