@@ -3966,16 +3966,19 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
         my $spec0  = [
-            { id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
-            { id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
-            { id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
-            { id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+            { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
+            { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
+            { type => 'normal', id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+            { type => 'normal', id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
                      ];
         my $spec1  = [
-            { id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
-            { id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
-            { id => 'region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
-            { id => 'postal_region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
+            { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'normal', id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+            { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                      ];
         my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
         # phones 
@@ -4413,6 +4416,12 @@ use HTML::Entities;
             say "$indent                                },";
         }
         say "$indent                };";
+        #my $spec0  = [
+        #    { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
+        #    { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
+        #    { type => 'normal', id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+        #    { type => 'normal', id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+        #             ];
         say "$indent            function country_onchange() {";
         say "$indent                var cc_id_elt              = document.getElementById('country_id');";
         say "$indent                var country_id             = cc_id_elt.value;";
@@ -4420,21 +4429,128 @@ use HTML::Entities;
         say "$indent                ";
         say "$indent                if(country_id == 0) return; // should never happen //"; 
         say "$indent                // values to match country_id //";
-        say "$indent                var cc                     = countries[country_id]['cc'];";
-        say "$indent                var prefix                 = countries[country_id]['prefix'];";
-        say "$indent                var name                   = countries[country_id]['_name'];";
-        say "$indent                var _escape                = countries[country_id]['_escape'];";
-        say "$indent                var _flag                  = countries[country_id]['_flag'];";
-        say "$indent                var country_regions        = countries[country_id]['country_regions'];";
-        say "$indent                // The objects to change //";
-        say "$indent                var hdn_cc                 = document.getElementById(\"cc\");";
-        say "$indent                hdn_cc.value               = cc;";
-        say "$indent                var hdn_prefix             = document.getElementById(\"prefix\");";
-        say "$indent                hdn_prefix.value           = prefix;";
-        say "$indent                var input_country          = document.getElementById(\"country\");";
-        say "$indent                input_country.value        = name;";
-        say "$indent                var input_postal_country   = document.getElementById(\"postal_country\");";
-        say "$indent                input_postal_country.value = name;";
+        my %vartable  = ();
+        my $last_type = '';
+        my $last_if   = '';
+        my $if_open;
+        for my $row (@$spec0){
+            my $type     = $row->{type};
+            if($type ne 'calculated' && $if_open){
+                say "$indent                }";
+                $if_open = undef;
+            }
+            if($type eq 'normal'){
+                my $id       = $row->{id};
+                my $inputval = $row->{inputval};
+                my $tag      = $row->{tag};
+                my @fields   = @{$row->{fields}};
+                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                for my $field (@fields){
+                    say "$indent                ${tag}_$id.$field               = $inputval;";
+                }
+                if(ref $inputval eq 'ARRAY'){
+                    my @inputvals = @{$inputval};
+                    my $cnt = 0;
+                    for my $val (@inputvals){
+                        last unless $cnt < @fields;
+                        say "$indent                var $val                     = countries[country_id]['$val'];";
+                        my $field  = $fields[$cnt];
+                        say "$indent                ${tag}_$id.$field               = $val;";
+                        $cnt++;
+                    }
+                }elsif(ref $inputval eq ''){
+                    say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                    for my $field (@fields){
+                        say "$indent                ${tag}_$id.$field               = $inputval;";
+                    }
+                }
+            }elsif($type eq 'calulate'){
+                my %cal    = %{$row->{cal}};
+                my $op       = $cal{op}
+                my $inputval  = $row->{inputval};
+                say "$indent                var $inputval                     = countries[country_id]['$inputval'];";
+                my @outparts = @{$cal{outparts}};
+                if($op eq 'split'){
+                    my $pattern  = $cal{pattern};
+                    say "$indent                var parts = $inputval.split($pattern);";
+                }
+                my $cnt = 0;
+                for my $var (@outparts){
+                    say "$indent                let $var = '';";
+                    if($cnt == 0){
+                        say "$indent                $var = parts[0];";
+                    }else{
+                        say "$indent                if(parts.length > $cnt){";
+                        say "$indent                    $var   = parts[$cnt];";
+                        say "$indent                }";
+                    }
+                    $cnt++;
+                }
+                #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+            }elsif($type eq 'calulated'){
+                my $id       = $row->{id};
+                my $inputval = $row->{inputval};
+                my $tag      = $row->{tag};
+                my @fields   = @{$row->{fields}};
+                my $if       = $row->{if};
+                $if          = '' unless defined $if;
+                if($if_open && $last_if ne $if){
+                    say "$indent                }";
+                    $if_open = undef;
+                }
+                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                for my $field (@fields){
+                    if($if_open){
+                        if($if){
+                            if($last_if ne $if){
+                                say "$indent                }"; # end if #
+                                say "$indent                if($if){"; # start new if #
+                                say "$indent                    ${tag}_$id.$field               = $inputval;";
+                                $if_open = 1;
+                            }else{
+                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
+                            }
+                        }else{
+                            say "$indent                }";
+                            $if_open = undef; # end if #
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                        }
+                    }else{
+                        if($if){
+                            say "$indent                if($if){";
+                            say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
+                            $if_open = 1;
+                        }else{
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                        }
+                    }
+                }
+                #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                $last_if   = $if if $if;
+            }
+            $last_type = $type;
+        } # for my $row (@$spec0) #
+        if($if_open){
+            say "$indent                }";
+        }
+        #say "$indent                var cc                     = countries[country_id]['cc'];";
+        #say "$indent                var prefix                 = countries[country_id]['prefix'];";
+        #say "$indent                var name                   = countries[country_id]['_name'];";
+        #say "$indent                var _escape                = countries[country_id]['_escape'];";
+        #say "$indent                var _flag                  = countries[country_id]['_flag'];";
+        #say "$indent                var country_regions        = countries[country_id]['country_regions'];";
+        #say "$indent                // The objects to change //";
+        #say "$indent                var hdn_cc                 = document.getElementById(\"cc\");";
+        #say "$indent                hdn_cc.value               = cc;";
+        #say "$indent                var hdn_prefix             = document.getElementById(\"prefix\");";
+        #say "$indent                hdn_prefix.value           = prefix;";
+        #say "$indent                var input_country          = document.getElementById(\"country\");";
+        #say "$indent                input_country.value        = name;";
+        #say "$indent                var input_postal_country   = document.getElementById(\"postal_country\");";
+        #say "$indent                input_postal_country.value = name;";
         say "$indent                var cr_id_elt              = document.getElementById('country_region_id');";
         say "$indent                var sortable = Object.values(country_regions);";
         say "$indent                sortable.sort(function(a, b) {";
@@ -4456,7 +4572,16 @@ use HTML::Entities;
         #say "$indent                    console.log(\`\${region}: \${distinguishing}\`);";
         say "$indent                    cr_id_elt.appendChild(opt);";
         say "$indent                }";
-        say "$indent            }";
+        say "$indent            } // function country_onchange() //";
+        #my $spec1  = [
+        #    { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+        #    { type => 'normal', id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+        #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+        #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+        #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+        #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+        #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+        #             ];
         say "$indent            function country_region_onchange() {";
         say "$indent                var cc_id_elt              = document.getElementById('country_id');";
         say "$indent                var country_id             = cc_id_elt.value;";
@@ -4465,40 +4590,140 @@ use HTML::Entities;
         say "$indent                console.log(\`\${country_id}: \${cr_id}\`);";
         say "$indent                var country_regions        = countries[country_id]['country_regions'];";
         say "$indent                var region                 = country_regions[cr_id]['region'];";
-        say "$indent                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
-        say "$indent                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
-        say "$indent                var landline_title         = country_regions[cr_id]['landline_title'];";
-        say "$indent                var mobile_title           = country_regions[cr_id]['mobile_title'];";
-        say "$indent                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
-        say "$indent                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
-        say "$indent                console.log(\`\${landline_pattern}: \${mobile_pattern}\`);";
-        say "$indent                var input_mobile           = document.getElementById(\"mobile\");";
-        say "$indent                input_mobile.placeholder   = mobile_placeholder;";
-        #say "$indent                alert(\"mobile_pattern == \" + mobile_pattern);";
-        say "$indent                input_mobile.setAttribute('pattern', mobile_pattern);";
-        say "$indent                input_mobile.title         = mobile_title;";
-        say "$indent                var input_phone            = document.getElementById(\"phone\");";
-        say "$indent                input_phone.placeholder    = landline_placeholder;";
-        say "$indent                input_phone.setAttribute('pattern', landline_pattern);";
-        say "$indent                input_phone.title          = landline_title;";
-        say "$indent                console.log(\`\${landline_title}: \${landline_pattern}\`);";
-        say "$indent                var parts = region.split(/\\s*=>\\s*/);";
-        say "$indent                let city = '';";
-        say "$indent                region = parts[0];";
-        say "$indent                if(parts.length > 1){";
-        say "$indent                    city   = parts[1];";
-        say "$indent                }";
-        say "$indent                var input_region           = document.getElementById(\"region\");";
-        say "$indent                input_region.value         = region;";
-        say "$indent                var input_postal_region           = document.getElementById(\"postal_region\");";
-        say "$indent                input_postal_region.value         = region;";
-        say "$indent                if(city.length > 0){";
-        say "$indent                    var input_city_suburb          = document.getElementById(\"city_suburb\");";
-        say "$indent                    var input_postal_city_suburb   = document.getElementById(\"postal_city_suburb\");";
-        say "$indent                    input_city_suburb.value = city;";
-        say "$indent                    input_postal_city_suburb.value = city;";
-        say "$indent                }";
-        say "$indent            }";
+        for my $row (@$spec1){
+            my $type     = $row->{type};
+            if($type ne 'calculated' && $if_open){
+                say "$indent                }";
+                $if_open = undef;
+            }
+            if($type eq 'normal'){
+                my $id       = $row->{id};
+                my $inputval = $row->{inputval};
+                my $tag      = $row->{tag};
+                my @fields   = @{$row->{fields}};
+                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                if(ref $inputval eq 'ARRAY'){
+                    my @inputvals = @{$inputval};
+                    my $cnt = 0;
+                    for my $val (@inputvals){
+                        last unless $cnt < @fields;
+                        say "$indent                var $val                     = country_regions[cr_id]['$val'];";
+                        my $field  = $fields[$cnt];
+                        say "$indent                ${tag}_$id.$field               = $val;";
+                        $cnt++;
+                    }
+                }elsif(ref $inputval eq ''){
+                    say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                    for my $field (@fields){
+                        say "$indent                ${tag}_$id.$field               = $inputval;";
+                    }
+                }
+            }elsif($type eq 'calulate'){
+                my %cal    = %{$row->{cal}};
+                my $op       = $cal{op}
+                my $inputval  = $row->{inputval};
+                say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                my @outparts = @{$cal{outparts}};
+                if($op eq 'split'){
+                    my $pattern  = $cal{pattern};
+                    say "$indent                var parts = $inputval.split($pattern);";
+                }
+                my $cnt = 0;
+                for my $var (@outparts){
+                    say "$indent                let $var = '';";
+                    if($cnt == 0){
+                        say "$indent                $var = parts[0];";
+                    }else{
+                        say "$indent                if(parts.length > $cnt){";
+                        say "$indent                    $var   = parts[$cnt];";
+                        say "$indent                }";
+                    }
+                    $cnt++;
+                }
+                #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+            }elsif($type eq 'calulated'){
+                my $id       = $row->{id};
+                my $inputval = $row->{inputval};
+                my $tag      = $row->{tag};
+                my @fields   = @{$row->{fields}};
+                my $if       = $row->{if};
+                $if          = '' unless defined $if;
+                if($if_open && $last_if ne $if){
+                    say "$indent                }";
+                    $if_open = undef;
+                }
+                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                for my $field (@fields){
+                    if($if_open){
+                        if($if){
+                            if($last_if ne $if){
+                                say "$indent                }"; # end if #
+                                say "$indent                if($if){"; # start new if #
+                                say "$indent                    ${tag}_$id.$field               = $inputval;";
+                                $if_open = 1;
+                            }else{
+                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
+                            }
+                        }else{
+                            say "$indent                }";
+                            $if_open = undef; # end if #
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                        }
+                    }else{
+                        if($if){
+                            say "$indent                if($if){";
+                            say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
+                            $if_open = 1;
+                        }else{
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                        }
+                    }
+                }
+                #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                $last_if   = $if if $if;
+            }
+            $last_type = $type;
+        } # for my $row (@$spec0) #
+        if($if_open){
+            say "$indent                }";
+        }
+        #say "$indent                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
+        #say "$indent                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
+        #say "$indent                var landline_title         = country_regions[cr_id]['landline_title'];";
+        #say "$indent                var mobile_title           = country_regions[cr_id]['mobile_title'];";
+        #say "$indent                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
+        #say "$indent                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
+        #say "$indent                console.log(\`\${landline_pattern}: \${mobile_pattern}\`);";
+        #say "$indent                var input_mobile           = document.getElementById(\"mobile\");";
+        #say "$indent                input_mobile.placeholder   = mobile_placeholder;";
+        ##say "$indent                alert(\"mobile_pattern == \" + mobile_pattern);";
+        #say "$indent                input_mobile.setAttribute('pattern', mobile_pattern);";
+        #say "$indent                input_mobile.title         = mobile_title;";
+        #say "$indent                var input_phone            = document.getElementById(\"phone\");";
+        #say "$indent                input_phone.placeholder    = landline_placeholder;";
+        #say "$indent                input_phone.setAttribute('pattern', landline_pattern);";
+        #say "$indent                input_phone.title          = landline_title;";
+        #say "$indent                console.log(\`\${landline_title}: \${landline_pattern}\`);";
+        #say "$indent                var parts = region.split(/\\s*=>\\s*/);";
+        #say "$indent                let city = '';";
+        #say "$indent                region = parts[0];";
+        #say "$indent                if(parts.length > 1){";
+        #say "$indent                    city   = parts[1];";
+        #say "$indent                }";
+        #say "$indent                var input_region           = document.getElementById(\"region\");";
+        #say "$indent                input_region.value         = region;";
+        #say "$indent                var input_postal_region           = document.getElementById(\"postal_region\");";
+        #say "$indent                input_postal_region.value         = region;";
+        #say "$indent                if(city.length > 0){";
+        #say "$indent                    var input_city_suburb          = document.getElementById(\"city_suburb\");";
+        #say "$indent                    var input_postal_city_suburb   = document.getElementById(\"postal_city_suburb\");";
+        #say "$indent                    input_city_suburb.value = city;";
+        #say "$indent                    input_postal_city_suburb.value = city;";
+        #say "$indent                }";
+        say "$indent            } // function country_region_onchange() //";
         say "$indent        </script>";
         say "$indent        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
         say "$indent    </td>";
