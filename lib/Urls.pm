@@ -3970,13 +3970,13 @@ use HTML::Entities;
             { id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
             { id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
             { id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
-                     ]
+                     ];
         my $spec1  = [
             { id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
             { id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
             { id => 'region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
             { id => 'postal_region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
-                     ]
+                     ];
         ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $spec0, $spec1);
         # phones 
         $title   = $mobile_title;
