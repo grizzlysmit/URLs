@@ -4562,9 +4562,11 @@ use HTML::Entities;
         say "$indent                    region         = value['region'];";
         say "$indent                    distinguishing = value['distinguishing'];";
         say "$indent                    opt.innerHTML  = region + \" (\" + distinguishing + ')';";
+        say "$indent                    opt.selected   = (cr_id == $cr_id);";
         #say "$indent                    console.log(\`\${region}: \${distinguishing}\`);";
         say "$indent                    cr_id_elt.appendChild(opt);";
         say "$indent                }";
+        say "$indent                country_region_onchange()";
         say "$indent            } // function country_onchange() //";
         #my $spec1  = [
         #    { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
