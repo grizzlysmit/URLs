@@ -4445,9 +4445,6 @@ use HTML::Entities;
             }
             if($type eq 'normal'){
                 say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
-                for my $field (@fields){
-                    say "$indent                ${tag}_$id.$field               = $inputval;";
-                }
                 if(ref $inputval eq 'ARRAY'){
                     my @inputvals = @{$inputval};
                     my $cnt = 0;
@@ -4459,7 +4456,7 @@ use HTML::Entities;
                         $cnt++;
                     }
                 }elsif(ref $inputval eq ''){
-                    say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                    say "$indent                var $inputval                     = countries[country_id]['$inputval'];";
                     for my $field (@fields){
                         say "$indent                ${tag}_$id.$field               = $inputval;";
                     }
