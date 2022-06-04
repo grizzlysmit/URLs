@@ -4466,7 +4466,7 @@ use HTML::Entities;
                 }
             }elsif($type eq 'calulate'){
                 my %cal    = %{$row->{cal}};
-                my $op       = $cal{op}
+                my $op       = $cal{op};
                 say "$indent                var $inputval                     = countries[country_id]['$inputval'];";
                 my @outparts = @{$cal{outparts}};
                 if($op eq 'split'){
@@ -4619,7 +4619,7 @@ use HTML::Entities;
                     }
                 }elsif($type eq 'calulate'){
                     my %cal      = %{$row_->{cal}};
-                    my $op       = $cal{op}
+                    my $op       = $cal{op};
                     my $inputval = $row_->{inputval};
                     say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
                     my @outparts = @{$cal{outparts}};
