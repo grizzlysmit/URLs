@@ -3977,7 +3977,7 @@ use HTML::Entities;
             { id => 'region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
             { id => 'postal_region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
                      ];
-        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $spec0, $spec1);
+        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
         # phones 
         $title   = $mobile_title;
         $pattern = $mobile_pattern;
@@ -4322,8 +4322,9 @@ use HTML::Entities;
 
 
     sub add_country_region_dropdowns {
-        my ($self, $indent, $_countries, $country_id, $cr_id, $spec0, $spec1) = @_;
+        my ($self, $indent, $_countries, $country_id, $cr_id, $cc, $prefix, $_country_, $spec0, $spec1) = @_;
         my %countries = %{$_countries};
+        my @_country  = @{$_country_};
         $indent = 0 if $indent < 0;
         $indent = ' ' x $indent;
         my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder);
