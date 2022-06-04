@@ -4588,98 +4588,100 @@ use HTML::Entities;
         say "$indent                var region                 = country_regions[cr_id]['region'];";
         $last_type = '';
         $last_if   = '';
-        for my $row_ (@$spec1){
-            my $type     = $row_->{type};
-            my $id       = $row_->{id};
-            my $inputval = $row_->{inputval};
-            my $tag      = $row_->{tag};
-            my @fields   = @{$row_->{fields}};
-            if($type ne 'calculated' && $if_open){
-                say "$indent                }";
-                $if_open = undef;
-            }
-            if($type eq 'normal'){
-                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
-                if(ref $inputval eq 'ARRAY'){
-                    my @inputvals = @{$inputval};
-                    my $cnt = 0;
-                    for my $val (@inputvals){
-                        last unless $cnt < @fields;
-                        say "$indent                var $val                     = country_regions[cr_id]['$val'];";
-                        my $field  = $fields[$cnt];
-                        say "$indent                ${tag}_$id.$field               = $val;";
-                        $cnt++;
-                    }
-                }elsif(ref $inputval eq ''){
-                    say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
-                    for my $field (@fields){
-                        say "$indent                ${tag}_$id.$field               = $inputval;";
-                    }
-                }
-            }elsif($type eq 'calulate'){
-                my %cal      = %{$row_->{cal}};
-                my $op       = $cal{op}
+        {
+            for my $row_ (@$spec1){
+                my $type     = $row_->{type};
+                my $id       = $row_->{id};
                 my $inputval = $row_->{inputval};
-                say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
-                my @outparts = @{$cal{outparts}};
-                if($op eq 'split'){
-                    my $pattern  = $cal{pattern};
-                    say "$indent                var parts = $inputval.split($pattern);";
-                }
-                my $cnt = 0;
-                for my $var (@outparts){
-                    say "$indent                let $var = '';";
-                    if($cnt == 0){
-                        say "$indent                $var = parts[0];";
-                    }else{
-                        say "$indent                if(parts.length > $cnt){";
-                        say "$indent                    $var   = parts[$cnt];";
-                        say "$indent                }";
-                    }
-                    $cnt++;
-                }
-            }elsif($type eq 'calulated'){
-                my $if      = $row_->{if};
-                $if          = '' unless defined $if;
-                if($if_open && $last_if ne $if){
+                my $tag      = $row_->{tag};
+                my @fields   = @{$row_->{fields}};
+                if($type ne 'calculated' && $if_open){
                     say "$indent                }";
                     $if_open = undef;
                 }
-                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
-                for my $field (@fields){
-                    if($if_open){
-                        if($if){
-                            if($last_if ne $if){
-                                say "$indent                }"; # end if #
-                                say "$indent                if($if){"; # start new if #
-                                say "$indent                    ${tag}_$id.$field               = $inputval;";
-                                $if_open = 1;
-                            }else{
-                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
-                            }
-                        }else{
-                            say "$indent                }";
-                            $if_open = undef; # end if #
-                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                if($type eq 'normal'){
+                    say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                    if(ref $inputval eq 'ARRAY'){
+                        my @inputvals = @{$inputval};
+                        my $cnt = 0;
+                        for my $val (@inputvals){
+                            last unless $cnt < @fields;
+                            say "$indent                var $val                     = country_regions[cr_id]['$val'];";
+                            my $field  = $fields[$cnt];
+                            say "$indent                ${tag}_$id.$field               = $val;";
+                            $cnt++;
                         }
-                    }else{
-                        if($if){
-                            say "$indent                if($if){";
-                            say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
-                            $if_open = 1;
-                        }else{
-                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                    }elsif(ref $inputval eq ''){
+                        say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                        for my $field (@fields){
+                            say "$indent                ${tag}_$id.$field               = $inputval;";
                         }
                     }
+                }elsif($type eq 'calulate'){
+                    my %cal      = %{$row_->{cal}};
+                    my $op       = $cal{op}
+                    my $inputval = $row_->{inputval};
+                    say "$indent                var $inputval                     = country_regions[cr_id]['$inputval'];";
+                    my @outparts = @{$cal{outparts}};
+                    if($op eq 'split'){
+                        my $pattern  = $cal{pattern};
+                        say "$indent                var parts = $inputval.split($pattern);";
+                    }
+                    my $cnt = 0;
+                    for my $var (@outparts){
+                        say "$indent                let $var = '';";
+                        if($cnt == 0){
+                            say "$indent                $var = parts[0];";
+                        }else{
+                            say "$indent                if(parts.length > $cnt){";
+                            say "$indent                    $var   = parts[$cnt];";
+                            say "$indent                }";
+                        }
+                        $cnt++;
+                    }
+                }elsif($type eq 'calulated'){
+                    my $if      = $row_->{if};
+                    $if          = '' unless defined $if;
+                    if($if_open && $last_if ne $if){
+                        say "$indent                }";
+                        $if_open = undef;
+                    }
+                    say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
+                    for my $field (@fields){
+                        if($if_open){
+                            if($if){
+                                if($last_if ne $if){
+                                    say "$indent                }"; # end if #
+                                    say "$indent                if($if){"; # start new if #
+                                    say "$indent                    ${tag}_$id.$field               = $inputval;";
+                                    $if_open = 1;
+                                }else{
+                                    say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
+                                }
+                            }else{
+                                say "$indent                }";
+                                $if_open = undef; # end if #
+                                say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                            }
+                        }else{
+                            if($if){
+                                say "$indent                if($if){";
+                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
+                                $if_open = 1;
+                            }else{
+                                say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
+                            }
+                        }
+                    }
+                    #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                    #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+                    #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                    #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                    $last_if   = $if if $if;
                 }
-                #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-                $last_if   = $if if $if;
-            }
-            $last_type = $type;
-        } # for my $row_ (@$spec1) #
+                $last_type = $type;
+            } # for my $row_ (@$spec1) #
+        }
         if($if_open){
             say "$indent                }";
         }
