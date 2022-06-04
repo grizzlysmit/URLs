@@ -4639,19 +4639,19 @@ use HTML::Entities;
                     $cnt++;
                 }
             }elsif($type eq 'calulated'){
-                my $_if      = $row_->{if};
-                $_if          = '' unless defined $_if;
-                if($if_open && $last_if ne $_if){
+                my $if      = $row_->{if};
+                $if          = '' unless defined $if;
+                if($if_open && $last_if ne $if){
                     say "$indent                }";
                     $if_open = undef;
                 }
                 say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
                 for my $field (@fields){
                     if($if_open){
-                        if($_if){
-                            if($last_if ne $_if){
+                        if($if){
+                            if($last_if ne $if){
                                 say "$indent                }"; # end if #
-                                say "$indent                if($_if){"; # start new if #
+                                say "$indent                if($if){"; # start new if #
                                 say "$indent                    ${tag}_$id.$field               = $inputval;";
                                 $if_open = 1;
                             }else{
@@ -4663,8 +4663,8 @@ use HTML::Entities;
                             say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
                         }
                     }else{
-                        if($_if){
-                            say "$indent                if($_if){";
+                        if($if){
+                            say "$indent                if($if){";
                             say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
                             $if_open = 1;
                         }else{
@@ -4676,7 +4676,7 @@ use HTML::Entities;
                 #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
                 #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                 #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-                $last_if   = $_if if $_if;
+                $last_if   = $if if $if;
             }
             $last_type = $type;
         } # for my $row_ (@$spec1) #
