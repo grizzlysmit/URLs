@@ -4435,15 +4435,15 @@ use HTML::Entities;
         my $if_open;
         for my $row (@$spec0){
             my $type     = $row->{type};
+            my $id       = $row->{id};
+            my $inputval = $row->{inputval};
+            my $tag      = $row->{tag};
+            my @fields   = @{$row->{fields}};
             if($type ne 'calculated' && $if_open){
                 say "$indent                }";
                 $if_open = undef;
             }
             if($type eq 'normal'){
-                my $id       = $row->{id};
-                my $inputval = $row->{inputval};
-                my $tag      = $row->{tag};
-                my @fields   = @{$row->{fields}};
                 say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
                 for my $field (@fields){
                     say "$indent                ${tag}_$id.$field               = $inputval;";
@@ -4467,7 +4467,6 @@ use HTML::Entities;
             }elsif($type eq 'calulate'){
                 my %cal    = %{$row->{cal}};
                 my $op       = $cal{op}
-                my $inputval  = $row->{inputval};
                 say "$indent                var $inputval                     = countries[country_id]['$inputval'];";
                 my @outparts = @{$cal{outparts}};
                 if($op eq 'split'){
@@ -4488,40 +4487,36 @@ use HTML::Entities;
                 }
                 #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
             }elsif($type eq 'calulated'){
-                my $_id       = $row->{id};
-                my $inputval = $row->{inputval};
-                my $tag      = $row->{tag};
-                my @fields   = @{$row->{fields}};
                 my $if       = $row->{if};
                 $if          = '' unless defined $if;
                 if($if_open && $last_if ne $if){
                     say "$indent                }";
                     $if_open = undef;
                 }
-                say "$indent                var ${tag}_$_id                    = document.getElementById(\"$_id\");";
+                say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
                 for my $field (@fields){
                     if($if_open){
                         if($if){
                             if($last_if ne $if){
                                 say "$indent                }"; # end if #
                                 say "$indent                if($if){"; # start new if #
-                                say "$indent                    ${tag}_$_id.$field               = $inputval;";
+                                say "$indent                    ${tag}_$id.$field               = $inputval;";
                                 $if_open = 1;
                             }else{
-                                say "$indent                    ${tag}_$_id.$field               = $inputval;"; # continue if #
+                                say "$indent                    ${tag}_$id.$field               = $inputval;"; # continue if #
                             }
                         }else{
                             say "$indent                }";
                             $if_open = undef; # end if #
-                            say "$indent                ${tag}_$_id.$field               = $inputval;"; # no if #
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
                         }
                     }else{
                         if($if){
                             say "$indent                if($if){";
-                            say "$indent                    ${tag}_$_id.$field               = $inputval;"; # start if #
+                            say "$indent                    ${tag}_$id.$field               = $inputval;"; # start if #
                             $if_open = 1;
                         }else{
-                            say "$indent                ${tag}_$_id.$field               = $inputval;"; # no if #
+                            say "$indent                ${tag}_$id.$field               = $inputval;"; # no if #
                         }
                     }
                 }
@@ -4535,6 +4530,7 @@ use HTML::Entities;
         } # for my $row (@$spec0) #
         if($if_open){
             say "$indent                }";
+            $if_open = undef;
         }
         #say "$indent                var cc                     = countries[country_id]['cc'];";
         #say "$indent                var prefix                 = countries[country_id]['prefix'];";
@@ -4590,17 +4586,19 @@ use HTML::Entities;
         say "$indent                console.log(\`\${country_id}: \${cr_id}\`);";
         say "$indent                var country_regions        = countries[country_id]['country_regions'];";
         say "$indent                var region                 = country_regions[cr_id]['region'];";
+        $last_type = '';
+        $last_if   = '';
         for my $row (@$spec1){
             my $type     = $row->{type};
+            my $id       = $row->{id};
+            my $inputval = $row->{inputval};
+            my $tag      = $row->{tag};
+            my @fields   = @{$row->{fields}};
             if($type ne 'calculated' && $if_open){
                 say "$indent                }";
                 $if_open = undef;
             }
             if($type eq 'normal'){
-                my $id       = $row->{id};
-                my $inputval = $row->{inputval};
-                my $tag      = $row->{tag};
-                my @fields   = @{$row->{fields}};
                 say "$indent                var ${tag}_$id                    = document.getElementById(\"$id\");";
                 if(ref $inputval eq 'ARRAY'){
                     my @inputvals = @{$inputval};
@@ -4642,10 +4640,6 @@ use HTML::Entities;
                 }
                 #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
             }elsif($type eq 'calulated'){
-                my $id       = $row->{id};
-                my $inputval = $row->{inputval};
-                my $tag      = $row->{tag};
-                my @fields   = @{$row->{fields}};
                 my $if       = $row->{if};
                 $if          = '' unless defined $if;
                 if($if_open && $last_if ne $if){
