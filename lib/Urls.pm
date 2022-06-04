@@ -4594,7 +4594,8 @@ use HTML::Entities;
                 my $id       = $row_->{id};
                 my $inputval = $row_->{inputval};
                 my $tag      = $row_->{tag};
-                my @fields   = @{$row_->{fields}};
+                my $fields   = $row_->{fields};
+                my @fields   = @{$fields} if defined $fields;
                 if($type ne 'calculated' && $if_open){
                     say "$indent                }";
                     $if_open = undef;
