@@ -4642,7 +4642,7 @@ use HTML::Entities;
                 }elsif($type eq 'calulated'){
                     my $if      = $row_->{if};
                     
-                    $if          = '' unless defined $if;
+                    $if          = '' if !defined $if;
                     if($if_open && $last_if ne $if){
                         say "$indent                }";
                         $if_open = undef;
