@@ -3977,7 +3977,7 @@ use HTML::Entities;
             { id => 'region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
             { id => 'postal_region', tag => 'input', inputval => [ 'region', ], fields => [ 'value', ], },
                      ];
-        ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $spec0, $spec1);
+        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $spec0, $spec1);
         # phones 
         $title   = $mobile_title;
         $pattern = $mobile_pattern;
@@ -4326,6 +4326,7 @@ use HTML::Entities;
         my %countries = %{$_countries};
         $indent = 0 if $indent < 0;
         $indent = ' ' x $indent;
+        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder);
         say "$indent<tr>";
         say "$indent    <td>";
         say "$indent        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
@@ -4334,12 +4335,6 @@ use HTML::Entities;
         say "$indent        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
         say "$indent        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
 
-        my $mobile_title;
-        my $mobile_pattern;
-        my $mobile_placeholder;
-        my $landline_title;
-        my $landline_pattern;
-        my $landline_placeholder;
         my $flag;
         say "$indent        <select name=\"country_id\" id=\"country_id\" onchange=\"country_onchange()\" is=\"ms-dropdown\">";
         for my $row (@_country){
@@ -4541,7 +4536,7 @@ use HTML::Entities;
         say "$indent        </select>";
         say "$indent    </td>";
         say "$indent</tr>";
-        return 1;
+        return ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder);
     } ## --- end sub add_country_region_dropdowns
 
 
