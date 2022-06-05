@@ -7962,6 +7962,9 @@ use HTML::Entities;
                 push @msgs, "Error: INSERT INTO country failed: $@";
                 $return  = 0;
             }
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
+                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]));
             if($result && $result != 0){
                 my $r                   = $query->fetchrow_hashref();
                 my $cc_id               = $r->{id};
@@ -8032,7 +8035,7 @@ use HTML::Entities;
         $list                 = '' unless defined $list;
 
         $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
-                [qw(cc country_prefix name flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder cc)]));
+                [qw(cc country_prefix name flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list)]));
 
         untie %session;
         $db->disconnect;
