@@ -7949,8 +7949,8 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             my $line = __LINE__;
-            push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
-                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]);
+            #push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
+            #    [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]);
             $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
                 [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]));
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
@@ -8012,8 +8012,8 @@ use HTML::Entities;
                         my $r                   = $query->fetchrow_hashref();
                         push @msgs, "INSERT INTO country_regions succeeded: $name => $region, $cc, +$country_prefix => $distinguishing";
                         $line = __LINE__;
-                        push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $list, \@prefixes, $cc_id, $distinguishing],
-                            [qw(line cc country_prefix name _escape flag landline_pattern_tmp mobile_pattern_tmp landline_title_tmp mobile_title_tmp landline_placeholder_tmp mobile_placeholder_tmp list @prefixes cc_id distinguishing)]);
+                        #push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $list, \@prefixes, $cc_id, $distinguishing],
+                        #    [qw(line cc country_prefix name _escape flag landline_pattern_tmp mobile_pattern_tmp landline_title_tmp mobile_title_tmp landline_placeholder_tmp mobile_placeholder_tmp list @prefixes cc_id distinguishing)]);
                         $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $list, \@prefixes, $cc_id, $distinguishing],
                             [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title_tmp mobile_title_tmp landline_placeholder_tmp mobile_placeholder_tmp list @prefixes cc_id distinguishing)]));
                     }else{
