@@ -5793,31 +5793,57 @@ use HTML::Entities;
 
         my @msgs;
         my $return = 1;
-        my @countries;
+
+        my %countries;
+        my @_country;
 
         $sql  = "SELECT\n";
-        $sql .= "    c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.cr_id, distinguishing, c.landline_pattern,\n";
-        $sql .= "    c.mobile_pattern, c.landline_title, c.mobile_title, c.landline_placeholder, c.mobile_placeholder\n";
-        $sql .= "FROM countries c\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
+        $sql .= "FROM country c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
         eval {
             $result = $query->execute();
         };
         if($@){
-            push @msgs, "SELECT FROM countries failed: $@", "\$sql == $sql";
+            push @msgs, "SELECT FROM country failed: $@", "\$sql == $sql";
             $return = 0;
         }
         unless($result){
-            push @msgs, "SELECT FROM countries failed: \$sql == $sql";
+            push @msgs, "SELECT FROM country failed: \$sql == $sql";
             return $return;
         }
         $r      = $query->fetchrow_hashref();
         while($r){
-            push @countries, $r;
+            push @_country, $r;
+            my $cc_id = $r->{id};
+            $r->{country_regions} = [];
+            $countries{$cc_id} = $r;
             $r      = $query->fetchrow_hashref();
         }
         $query->finish();
+        $sql  = "SELECT\n";
+        $sql .= "    cr.id cr_id, cr.region, cr.distinguishing, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql .= "    cr.landline_title, cr.mobile_title, cr.landline_placeholder, cr.mobile_placeholder\n";
+        $sql .= "FROM country_regions cr\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM country_regions failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM country_regions failed: \$sql == $sql";
+            return $return;
+        }
+        $r      = $query->fetchrow_hashref();
+        while($r){
+            my $country_id = $r->{country_id};
+            push @{$countries{$country_id}->{country_regions}}, $r;
+            $r      = $query->fetchrow_hashref();
+        }
         unless($return){
             $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
         }
