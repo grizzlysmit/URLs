@@ -7954,8 +7954,8 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
                 [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]));
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
-            $self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
-            return $return;
+            #$self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
+            #return $return;
             my $sql               = "INSERT INTO country(cc, prefix, _name, _escape, _flag)\n";
             $sql                 .= "VALUES(?, ?, ?, ?, ?)\n"; 
             $sql                 .= "ON CONFLICT (cc) DO UPDATE SET _flag = EXCLUDED._flag\n";
