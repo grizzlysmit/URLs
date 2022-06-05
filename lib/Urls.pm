@@ -5416,7 +5416,7 @@ use HTML::Entities;
         my $cc                 = $req->param('cc');
         my $prefix             = $req->param('prefix');
         my $cr_id              = $req->param('cr_id');
-        my $countries_id       = $req->param('countries_id');
+        my $country_id       = $req->param('country_id');
         my $postal_same        = $req->param('postal_same');
         my $postal_unit        = $req->param('postal_unit');
         my $postal_street      = $req->param('postal_street');
@@ -5503,7 +5503,7 @@ use HTML::Entities;
         $postal_country      = encode_entities($postal_country)     if defined $postal_country;
         my $_mobile_pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
         my $_landline_pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
-        if(defined $countries_id){
+        if(defined $country_id){
             my @msgs;
             my $return = 1;
             my $_sql  = "SELECT landline_pattern, mobile_pattern FROM countries c\n";
@@ -5511,7 +5511,7 @@ use HTML::Entities;
             my $_query  = $db->prepare($_sql);
             my $_result;
             eval {
-                $_result = $_query->execute($countries_id);
+                $_result = $_query->execute($country_id);
             };
             if($@){
                 push @msgs, "SELECT FROM countries failed: $@";
@@ -5659,9 +5659,9 @@ use HTML::Entities;
                             ($primary_email_id, $return_email, @msgs_email) = $self->create_email($email, $db);
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
-                            $countries_id = 2 unless defined $countries_id;
+                            $country_id = 2 unless defined $country_id;
                             if($return){
-                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $db);
+                                my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $db);
                                 $return = $return_details unless $return_details;
                                 push @msgs, @_msgs;
                                 if($return){
@@ -5758,12 +5758,12 @@ use HTML::Entities;
         $family             = '' unless defined $family;
         $display_name       = '' unless defined $display_name;
         $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $countries_id], [qw(line cc prefix countries_id)]));
+        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $country_id], [qw(line cc prefix country_id)]));
         $cc                 = 'AU' unless defined $cc;
         $prefix             = '+61' unless defined $prefix;
-        $countries_id       = '2' unless defined $countries_id;
+        $country_id       = '2' unless defined $country_id;
         $line = __LINE__;
-        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $countries_id], [qw(line cc prefix countries_id)]));
+        $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $country_id], [qw(line cc prefix country_id)]));
 
         my $sql  = "SELECT g.id, g._name FROM _group g;\n";
         my $query       = $db->prepare($sql);
@@ -6611,17 +6611,17 @@ use HTML::Entities;
 
 
     sub create_passwd_details {
-        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id, $db) = @_;
+        my ($self, $display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $db) = @_;
         my $line = __LINE__;
         $self->log(Data::Dumper->Dump([$display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $line],
                 [qw(display_name given family residential_address_id postal_address_id primary_phone_id secondary_phone_id primary_email_id line)]));
         my ($passwd_details_id, $return, @msgs);
         $return = 1;
-        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id, countries_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
+        my $sql    = "INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id, country_id)VALUES(?, ?, ?, ?, ?, ?, ?, ?)  RETURNING id;\n";
         my $query  = $db->prepare($sql);
         my $result;
         eval {
-            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $countries_id);
+            $result = $query->execute($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id);
         };
         if($@){
             push @msgs, "Insert into passwd_details failed: $@";
@@ -8806,7 +8806,7 @@ use HTML::Entities;
         say "                                                }";
         say "                                var cc_id_elt = document.getElementById('cc');";
         say "                                var cc = cc_id_elt.value;";
-        #say "                                alert(\"countries_id == \" + countries_id);";
+        #say "                                alert(\"country_id == \" + country_id);";
         say "                                var flag = country[cc]['_flag'];";
         say "                                var name = country[cc]['c_name'];";
         say "                                var flag_elt = document.getElementById('_flag');";
