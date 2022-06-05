@@ -8011,6 +8011,11 @@ use HTML::Entities;
                     if($result && $result != 0){
                         my $r                   = $query->fetchrow_hashref();
                         push @msgs, "INSERT INTO country_regions succeeded: $name => $region, $cc, +$country_prefix => $distinguishing";
+                        $line = __LINE__;
+                        push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $list, \@prefixes, $cc_id, $distinguishing],
+                            [qw(line cc country_prefix name _escape flag landline_pattern_tmp mobile_pattern_tmp landline_title_tmp mobile_title_tmp landline_placeholder_tmp mobile_placeholder_tmp list @prefixes cc_id distinguishing)]);
+                        $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern_tmp, $mobile_pattern_tmp, $landline_title_tmp, $mobile_title_tmp, $landline_placeholder_tmp, $mobile_placeholder_tmp, $list, \@prefixes, $cc_id, $distinguishing],
+                            [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title_tmp mobile_title_tmp landline_placeholder_tmp mobile_placeholder_tmp list @prefixes cc_id distinguishing)]));
                     }else{
                         push @msgs, "Error: INSERT INTO country_regions failed: $sql";
                         $return  = 0;
