@@ -4416,12 +4416,6 @@ use HTML::Entities;
             say "$indent                                },";
         }
         say "$indent                };";
-        #my $spec0  = [
-        #    { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
-        #    { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
-        #    { type => 'normal', id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
-        #    { type => 'normal', id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
-        #             ];
         say "$indent            function country_onchange() {";
         say "$indent                var cc_id_elt              = document.getElementById('country_id');";
         say "$indent                var country_id             = cc_id_elt.value;";
