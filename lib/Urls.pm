@@ -5947,6 +5947,8 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
 
+        my $country_id;
+
         my $spec0  = [
             { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
             { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
