@@ -5659,7 +5659,7 @@ use HTML::Entities;
                             ($primary_email_id, $return_email, @msgs_email) = $self->create_email($email, $db);
                             $return = $return_email unless $return_email;
                             push @msgs, @msgs_email;
-                            $country_id = 2 unless defined $country_id;
+                            $country_id = 27 unless defined $country_id;
                             if($return){
                                 my ($passwd_details_id, $return_details, @_msgs) = $self->create_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $db);
                                 $return = $return_details unless $return_details;
@@ -5761,7 +5761,7 @@ use HTML::Entities;
         $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $country_id], [qw(line cc prefix country_id)]));
         $cc                 = 'AU' unless defined $cc;
         $prefix             = '+61' unless defined $prefix;
-        $country_id       = '2' unless defined $country_id;
+        $country_id       = 27 unless defined $country_id;
         $line = __LINE__;
         $self->log(Data::Dumper->Dump([$line, $cc, $prefix, $country_id], [qw(line cc prefix country_id)]));
 
@@ -5941,7 +5941,7 @@ use HTML::Entities;
         say "                    </td>";
         say "                </tr>";
 
-        my $country_id;
+        #my $country_id;
 
         my $spec0  = [
             { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
