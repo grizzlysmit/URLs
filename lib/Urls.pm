@@ -7949,10 +7949,10 @@ use HTML::Entities;
             my @msgs;
             my $return = 1;
             my $line = __LINE__;
-            push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
-                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]);
-            $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
-                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]));
+            push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
+                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]);
+            $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes],
+                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes)]));
             #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
             $self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
             return $return;
