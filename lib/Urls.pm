@@ -4429,7 +4429,6 @@ use HTML::Entities;
         say "$indent                ";
         say "$indent                if(country_id == 0) return; // should never happen //"; 
         say "$indent                // values to match country_id //";
-        my %vartable  = ();
         my $last_type = '';
         my $last_if   = '';
         my $if_open;
@@ -4517,10 +4516,6 @@ use HTML::Entities;
                         }
                     }
                 }
-                #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-                #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                 $last_if   = $_if if $_if;
             }
             $last_type = $type;
@@ -4529,20 +4524,6 @@ use HTML::Entities;
             say "$indent                }";
             $if_open = undef;
         }
-        #say "$indent                var cc                     = countries[country_id]['cc'];";
-        #say "$indent                var prefix                 = countries[country_id]['prefix'];";
-        #say "$indent                var name                   = countries[country_id]['_name'];";
-        #say "$indent                var _escape                = countries[country_id]['_escape'];";
-        #say "$indent                var _flag                  = countries[country_id]['_flag'];";
-        #say "$indent                // The objects to change //";
-        #say "$indent                var hdn_cc                 = document.getElementById(\"cc\");";
-        #say "$indent                hdn_cc.value               = cc;";
-        #say "$indent                var hdn_prefix             = document.getElementById(\"prefix\");";
-        #say "$indent                hdn_prefix.value           = prefix;";
-        #say "$indent                var input_country          = document.getElementById(\"country\");";
-        #say "$indent                input_country.value        = name;";
-        #say "$indent                var input_postal_country   = document.getElementById(\"postal_country\");";
-        #say "$indent                input_postal_country.value = name;";
         say "$indent                var country_regions        = countries[country_id]['country_regions'];";
         say "$indent                var cr_id_elt              = document.getElementById('country_region_id');";
         say "$indent                var sortable = Object.values(country_regions);";
@@ -4570,15 +4551,6 @@ use HTML::Entities;
         say "$indent                }";
         say "$indent                country_region_onchange()";
         say "$indent            } // function country_onchange() //";
-        #my $spec1  = [
-        #    { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
-        #    { type => 'normal', id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
-        #    { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
-        #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-        #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-        #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-        #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-        #             ];
         say "$indent            function country_region_onchange() {";
         say "$indent                var cc_id_elt              = document.getElementById('country_id');";
         say "$indent                var country_id             = cc_id_elt.value;";
@@ -4676,10 +4648,6 @@ use HTML::Entities;
                             }
                         }
                     }
-                    #    { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                    #    { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
-                    #    { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
-                    #    { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                     $last_if   = $if if $if;
                 }
                 $last_type = $type;
@@ -4688,39 +4656,6 @@ use HTML::Entities;
         if($if_open){
             say "$indent                }";
         }
-        #say "$indent                var landline_pattern       = country_regions[cr_id]['landline_pattern'];";
-        #say "$indent                var mobile_pattern         = country_regions[cr_id]['mobile_pattern'];";
-        #say "$indent                var landline_title         = country_regions[cr_id]['landline_title'];";
-        #say "$indent                var mobile_title           = country_regions[cr_id]['mobile_title'];";
-        #say "$indent                var landline_placeholder   = country_regions[cr_id]['landline_placeholder'];";
-        #say "$indent                var mobile_placeholder     = country_regions[cr_id]['mobile_placeholder'];";
-        #say "$indent                console.log(\`\${landline_pattern}: \${mobile_pattern}\`);";
-        #say "$indent                var input_mobile           = document.getElementById(\"mobile\");";
-        #say "$indent                input_mobile.placeholder   = mobile_placeholder;";
-        ##say "$indent                alert(\"mobile_pattern == \" + mobile_pattern);";
-        #say "$indent                input_mobile.setAttribute('pattern', mobile_pattern);";
-        #say "$indent                input_mobile.title         = mobile_title;";
-        #say "$indent                var input_phone            = document.getElementById(\"phone\");";
-        #say "$indent                input_phone.placeholder    = landline_placeholder;";
-        #say "$indent                input_phone.setAttribute('pattern', landline_pattern);";
-        #say "$indent                input_phone.title          = landline_title;";
-        #say "$indent                console.log(\`\${landline_title}: \${landline_pattern}\`);";
-        #say "$indent                var parts = region.split(/\\s*=>\\s*/);";
-        #say "$indent                let city = '';";
-        #say "$indent                region = parts[0];";
-        #say "$indent                if(parts.length > 1){";
-        #say "$indent                    city   = parts[1];";
-        #say "$indent                }";
-        #say "$indent                var input_region           = document.getElementById(\"region\");";
-        #say "$indent                input_region.value         = region;";
-        #say "$indent                var input_postal_region           = document.getElementById(\"postal_region\");";
-        #say "$indent                input_postal_region.value         = region;";
-        #say "$indent                if(city.length > 0){";
-        #say "$indent                    var input_city_suburb          = document.getElementById(\"city_suburb\");";
-        #say "$indent                    var input_postal_city_suburb   = document.getElementById(\"postal_city_suburb\");";
-        #say "$indent                    input_city_suburb.value = city;";
-        #say "$indent                    input_postal_city_suburb.value = city;";
-        #say "$indent                }";
         say "$indent            } // function country_region_onchange() //";
         say "$indent        </script>";
         say "$indent        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
@@ -5985,126 +5920,28 @@ use HTML::Entities;
         say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
         say "                    </td>";
         say "                </tr>";
+
+        my $spec0  = [
+            { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
+            { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
+            { type => 'normal', id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+            { type => 'normal', id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+                     ];
+        my $spec1  = [
+            { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'normal', id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+            { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                     ];
+        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
+
         # phones 
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"cc_and_prefix\">CC and Prefix:</label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        <input type=\"hidden\" name=\"cc\" id=\"cc\" value=\"$cc\"/>";
-        say "                        <input type=\"hidden\" name=\"prefix\" id=\"prefix\" value=\"$prefix\"/>";
-
-        my $mobile_title;
-        my $mobile_pattern;
-        my $mobile_placeholder;
-        my $landline_title;
-        my $landline_pattern;
-        my $landline_placeholder;
-        my $flag;
-        say "                        <select name=\"countries_id\" id=\"countries_id\" onchange=\"countries_onchange()\" is=\"ms-dropdown\">";
-        #say "                            <select name=\"countries_id\" is=\"ms-dropdown\">";
-        for my $row (@countries){
-            my $cc_id   = $row->{id};
-            my $name    = $row->{_name};
-            my $_cc     = $row->{cc};
-            my $_flag   = $row->{_flag};
-            my $_prefix = $row->{prefix};
-            if($cc_id == $countries_id){
-                $flag   = $_flag;
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\" selected=\"selected\">$name: $_cc ($_prefix)</option>";
-            }else{
-                say "                                <option value=\"$cc_id\" data-image=\"$_flag\">$name: $_cc ($_prefix)</option>";
-            }
-        }
-        say "                        </select>";
-
-        say "                        <script>";
-        say "                            function countries_onchange() {";
-        say "                                var countries = {";
-        for my $row (@countries){
-            my $cc_id            = $row->{id};
-            my $_cc              = $row->{cc};
-            my $name             = $row->{_name};
-            my $_flag            = $row->{_flag};
-            my $_prefix          = $row->{prefix};
-            my $_escape          = $row->{_escape};
-            my $lndl_pattern     = $row->{landline_pattern};
-            my $mob_pattern      = $row->{mobile_pattern};
-            my $lndl_title       = $row->{landline_title};
-            my $mob_title        = $row->{mobile_title};
-            my $lndl_placeholder = $row->{landline_placeholder};
-            my $mob_placeholder  = $row->{mobile_placeholder};
-            $_escape = '' unless defined $_escape;
-            if($countries_id == $cc_id){
-                $mobile_title       = $mob_title;
-                $mobile_pattern     = $mob_pattern;
-                $mobile_placeholder = $mob_placeholder;
-                $landline_title     = $lndl_title;
-                $landline_pattern   = $lndl_pattern;
-                $landline_placeholder = $lndl_placeholder;
-            }
-            $lndl_pattern        =~ s/\\/\\\\/g;
-            $mob_pattern         =~ s/\\/\\\\/g;
-            say "                                            \"$cc_id\": { \"_name\": \"$name\",";
-            say "                                                          \"cc\": \"$_cc\",";
-            say "                                                          \"prefix\": \"$_prefix\",";
-            say "                                                          \"_flag\": \"$_flag\",";
-            say "                                                          \"_escape\": \"$_escape\",";
-            say "                                                          \"landline_pattern\": \"$lndl_pattern\",";
-            say "                                                          \"mobile_pattern\": \"$mob_pattern\",";
-            say "                                                          \"landline_title\": \"$lndl_title\",";
-            say "                                                          \"mobile_title\": \"$mob_title\",";
-            say "                                                          \"landline_placeholder\": \"$lndl_placeholder\",";
-            say "                                                          \"mobile_placeholder\": \"$mob_placeholder\" },";
-        }
-        say "                                    };";
-        say "                                var cc_id_elt = document.getElementById('countries_id');";
-        say "                                var countries_id = cc_id_elt.value;";
-        #say "                                alert(\"countries_id == \" + countries_id);";
-        say "                                ";
-        say "                                if(countries_id == 0) return; // should never happen //"; 
-        say "                                // values to match countries_id //";
-        say "                                var cc                     = countries[countries_id]['cc'];";
-        say "                                var prefix                 = countries[countries_id]['prefix'];";
-        say "                                var name                   = countries[countries_id]['_name'];";
-        say "                                var _escape                = countries[countries_id]['_escape'];";
-        say "                                var _flag                  = countries[countries_id]['_flag'];";
-        say "                                var landline_pattern       = countries[countries_id]['landline_pattern'];";
-        say "                                var mobile_pattern         = countries[countries_id]['mobile_pattern'];";
-        say "                                var landline_title         = countries[countries_id]['landline_title'];";
-        say "                                var mobile_title           = countries[countries_id]['mobile_title'];";
-        say "                                var landline_placeholder   = countries[countries_id]['landline_placeholder'];";
-        say "                                var mobile_placeholder     = countries[countries_id]['mobile_placeholder'];";
-        say "                                // The objects to change //";
-        say "                                var hdn_cc                 = document.getElementById(\"cc\");";
-        say "                                hdn_cc.value               = cc;";
-        say "                                var hdn_prefix             = document.getElementById(\"prefix\");";
-        say "                                hdn_prefix.value           = prefix;";
-        say "                                var input_mobile           = document.getElementById(\"mobile\");";
-        say "                                input_mobile.placeholder   = mobile_placeholder;";
-        #say "                                alert(\"mobile_pattern == \" + mobile_pattern);";
-        say "                                input_mobile.setAttribute('pattern', mobile_pattern);";
-        say "                                input_mobile.title         = mobile_title;";
-        say "                                var input_phone            = document.getElementById(\"phone\");";
-        say "                                input_phone.placeholder    = landline_placeholder;";
-        #say "                                input_phone.pattern        = landline_pattern;";
-        #say "                                alert(\"landline_pattern == \" + landline_pattern);";
-        say "                                input_phone.setAttribute('pattern', landline_pattern);";
-        say "                                input_phone.title          = landline_title;";
-        say "                                var input_country          = document.getElementById(\"country\");";
-        say "                                input_country.value        = name;";
-        say "                                var input_postal_country   = document.getElementById(\"postal_country\");";
-        say "                                input_postal_country.value = name;";
-        say "                            }";
-        say "                            ";
-        say "                            ";
-        say "                        </script>";
-        say "                        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
-        say "                    </td>";
-        say "                </tr>";
-        $title   = 'Only +digits or local formats allowed. i.e. +61438-567-876 or 0438 567 876 or 0438567876';
-        $pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
-        my $placeholder = '+61438-567-876|0438 567 876|0438567876';
+        $title          = $mobile_title;
+        $pattern        = $mobile_pattern;
+        my $placeholder = $mobile_placeholder;
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"mobile\">mobile</label>";
@@ -6113,9 +5950,9 @@ use HTML::Entities;
         say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
         say "                    </td>";
         say "                </tr>";
-        $title   = 'Only +digits or local formats allowed i.e. +612-9567-2876 or (02) 9567 2876 or 0295672876.';
-        $pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
-        $placeholder = '+612-9567-2876|(02) 9567 2876|0295672876';
+        $title       = $landline_title;
+        $pattern     = $landline_pattern;
+        $placeholder = $landline_placeholder;
         say "                <tr>";
         say "                    <td>";
         say "                        <label for=\"phone\">land line</label>";
