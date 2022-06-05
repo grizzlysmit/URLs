@@ -7948,6 +7948,14 @@ use HTML::Entities;
         if($submit && $submit eq 'Insert'){
             my @msgs;
             my $return = 1;
+            my $line = __LINE__;
+            push @msgs, Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
+                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]);
+            $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
+                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]));
+            #my ($self,    $cfg, $debug, $_session, $db, $fun,               $button_msg,                 $dont_do_form, @msgs) = @_;
+            $self->message($cfg, $debug, \%session, $db, 'insert_countries', 'Insert some more countries', undef,        @msgs) if @msgs;
+            return $return;
             my $sql               = "INSERT INTO country(cc, prefix, _name, _escape, _flag)\n";
             $sql                 .= "VALUES(?, ?, ?, ?, ?)\n"; 
             $sql                 .= "ON CONFLICT (cc) DO UPDATE SET _flag = EXCLUDED._flag\n";
@@ -7962,9 +7970,6 @@ use HTML::Entities;
                 push @msgs, "Error: INSERT INTO country failed: $@";
                 $return  = 0;
             }
-            my $line = __LINE__;
-            $self->log(Data::Dumper->Dump([$line, $cc, $country_prefix, $name, $_escape, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list, \@prefixes, $sql, $query, $result],
-                [qw(line cc country_prefix name _escape flag landline_pattern mobile_pattern landline_title mobile_title landline_placeholder mobile_placeholder list @prefixes sql query result)]));
             if($result && $result != 0){
                 my $r                   = $query->fetchrow_hashref();
                 my $cc_id               = $r->{id};
