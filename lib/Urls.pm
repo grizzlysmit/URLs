@@ -3735,6 +3735,8 @@ use HTML::Entities;
             }
         }
 
+        $country_id         = 27 unless defined $country_id;
+        $cr_id              = 492 unless defined $cr_id;
         $username           = '' unless defined $username;
         $email              = '' unless defined $email;
         $password           = '' unless defined $password;
