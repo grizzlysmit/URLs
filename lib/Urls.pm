@@ -4552,9 +4552,9 @@ use HTML::Entities;
         #        $last_type = $type;
         #    } # for my $row_ (@$spec1) #
         #}
-        if($if_open){
-            say "$indent_str                }";
-        }
+        #if($if_open){
+        #    say "$indent_str                }";
+        #}
         say "$indent_str            } // function country_region_onchange() //";
         say "$indent_str        </script>";
         say "$indent_str        <script src=\"https://cdn.jsdelivr.net/npm/ms-dropdown\@4.0.3/dist/js/dd.min.js\"></script>";
