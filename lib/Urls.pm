@@ -3735,8 +3735,6 @@ use HTML::Entities;
             }
         }
 
-        $country_id         = 27 unless defined $country_id;
-        $cr_id              = 492 unless defined $cr_id;
         $username           = '' unless defined $username;
         $email              = '' unless defined $email;
         $password           = '' unless defined $password;
@@ -5654,6 +5652,8 @@ use HTML::Entities;
             $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
         }
 
+        $country_id         = 27 unless defined $country_id;
+        $cr_id              = 492 unless defined $cr_id;
         $username           = '' unless defined $username;
         $email              = '' unless defined $email;
         $password           = '' unless defined $password;
@@ -5879,6 +5879,9 @@ use HTML::Entities;
             { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                      ];
         my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$line, $country_id, $cr_id, $mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder],
+                [qw(line country_id cr_id mobile_title mobile_pattern mobile_placeholder landline_title landline_pattern landline_placeholder)]));
 
         # phones 
         $title          = $mobile_title;
