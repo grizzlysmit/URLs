@@ -4452,13 +4452,13 @@ use HTML::Entities;
         say "$indent_str                country_region_onchange()";
         say "$indent_str            } // function country_onchange() //";
         say "$indent_str            function country_region_onchange() {";
-        say "$indent_str                var cc_id_elt                         = document.getElementById('country_id');";
-        say "$indent_str                var country_id                        = cc_id_elt.value;";
-        say "$indent_str                var cr_id_elt                         = document.getElementById('country_region_id');";
-        say "$indent_str                var cr_id                             = cr_id_elt.value;";
+        say "$indent_str                var cc_id_elt             = document.getElementById('country_id');";
+        say "$indent_str                var country_id            = cc_id_elt.value;";
+        say "$indent_str                var cr_id_elt             = document.getElementById('country_region_id');";
+        say "$indent_str                var cr_id                 = cr_id_elt.value;";
         say "$indent_str                console.log(\`\${country_id}: \${cr_id}\`);";
-        say "$indent_str                var country_regions                   = countries[country_id]['country_regions'];";
-        say "$indent_str                var region                            = country_regions[cr_id]['region'];";
+        say "$indent_str                var country_regions       = countries[country_id]['country_regions'];";
+        say "$indent_str                var region                = country_regions[cr_id]['region'];";
         $self->insert_spec_js($indent + 16, 'country_regions', 'cr_id', @$spec1);
         say "$indent_str            } // function country_region_onchange() //";
         say "$indent_str        </script>";
@@ -4546,11 +4546,11 @@ use HTML::Entities;
                 my @outparts = @{$cal{outparts}};
                 if($op eq 'split'){
                     my $pattern  = $cal{pattern};
-                    printf "%*svar %-23s = %s.split(%s);\n", $indent, $indent_str, 'parts', $inputval, $pattern;
+                    printf "%*svar %-27s = %s.split(%s);\n", $indent, $indent_str, 'parts', $inputval, $pattern;
                 }
                 my $cnt = 0;
                 for my $var (@outparts){
-                    printf "%*slet %-23s = '';\n", $indent, $indent_str, $var;
+                    printf "%*slet %-27s = '';\n", $indent, $indent_str, $var;
                     if($cnt == 0){
                         printf "%*s%-27s = parts[0];\n", $indent, $indent_str, $var;
                         say "$indent_str                $var = parts[0];";
