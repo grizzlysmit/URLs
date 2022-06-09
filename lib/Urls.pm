@@ -3819,9 +3819,9 @@ use HTML::Entities;
         $r      = $query->fetchrow_hashref();
         while($r){
             push @_country, $r;
-            my $cc_id = $r->{id};
+            my $_cc_id = $r->{id};
             $r->{country_regions} = [];
-            $countries{$cc_id} = $r;
+            $countries{$_cc_id} = $r;
             $r      = $query->fetchrow_hashref();
         }
         $query->finish();
@@ -3843,8 +3843,8 @@ use HTML::Entities;
         }
         $r      = $query->fetchrow_hashref();
         while($r){
-            my $country_id = $r->{country_id};
-            push @{$countries{$country_id}->{country_regions}}, $r;
+            my $_country_id = $r->{country_id};
+            push @{$countries{$_country_id}->{country_regions}}, $r;
             $r      = $query->fetchrow_hashref();
         }
         unless($return){
