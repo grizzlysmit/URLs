@@ -4610,7 +4610,7 @@ use HTML::Entities;
             my $id       = $row->{id};
             my $inputval = $row->{inputval};
             my $tag      = $row->{tag};
-            my $fields   = $row_->{fields};
+            my $fields   = $row->{fields};
             my @fields   = @{$fields} if defined $fields;
             #my @fields   = @{$row->{fields}};
             if($type ne 'calculated' && $if_open){
