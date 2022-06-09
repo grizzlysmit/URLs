@@ -4493,7 +4493,7 @@ use HTML::Entities;
                 if($_cr_id == $cr_id){
                     say "$indent_str            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
                 }else{
-                    say "$indent_str            <option class=\"country_regions_opts\" value=\"$_cr_id\" selected=\"selected\">$_region ($distinguishing)</option>";
+                    say "$indent_str            <option class=\"country_regions_opts\" value=\"$_cr_id\">$_region ($distinguishing)</option>";
                 }
             }
         }else{
