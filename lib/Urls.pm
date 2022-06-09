@@ -4423,9 +4423,6 @@ use HTML::Entities;
         say "$indent_str                ";
         say "$indent_str                if(country_id == 0) return; // should never happen //"; 
         say "$indent_str                // values to match country_id //";
-        my $last_type = '';
-        my $last_if   = '';
-        my $if_open;
         $self->insert_spec_js($indent + 16, 'countries', 'country_id', @$spec0);
         say "$indent_str                var country_regions        = countries[country_id]['country_regions'];";
         say "$indent_str                var cr_id_elt              = document.getElementById('country_region_id');";
@@ -4462,8 +4459,6 @@ use HTML::Entities;
         say "$indent_str                console.log(\`\${country_id}: \${cr_id}\`);";
         say "$indent_str                var country_regions        = countries[country_id]['country_regions'];";
         say "$indent_str                var region                 = country_regions[cr_id]['region'];";
-        $last_type = '';
-        $last_if   = '';
         $self->insert_spec_js($indent + 16, 'country_regions', 'cr_id', @$spec1);
         #{
         #    for my $row_ (@$spec1){
@@ -4607,6 +4602,9 @@ use HTML::Entities;
         my ($self, $indent, $colection, $ind, @spec) = @_;
         $indent = 0 if $indent < 0;
         my $indent_str = ' ' x $indent;
+        my $last_type = '';
+        my $last_if   = '';
+        my $if_open;
         for my $row (@spec){
             my $type     = $row->{type};
             my $id       = $row->{id};
