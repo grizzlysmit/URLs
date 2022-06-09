@@ -4618,50 +4618,50 @@ use HTML::Entities;
                 $if_open = undef;
             }
             if($type eq 'normal'){
-                printf "%*svar %-19s = document.getElementById(\"%s\");\n", $indent, $indent_str, "${tag}_$id", $id;
+                printf "%*svar %-23s = document.getElementById(\"%s\");\n", $indent, $indent_str, "${tag}_$id", $id;
                 #say "$indent_str                var ${tag}_$id                    = document.getElementById(\"$id\");";
                 if(ref $inputval eq 'ARRAY'){
                     my @inputvals = @{$inputval};
                     my $cnt = 0;
                     for my $val (@inputvals){
                         last unless $cnt < @fields;
-                        printf "%*svar %-19s = %s[%s]['%s'];\n", $indent, $indent_str, $val, $colection, $ind, $val;
+                        printf "%*svar %-23s = %s[%s]['%s'];\n", $indent, $indent_str, $val, $colection, $ind, $val;
                         #say "$indent_str                var $val                     = $colection[country_id]['$val'];";
                         my $field  = $fields[$cnt];
-                        printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $val;
+                        printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $val;
                         #say "$indent_str                ${tag}_$id.$field               = $val;";
                         $cnt++;
                     }
                 }elsif(ref $inputval eq ''){
-                    printf "%*svar %-19s = %s[%s]['%s'];\n", $indent, $indent_str, $inputval, $colection, $ind, $inputval;
+                    printf "%*svar %-23s = %s[%s]['%s'];\n", $indent, $indent_str, $inputval, $colection, $ind, $inputval;
                     #say "$indent_str                var $inputval                     = $colection[country_id]['$inputval'];";
                     for my $field (@fields){
-                        printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval;
+                        printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval;
                         #say "$indent_str                ${tag}_$id.$field               = $inputval;";
                     }
                 }
             }elsif($type eq 'calulate'){
                 my %cal    = %{$row->{cal}};
                 my $op       = $cal{op};
-                printf "%*svar %-19s = %s[%s]['%s'];\n", $indent, $indent_str, $inputval, $colection, $ind, $inputval;
+                printf "%*svar %-23s = %s[%s]['%s'];\n", $indent, $indent_str, $inputval, $colection, $ind, $inputval;
                 #say "$indent_str                var $inputval                     = $colection[country_id]['$inputval'];";
                 my @outparts = @{$cal{outparts}};
                 if($op eq 'split'){
                     my $pattern  = $cal{pattern};
-                    printf "%*svar %-19s = %s.split(%s);\n", $indent, $indent_str, 'parts', $inputval, $pattern;
+                    printf "%*svar %-23s = %s.split(%s);\n", $indent, $indent_str, 'parts', $inputval, $pattern;
                     #say "$indent_str                var parts = $inputval.split($pattern);";
                 }
                 my $cnt = 0;
                 for my $var (@outparts){
-                    printf "%*slet %-19s = '';\n", $indent, $indent_str, $var;
+                    printf "%*slet %-23s = '';\n", $indent, $indent_str, $var;
                     #say "$indent_str                let $var = '';";
                     if($cnt == 0){
-                        printf "%*s%-23s = parts[0];\n", $indent, $indent_str, $var;
+                        printf "%*s%-27s = parts[0];\n", $indent, $indent_str, $var;
                         say "$indent_str                $var = parts[0];";
                     }else{
                         printf "%*sif(parts.length > %d){\n", $indent, $indent_str, $cnt;
                         #say "$indent_str                if(parts.length > $cnt){";
-                        printf "%*s%-27s = parts[%s];\n", $indent, $indent_str, $var, $cnt;
+                        printf "%*s%-31s = parts[%s];\n", $indent, $indent_str, $var, $cnt;
                         #say "$indent_str                    $var   = parts[$cnt];";
                         printf "%*s}\n", $indent, $indent_str;
                         #say "$indent_str                }";
@@ -4686,29 +4686,29 @@ use HTML::Entities;
                                 #say "$indent_str                }"; # end if #
                                 printf "%*sif(%s){\n", $indent, $indent_str, $_if; # start new if #
                                 #say "$indent_str                if($_if){"; # start new if #
-                                printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $field, $inputval;
+                                printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $field, $inputval;
                                 #say "$indent_str                    ${tag}_$id.$field               = $inputval;";
                                 $if_open = 1;
                             }else{
-                                printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # continue if #
+                                printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # continue if #
                                 #say "$indent_str                    ${tag}_$id.$field               = $inputval;"; # continue if #
                             }
                         }else{
                             printf "%*s}\n", $indent, $indent_str;
                             #say "$indent_str                }";
                             $if_open = undef; # end if #
-                            printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # no if #
+                            printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # no if #
                             #say "$indent_str                ${tag}_$id.$field               = $inputval;"; # no if #
                         }
                     }else{
                         if($_if){
                             printf "%*sif(%s){\n", $indent, $indent_str, $_if; # start new if #
                             #say "$indent_str                if($_if){";
-                            printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # start if #
+                            printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # start if #
                             #say "$indent_str                    ${tag}_$id.$field               = $inputval;"; # start if #
                             $if_open = 1;
                         }else{
-                            printf "%*s%-23s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # no if #
+                            printf "%*s%-27s = %s;\n", $indent, $indent_str, "${tag}_$id.$field", $inputval; # no if #
                             #say "$indent_str                ${tag}_$id.$field               = $inputval;"; # no if #
                         }
                     }
