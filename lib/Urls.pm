@@ -7638,7 +7638,7 @@ use HTML::Entities;
     sub insert_countries {
         my ($self, $req, $cfg, $rec) = @_;
         my $ident           = ident $self;
-        my $debug = $debug{$ident};
+        my $debug           = $debug{$ident};
 
         my $dbserver        = $cfg->val('urls_db', 'dbserver');
         my $dbuser          = $cfg->val('urls_db', 'dbuser');
@@ -7813,12 +7813,12 @@ use HTML::Entities;
         $cc                   = 'NZ' unless defined $cc;
         $country_prefix       = '64' unless defined $country_prefix;
         $_escape              = '0' unless defined $_escape;
-        $landline_pattern     = '(?:\+?{country-prefix}[ -]?){distinguishing}[ -]?75\d[ -]?\d{4}' unless defined $landline_pattern;
-        $mobile_pattern       = '(?:\+{country-prefix}|0)(?:(?:2\d|85|86|96)\d{2})[ -]?\d{3}[ -]?\d{3}' unless defined $mobile_pattern;
-        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}{distinguishing}-756-2876 or (0{distinguishing}) 756 2876 or 0{distinguishing}7562876.' unless defined $landline_title;
-        $mobile_title         = 'Only +digits or local formats allowed. i.e. +{country-prefix}260-567-876 or 0260 567 876 or 0260567876' unless defined $mobile_title;
+        $landline_pattern     = '(?:\+?{country-prefix}[ -]?|0){distinguishing}[ -]?\d{3}[ -]?\d{4}' unless defined $landline_pattern;
+        $mobile_pattern       = '(?:\+{country-prefix}|0)(?:(?:10|11|12|15)\d{2})[ -]?\d{4}[ -]?\d{4}' unless defined $mobile_pattern;
+        $landline_title       = 'Only +digits or local formats allowed i.e. +{country-prefix}-{distinguishing}-756-2876 or (0{distinguishing}) 756 2876 or 0{distinguishing}7562876.' unless defined $landline_title;
+        $mobile_title         = 'Only +digits or local formats allowed. i.e. +{country-prefix}10-567-8765 or 011 567 8765 or 01260567876' unless defined $mobile_title;
         $landline_placeholder = '+{country-prefix}{distinguishing}-756-2876|(0{distinguishing}) 756 2876|0{distinguishing}7562876' unless defined $landline_placeholder;
-        $mobile_placeholder   = '+{country-prefix}268-560-876|0260 567 876|0260567876' unless defined $mobile_placeholder;
+        $mobile_placeholder   = '+{country-prefix}12-560-876|015 567 876|010657876' unless defined $mobile_placeholder;
         $list                 = '' unless defined $list;
 
         $self->log(Data::Dumper->Dump([$cc, $country_prefix, $name, $flag, $landline_pattern, $mobile_pattern, $landline_title, $mobile_title, $landline_placeholder, $mobile_placeholder, $list],
@@ -7920,7 +7920,7 @@ use HTML::Entities;
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"list\">Prefixes: </label>";
+        say "                        <label for=\"list\">Area Code: </label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
         say "                        <input type=\"text\" name=\"list\" id=\"list\" placeholder=\"num, num, ...\" value=\"$list\" pattern=\"\\s*\\d+(?:\\s*,\\s*\\d+)*\\s*\" title=\"num, num,  ...\"/>";
