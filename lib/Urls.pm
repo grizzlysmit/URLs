@@ -7811,7 +7811,7 @@ use HTML::Entities;
         $name                 = 'Egypt' unless defined $name;
         $region               = '' unless defined $region;
         $cc                   = 'EG' unless defined $cc;
-        $country_prefix       = '64' unless defined $country_prefix;
+        $country_prefix       = '20' unless defined $country_prefix;
         $_escape              = '0' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?|0){distinguishing}[ -]?\d{3}[ -]?\d{4}' unless defined $landline_pattern;
         $mobile_pattern       = '(?:\+{country-prefix}|0)(?:(?:10|11|12|15)\d{2})[ -]?\d{4}[ -]?\d{4}' unless defined $mobile_pattern;
