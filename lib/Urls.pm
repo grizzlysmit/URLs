@@ -7808,9 +7808,9 @@ use HTML::Entities;
             return $return;
         }
 
-        $name                 = 'New Zealand' unless defined $name;
+        $name                 = 'Egypt' unless defined $name;
         $region               = '' unless defined $region;
-        $cc                   = 'NZ' unless defined $cc;
+        $cc                   = 'EG' unless defined $cc;
         $country_prefix       = '64' unless defined $country_prefix;
         $_escape              = '0' unless defined $_escape;
         $landline_pattern     = '(?:\+?{country-prefix}[ -]?|0){distinguishing}[ -]?\d{3}[ -]?\d{4}' unless defined $landline_pattern;
