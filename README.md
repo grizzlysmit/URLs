@@ -15,6 +15,8 @@ web i.e. **index.pl** still ~~in progress~~ nearly done Raku version is now behi
 Manage your URLs that you cannot get or cannot easily get with google.
 Basically a bookmark manager, but searchable and organisable.
 
+the docs are still a bit raw and rough
+
 
 ## 2. Command Line 
 
