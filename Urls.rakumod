@@ -36,7 +36,7 @@ sub get-password(Str $user  --> Str) {
 my $database = 'urls';
 my $user     = 'urluser';
 #my $t = DBIish::Transaction.new(connection => {DBIish.connect('Pg', :$user, :password => get-password($user), :$database);}, :retry);
-my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :post(5432), :$database, :$user, password => get-password($user));
+my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :port(5432), :$database, :$user, password => get-password($user));
 
 
 sub list-links(Str $prefix --> Bool) is export {
