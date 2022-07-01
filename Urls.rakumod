@@ -5,6 +5,7 @@ use Config::INI::Writer;
 #use DBIish::Transaction;
 #use DBIish::Savepoint;
 use DBIish;
+use Session;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
