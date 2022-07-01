@@ -39,6 +39,16 @@ my $user     = 'urluser';
 #my $t = DBIish::Transaction.new(connection => {DBIish.connect('Pg', :$user, :password => get-password($user), :$database);}, :retry);
 my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :port(5432), :$database, :$user, password => get-password($user));
 
+my $id = %ini«login_details»«id» if %ini«login_details»:exists && %ini«login_details»«id»:exists; 
+
+my %session := Session::Postgres.new($id, { Handle => $dbh });
+
+$id = $id // %session.id;
+
+if !(%ini«login_details»:exists && %ini«login_details»«id»:exists) {
+    %ini«login_details»«id» = $id;
+    Config::INI::Writer::dumpfile(%ini, "$config/settings.ini");
+}
 
 sub list-links(Str $prefix --> Bool) is export {
     my $sth = $dbh.execute('SELECT * FROM vlinks ORDER BY section, name;');
@@ -294,4 +304,47 @@ sub launch-link(Str $section, Str $link --> Bool) is export {
     }else{
         "no such link found".say;
     }
+}
+
+sub validate(Str:D $hashed_password, Str:D $passwd --> Bool) {
+}
+
+sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export {
+    my $sql               = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+    $sql                 ~= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
+    $sql                 ~= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+    $sql                 ~= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+    $sql                 ~= "WHERE p.username = ?\n";
+    my $sth               = $dbh.execute($sql, $username);
+    my %val               = $sth.row(:hash);
+    my $loggedin_id       = %val«id»;
+    my $loggedin_username = %val«username»;
+    my $primary_group_id  = %val«group_id»;
+    my $hashed_password   = %val«_password»;
+    my $_admin            = %val«_admin»;
+    my $display_name      = %val«display_name»;
+    my $given             = %val«given»;
+    my $family            = %val«_family»;
+    my $email             = %val«_email»;
+    my $phone_number      = %val«phone_number»;
+    my $groupname         = %val«groupname»;
+    if validate($hashed_password, $passwd) {
+        %session«loggedin»               = $loggedin_id;
+        %session«loggedin_id»            = $loggedin_id;
+        %session«loggedin_username»      = $loggedin_username;
+        %session«loggedin_admin»         = $_admin;
+        %session«loggedin_display_name»  = $display_name;
+        %session«loggedin_given»         = $given;
+        %session«loggedin_family»        = $family;
+        %session«loggedin_email»         = $email;
+        %session«loggedin_phone_number»  = $phone_number;
+        %session«loggedin_groupname»     = $groupname;
+        %session«loggedin_groupnname_id» = $primary_group_id;
+        %session.save;
+    }
+}
+
+END {
+    %session.save;
+    $dbh.disconnect();
 }
