@@ -39,13 +39,13 @@ my $user     = 'urluser';
 #my $t = DBIish::Transaction.new(connection => {DBIish.connect('Pg', :$user, :password => get-password($user), :$database);}, :retry);
 my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :port(5432), :$database, :$user, password => get-password($user));
 
-my $id = %ini«login_details»«id» if %ini«login_details»:exists && %ini«login_details»«id»:exists; 
+my $id = %ini«login_details»«id» if (%ini«login_details»:exists) && (%ini«login_details»«id»:exists); 
 
 my %session := Session::Postgres.new($id, { Handle => $dbh });
 
 $id = $id // %session.id;
 
-if !(%ini«login_details»:exists && %ini«login_details»«id»:exists) {
+if !((%ini«login_details»:exists) && (%ini«login_details»«id»:exists)) {
     %ini«login_details»«id» = $id;
     Config::INI::Writer::dumpfile(%ini, "$config/settings.ini");
 }
@@ -307,6 +307,7 @@ sub launch-link(Str $section, Str $link --> Bool) is export {
 }
 
 sub validate(Str:D $hashed_password, Str:D $passwd --> Bool) {
+    return True; # Todo: implement this.
 }
 
 sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export {
@@ -346,5 +347,5 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
 
 END {
     %session.save;
-    $dbh.disconnect();
+    $dbh.dispose;
 }
