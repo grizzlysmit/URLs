@@ -6,6 +6,7 @@ use Config::INI::Writer;
 #use DBIish::Savepoint;
 use DBIish;
 use Session;
+use Inline::Perl5;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
@@ -41,7 +42,7 @@ my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :port(5432), :$database, :$u
 
 my $id = %ini«login_details»«id» if (%ini«login_details»:exists) && (%ini«login_details»«id»:exists); 
 
-my %session := Session::Postgres.new($id, { Handle => $dbh });
+my %session := Session::Postgres.new($id, { dbname => $database, dbserver => 'rakbat.local', dbuser => $user, dbport => 5432, dbpasswd => get-password($user), });
 
 $id = $id // %session.id;
 
@@ -306,8 +307,42 @@ sub launch-link(Str $section, Str $link --> Bool) is export {
     }
 }
 
-sub validate(Str:D $hashed_password, Str:D $passwd --> Bool) {
-    return True; # Todo: implement this.
+sub generate-hash(Str:D $password --> Str) is export {
+    my $p5 = Inline::Perl5.new;
+    $p5.use('Crypt::PBKDF2');
+    my $pbkdf2 = $p5.invoke('Crypt::PBKDF2', "new", 
+            hash_class => 'HMACSHA2', 
+            hash_args => {sha_size => 512},
+            iterations => 2048,
+            output_len => 64,
+            salt_len => 16,
+            length_limit => 144
+        );
+    return $pbkdf2.generate($password);
+}
+
+sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
+    my $p5 = Inline::Perl5.new;
+    $p5.use('Crypt::PBKDF2');
+    my $pbkdf2 = $p5.invoke('Crypt::PBKDF2', "new", 
+            hash_class => 'HMACSHA2', 
+            hash_args => {sha_size => 512},
+            iterations => 2048,
+            output_len => 64,
+            salt_len => 16,
+            length_limit => 144
+        );
+    my Bool $result = False;
+    try {
+        CATCH {
+            default {
+                $result = False;
+            }
+       }
+
+        $result = $pbkdf2.validate($hashed-password, $password) != 0;
+    }
+    return $result;
 }
 
 sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export {
@@ -321,7 +356,7 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
     my $loggedin_id       = %val«id»;
     my $loggedin_username = %val«username»;
     my $primary_group_id  = %val«group_id»;
-    my $hashed_password   = %val«_password»;
+    my $hashed-password   = %val«_password»;
     my $_admin            = %val«_admin»;
     my $display_name      = %val«display_name»;
     my $given             = %val«given»;
@@ -329,7 +364,7 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
     my $email             = %val«_email»;
     my $phone_number      = %val«phone_number»;
     my $groupname         = %val«groupname»;
-    if validate($hashed_password, $passwd) {
+    if validate($hashed-password, $passwd) {
         %session«loggedin»               = $loggedin_id;
         %session«loggedin_id»            = $loggedin_id;
         %session«loggedin_username»      = $loggedin_username;

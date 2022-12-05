@@ -1,10 +1,15 @@
 module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
 
-    use DBIish;
-    use DBDish::Pg;
-    use Digest::MD5;
-    use MIME::Base64;
+    #use DBIish;
+    #use DBDish::Pg;
+    #use Digest::MD5;
+    #use MIME::Base64;
+    use Inline::Perl5;
+    use DBI:from<Perl5>;
+    use Apache::Session::Postgres:from<Perl5>;
+    use P5defined;
 
+    #`«««
     class Serialize {
         method unserize ( Str:D $raw ) {
             #dd $raw;
@@ -84,104 +89,163 @@ module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
             }
         }
     }
+    # »»»
     class Postgres does Associative is export {
         subset StrOrArrayOfStr where Str | ( Array & {.all ~~ Str} );
 
-        has %.data of StrOrArrayOfStr
-                 handles <iterator list kv k keys p values>;
-        has $!_store;
+        #has $!p5;
+        has $!apsesspg;
+        #has %!data of StrOrArrayOfStr handles <iterator list kv k keys p values>;
+        #has $!_store;
         has $.id;
         has %!args;
         has $!db;
         has Bool $!dirty;
-        submethod BUILD ( :%data, :$_store, :$id, :%args, :$db, :$dirty) {
-            #dd $id;
-            %!data   = %data;
-            $!_store = $_store;
-            $!id     = $id;
+        submethod BUILD ( #:$p5, 
+                          #:%data,
+                          #:$_store,
+                          :$id,
+                          :%args,
+                          :$db,
+                          :$dirty) {
+            #`«««
+            if $p5 ~~ Nil {
+                $!p5 = $p5;
+            } else {
+                $!p5 = Inline::Perl5.new;
+            }
+            $!p5.use('Apache::Session::Postgres');
+            $!apsesspg = $!p5.invoke('Apache::Session::Postgres', 'TIEHASH', $id, { Handle => $db, TableName => 'sessions', });
+            # »»»
+            if $id ~~ Str {
+                $!apsesspg = Apache::Session::Postgres.TIEHASH($id, { Handle => $db, TableName => 'sessions', });
+            } else {
+                $!apsesspg = Apache::Session::Postgres.TIEHASH((Any), { Handle => $db, TableName => 'sessions', });
+            }
+            dd $id;
+            #%!data   = %data;
+            #$!_store = $_store;
+            my $_id  = $!apsesspg.FETCH('id');
+            $!id     = $id // $_id;
+            dd $id, $_id, $!apsesspg;
             %!args   = %args;
             $!db     = $db;
             $!dirty  = $dirty;
         }
-        multi method new ( $id, $_args where Hash = {} ) {
+        multi method new ( $_id, $_args where Hash = {} ) {
             #"new positional".say;
-            return self.new( :$id, :args(%$_args) );
+            return self.new( :$_id, :args(%$_args) );
         }
-        multi method new ( :$id is copy = Nil, :%args = Hash.new() ) {
+        multi method new ( :$_id is copy = Nil, :%args = Hash.new() ) {
             #"new names only".say;
             #%!args = %args;
             #dd %args;
-            ##`«««
-                #if $id == Nil || ($id ~~ Str && $id eq '')  {
-                my $length = 32;
-                my $d = Digest::MD5.new;
-                $id = $id // ($d.md5_hex($d.md5_hex(DateTime.now.posix() ~ Hash.new() ~ 1e5.rand ~ $*PID))).substr(0, $length);
-                #dd "Got here $?LINE", $id;
-                #}#»»»
+            my $id;
+            my Bool $dirty = False;
+            if $_id ~~ Str && $_id.trim ne '' {
+                $id = $_id;
+            } else {
+                $dirty = True;
+            }
             #dd $id;
             my $db;
+            #my $p5 = Nil; 
             if %args«Handle»:exists {
                 $db   = %args«Handle»;
             } else {
                 {
                     CATCH {
+                        #`«««
                         when X::DBDish::DBError::Pg {
                             .message.say; .message-detail.say; .message-hint.say; .resume;
-                        }
+                        } # »»»
+                        when X::AdHoc {
+                            say "Caught a Perl 5 exception: $_";
+                        }                        
                         default {
-                            .resume;
+                            #.resume;
                         }
                     }
                     my Str $dbserver = %args«dbserver»;
                     my Int $dbport   = %args«dbport»;
                     my Str $dbuser   = %args«dbuser»;
-                    my Str $dbpasswd = %args«dbpasswd»;
+                    my Str $dbpass   = %args«dbpasswd»;
                     my Str $dbname   = %args«dbname»;
-                    $db = DBIish.connect('Pg', :host<<$dbserver>>, :port($dbport), :database<<$dbname>>, :user<<$dbuser>>, :password<<$dbpasswd>>);
+                    dd $dbserver, $dbport, $dbpass, $dbname, $dbuser;
+                    #$p5 = Inline::Perl5.new;
+                    #$p5.use('DBI');
+                    #$db = $p5.invoke('DBI', 'connect', "dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", { AutoCommit => 1, RaiseError => 1});
+                    #$db = $p5.invoke('DBI', 'connect', "dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", { AutoCommit => 1, RaiseError => 1});
+                    $db = DBI.connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", { AutoCommit => 1, RaiseError => 1});
+                    #$db = DBIish.connect('Pg', :host<<$dbserver>>, :port($dbport), :database<<$dbname>>, :user<<$dbuser>>, :password<<$dbpass>>);
                 }
             }
+            #`«««
             my $_store = Store.new( :$db, :$id );
             my ($raw, $dirty) = $_store.get();
             my %data  = Serialize.new.unserize($raw);
-            return self.bless(:%data, :$_store, :$id, :%args, :$db, :$dirty, |%_);
+            # »»»
+            return self.bless(#:$p5, 
+                              #:%data,
+                              #:$_store,
+                              :$id,
+                              :%args,
+                              :$db,
+                              :$dirty,
+                              |%_);
         }
         method EXISTS-KEY ($key) {
-            return %!data{$key}:exists;
+            return $!apsesspg.EXISTS($key);
+            #return %!data{$key}:exists;
         }
         method DELETE-KEY ($key) {
-            my $result = %!data{$key}:delete;
+            #my $result = %!data{$key}:delete;
+            my $result = $!apsesspg.DELETE($key);
             $!dirty    = True;
             return $result;
         }
         method ASSIGN-KEY ($key, $new) {
-            my $result = %!data{$key} = $new;
+            #my $result = %!data{$key} = $new;
+            my $result = $!apsesspg.STORE($key, $new);
             $!dirty    = True;
             return $result;
         }
         method Str {
-            return %!data.Str;
+            #return %!data.Str;
+            my Str $result;
+            return $!apsesspg.Str;
         }
         method AT-KEY ($key) is rw {
             $!dirty = True;
-            return %!data{$key};
+            #return %!data{$key};
+            return $!apsesspg.FETCH($key);
         }
         method BIND-KEY ($key, \new) {
-            my $result = %!data{$key} = \new;
+            #my $result = %!data{$key} = \new;
+            my $result = $!apsesspg.FETCH($key) = \new;
             $!dirty    = True;
             return $result;
         }
+        #`«««
         method push(*@_) {
-            my $result = %!data.push(|@_);
+            #my $result = %!data.push(|@_);
+            my $result = $!apsesspg.FIRSTKEY;
             $!dirty    = True;
             return $result;
-        }
+        } #»»»
         method save {
             #dd $!id;
             if $!dirty {
+                $!apsesspg.save;
+                #`«««
                 my $raw = Serialize.new.serialize(%!data);
                 $!_store.save($raw, $!id);
                 $!dirty = False;
+                # »»»
             }
+        }
+        method restore {
+            $!apsesspg.restore;
         }
         submethod DESTROY {
             self.save;
