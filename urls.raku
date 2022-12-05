@@ -1,6 +1,7 @@
 #!/usr/bin/env raku
 use v6;
 
+use lib '/usr/share/mod_perl';
 use Urls;
 
 multi sub MAIN('list', 'links', Str $prefix = '') returns Int {

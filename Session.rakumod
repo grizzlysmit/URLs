@@ -6,7 +6,6 @@ module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
     #use MIME::Base64;
     use Inline::Perl5;
     use DBI:from<Perl5>;
-    use lib '/usr/share/mod_perl';
     use Apache::Session::Postgres:from<Perl5>;
     use Init_session:from<Perl5>;
 

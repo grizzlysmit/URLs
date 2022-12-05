@@ -32,3 +32,5 @@ sub call_tie_with_id {
     my ($session_id, $args) = @_;
     return Apache::Session::Postgres->TIEHASH($session_id, $args);
 } ## --- end sub call_tie_with_id
+
+return 1;
