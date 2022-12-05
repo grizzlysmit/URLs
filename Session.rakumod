@@ -8,7 +8,7 @@ module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
     use DBI:from<Perl5>;
     use lib '/usr/share/mod_perl';
     use Apache::Session::Postgres:from<Perl5>;
-    use init_session:from<Perl5>;
+    use Init_session:from<Perl5>;
 
     #`«««
     class Serialize {
@@ -120,10 +120,10 @@ module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
             # »»»
             if $id ~~ Str {
                 #$!apsesspg = Apache::Session::Postgres.TIEHASH($id, { Handle => $db, TableName => 'sessions', });
-                $!apsesspg = init_session::call_tie_with_id($id, { Handle => $db, TableName => 'sessions', });
+                $!apsesspg = Init_session::call_tie_with_id($id, { Handle => $db, TableName => 'sessions', });
             } else {
                 #$!apsesspg = Apache::Session::Postgres.TIEHASH((Any), { Handle => $db, TableName => 'sessions', });
-                $!apsesspg = init_session::call_tie_without_id({ Handle => $db, TableName => 'sessions', });
+                $!apsesspg = Init_session::call_tie_without_id({ Handle => $db, TableName => 'sessions', });
             }
             dd $id;
             #%!data   = %data;
