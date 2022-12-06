@@ -16,13 +16,13 @@ package Init_session;
 #     REVISION: ---
 #===============================================================================
 
+use parent 'Exporter';
 use strict;
 use warnings;
 use v5.34.0;
 use Apache::Session::Postgres;
 use DBI;
 #use Exporter;
-use parent 'Exporter';
 
 #our @ISA = qw(Exporter);
 
