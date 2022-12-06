@@ -23,9 +23,9 @@ use Apache::Session::Postgres;
 use DBI;
 use Exporter;
 
-@ISA = qw(Exporter);
+our @ISA = qw(Exporter);
 
-@EXPORT = qw(call_tie_without_id call_tie_with_id);
+our @EXPORT = qw(call_tie_without_id call_tie_with_id);
 
 sub call_tie_without_id {
     my ($args) = @_;
