@@ -21,11 +21,13 @@ use warnings;
 use v5.34.0;
 use Apache::Session::Postgres;
 use DBI;
-use Exporter;
+#use Exporter;
+use parent 'Exporter';
 
-our @ISA = qw(Exporter);
+#our @ISA = qw(Exporter);
 
 our @EXPORT = qw(call_tie_without_id call_tie_with_id);
+our @EXPORT_OK = qw(call_tie_without_id call_tie_with_id);
 
 sub call_tie_without_id {
     my ($args) = @_;
