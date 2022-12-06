@@ -2,6 +2,7 @@
 use v6;
 
 use Urls;
+use Terminal::Getpass;
 
 multi sub MAIN('list', 'links', Str $prefix = '') returns Int {
    if list-links($prefix) {
@@ -89,4 +90,26 @@ multi sub MAIN('launch', 'link', Str $section where { $section !~~ rx/^^ \s+ $$/
    } else {
        exit 1;
    } 
+}
+
+multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w* $$/} = '', Str :p(:$passwd) is copy = '') returns Int {
+    if $username eq '' {
+        $username = prompt "username > ";
+    }
+    if $passwd eq '' {
+        $passwd = getpass "password > ";
+    }
+    if login($username, $passwd) {
+       exit 0;
+    } else {
+       exit 1;
+    } 
+}
+
+multi sub MAIN('register', Str $section where { $section !~~ rx/^^ \s+ $$/ }, Str $link) returns Int {
+    if launch-link($section, $link) {
+       exit 0;
+    } else {
+       exit 1;
+    } 
 }

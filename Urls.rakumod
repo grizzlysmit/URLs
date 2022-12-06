@@ -8,6 +8,7 @@ use DBIish;
 use Session;
 use Inline::Perl5;
 use DBI:from<Perl5>;
+use Crypt::PBKDF2:from<Perl5>;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
@@ -315,9 +316,7 @@ sub launch-link(Str $section, Str $link --> Bool) is export {
 }
 
 sub generate-hash(Str:D $password --> Str) is export {
-    my $p5 = Inline::Perl5.new;
-    $p5.use('Crypt::PBKDF2');
-    my $pbkdf2 = $p5.invoke('Crypt::PBKDF2', "new", 
+    my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
             iterations => 2048,
@@ -331,7 +330,7 @@ sub generate-hash(Str:D $password --> Str) is export {
 sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
     my $p5 = Inline::Perl5.new;
     $p5.use('Crypt::PBKDF2');
-    my $pbkdf2 = $p5.invoke('Crypt::PBKDF2', "new", 
+    my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
             iterations => 2048,
@@ -384,10 +383,13 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
         %session«loggedin_groupname»     = $groupname;
         %session«loggedin_groupnname_id» = $primary_group_id;
         %session.save;
+        return True;
     }
+    return False;
 }
 
 END {
     %session.save;
+    $db.disconnect;
     $dbh.dispose;
 }
