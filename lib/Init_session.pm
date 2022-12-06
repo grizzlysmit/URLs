@@ -26,18 +26,18 @@ use DBI;
 
 #our @ISA = qw(Exporter);
 
-our @EXPORT = qw(call_tie_without_id call_tie_with_id);
-our @EXPORT_OK = qw(call_tie_without_id call_tie_with_id);
+our @EXPORT = qw(tiehash_without_id tiehash_with_id);
+our @EXPORT_OK = qw(tiehash_without_id tiehash_with_id);
 
-sub call_tie_without_id {
+sub tiehash_without_id {
     my ($args) = @_;
     return Apache::Session::Postgres->TIEHASH(undef(), $args);
-} ## --- end sub call_tie_without_id
+} ## --- end sub tiehash_without_id
 
 
-sub call_tie_with_id {
+sub tiehash_with_id {
     my ($session_id, $args) = @_;
     return Apache::Session::Postgres->TIEHASH($session_id, $args);
-} ## --- end sub call_tie_with_id
+} ## --- end sub tiehash_with_id
 
 return 1;
