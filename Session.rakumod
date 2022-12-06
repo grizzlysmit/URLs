@@ -119,10 +119,10 @@ module Session:ver<0.1.0>:auth<Francis Grizzly Smit (grizzlysmit@smit.id.au)>{
             # »»»
             if $id ~~ Str {
                 #$!apsesspg = Apache::Session::Postgres.TIEHASH($id, { Handle => $db, TableName => 'sessions', });
-                $!apsesspg = Init_session::call_tie_with_id($id, { Handle => $db, TableName => 'sessions', });
+                $!apsesspg = call_tie_with_id($id, { Handle => $db, TableName => 'sessions', });
             } else {
                 #$!apsesspg = Apache::Session::Postgres.TIEHASH((Any), { Handle => $db, TableName => 'sessions', });
-                $!apsesspg = Init_session::call_tie_without_id({ Handle => $db, TableName => 'sessions', });
+                $!apsesspg = call_tie_without_id({ Handle => $db, TableName => 'sessions', });
             }
             dd $id;
             #%!data   = %data;
