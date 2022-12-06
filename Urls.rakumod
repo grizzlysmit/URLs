@@ -7,6 +7,7 @@ use Config::INI::Writer;
 use DBIish;
 use Session;
 use Inline::Perl5;
+use DBI:from<Perl5>;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
@@ -35,14 +36,20 @@ sub get-password(Str $user  --> Str) {
     return %ini{$user}.«password»;
 }
 
-my $database = 'urls';
-my $user     = 'urluser';
-#my $t = DBIish::Transaction.new(connection => {DBIish.connect('Pg', :$user, :password => get-password($user), :$database);}, :retry);
-my $dbh = DBIish.connect('Pg', :host<rakbat.local>, :port(5432), :$database, :$user, password => get-password($user));
+my Str $dbserver = 'rakbat.local';
+my Str $database = 'urls';
+my Int $dbport = 5432;
+my Str $dbuser = 'urluser';
+my Str $dbpass = get-password($dbuser);
+#my $t = DBIish::Transaction.new(connection => {DBIish.connect('Pg', :$dbuser, :password => get-password($dbuser), :$database);}, :retry);
+my $dbh = DBIish.connect('Pg', :host($dbserver), :port($dbport), :$database, :user($dbuser), :password($dbpass));
+
+my $db = DBI.connect("dbi:Pg:database=$database;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", { AutoCommit => 1, RaiseError => 1});
 
 my $id = %ini«login_details»«id» if (%ini«login_details»:exists) && (%ini«login_details»«id»:exists); 
 
-my %session := Session::Postgres.new($id, { dbname => $database, dbserver => 'rakbat.local', dbuser => $user, dbport => 5432, dbpasswd => get-password($user), });
+#my %session := Session::Postgres.new($id, { dbname => $database, dbserver => 'rakbat.local', dbuser => $dbuser, dbport => 5432, dbpasswd => get-password($dbuser), });
+my %session := Session::Postgres.new($id, { Handle => $db, });
 
 $id = $id // %session.id;
 
