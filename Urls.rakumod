@@ -325,7 +325,7 @@ sub generate-hash(Str:D $password --> Str) is export {
             length_limit => 144
         );
     return $pbkdf2.generate($password);
-}
+} # sub generate-hash(Str:D $password --> Str) is export #
 
 sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
     my $p5 = Inline::Perl5.new;
@@ -349,7 +349,7 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
         $result = $pbkdf2.validate($hashed-password, $password) != 0;
     }
     return $result;
-}
+} # sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export #
 
 sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export {
     my $sql               = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
@@ -386,7 +386,20 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
         return True;
     }
     return False;
-}
+} # sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export #
+
+sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $repeat-pwd,
+                      Str:D $group is copy, @Groups, %residential-address is copy, Bool $same-as-residential is copy,
+                      Str $email is copy, Str $mobile is copy, Str $landline is copy --> Bool) is export {
+    return False unless $passwd eq $repeat-pwd;
+    return True;
+    my Str:D $hassed-passwd = generate-hash($username, $passwd);
+    my $sql               = qq{INSERT INTO _group(_name) VALUES(?);\n};
+    my $sth;
+    try {
+        $sth               = $dbh.execute($sql, $username);
+    }
+} # sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $verifypwd --> Bool) is export #
 
 END {
     %session.save;

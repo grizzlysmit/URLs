@@ -3,6 +3,11 @@ use v6;
 
 use Urls;
 use Terminal::Getpass;
+use Email::Valid:from<Perl5>;
+
+my %*SUB-MAIN-OPTS;
+%*SUB-MAIN-OPTS<named-anywhere> = True;
+#%*SUB-MAIN-OPTS<bundling>       = True;
 
 multi sub MAIN('list', 'links', Str $prefix = '') returns Int {
    if list-links($prefix) {
@@ -76,7 +81,9 @@ multi sub MAIN('delete', 'pseudo-page', Str $page-name where { $page-name !~~ rx
    } 
 }
 
-multi sub MAIN('add', 'pseudo-page', Str $page where { $page !~~ rx/^^ \s+ $$/ }, Str $pattern = '', Str :$status where { $status ~~ rx/^^ ['invalid'|'unassigned'|'assigned'|'both'] $$/ } = 'invalid', Str :$full-name = $page) returns Int {
+multi sub MAIN('add', 'pseudo-page', Str $page where { $page !~~ rx/^^ \s+ $$/ }, Str $pattern = '',
+               Str :$status where { $status ~~ rx/^^ ['invalid'|'unassigned'|'assigned'|'both'] $$/ } = 'invalid',
+                                                                              Str :$full-name = $page) returns Int {
    if add-pseudo-pages($page, Str2Status($status), $full-name, $pattern) {
        exit 0;
    } else {
@@ -106,8 +113,41 @@ multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w
     } 
 }
 
-multi sub MAIN('register', Str $section where { $section !~~ rx/^^ \s+ $$/ }, Str $link) returns Int {
-    if launch-link($section, $link) {
+multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D :p(:$passwd) is copy = '',
+               Str:D :r(:$repeat-pwd) is copy = '', Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
+               Str:D :u(:$unit) = '', Str:D :s(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
+               Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :S(:$not-the-same-as-residential),
+               Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) is copy = '', :l(:$landline) is copy = '') returns Int {
+    while $username !~~ rx/^^ \w ** 2..32 $$/ {
+        $username = prompt "username must be between 2 and 32 characters in [a-zA-Z0-9_] > ";
+    }
+    while $passwd.chars < 10 || $passwd ne $repeat-pwd {
+        $passwd = getpass "password: ";
+        $repeat-pwd = getpass "repeat-password: ";
+    }
+    while $group eq '' || $group !~~ rx/^^ \w ** 2..32 $$/ {
+        $group = prompt "main group: [$username] > ";
+        $group = $username if $group eq '';
+        dd $group;
+    }
+    my @Groups = $Groups.split(',', :skip-empty);
+    my %residential-address = (
+        unit => $unit, 
+        street => $street, 
+        city_suberb => $city-suberb, 
+        postcode => $postcode, 
+        region => $region, 
+        country => $country, 
+        unit => $unit, 
+    );
+    ##`«««
+    my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1);
+    while $email.trim eq '' || !$valid.address($email) {
+        $email = prompt "must supply a valid email > ";
+    }
+    # »»»
+    my Bool $same-as-residential = !$not-the-same-as-residential;
+    if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, %residential-address, $same-as-residential, $email, $mobile, $landline) {
        exit 0;
     } else {
        exit 1;

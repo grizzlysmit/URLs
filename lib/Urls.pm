@@ -5396,7 +5396,7 @@ use HTML::Entities;
         if($loggedin && !$isadmin){
             untie %session;
             $db->disconnect;
-            return 0; # Only admins and nnew users should be usinng this page. #
+            return 0; # Only admins and new users should be usinng this page. #
         }
 
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
