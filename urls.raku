@@ -3,7 +3,8 @@ use v6;
 
 use Urls;
 use Terminal::Getpass;
-use Email::Valid:from<Perl5>;
+#use Email::Valid:from<Perl5>;
+use Email::Valid; # using the raku one #
 
 my %*SUB-MAIN-OPTS;
 %*SUB-MAIN-OPTS<named-anywhere> = True;
@@ -115,6 +116,7 @@ multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w
 
 multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D :p(:$passwd) is copy = '',
                Str:D :r(:$repeat-pwd) is copy = '', Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
+               Str:D :f(:$given-names) = '', Str:D :s(:$surname) = '', Str:D :d(:$display-name) = '', 
                Str:D :u(:$unit) = '', Str:D :s(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
                Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :S(:$not-the-same-as-residential),
                Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) is copy = '', :l(:$landline) is copy = '') returns Int {
@@ -138,16 +140,18 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
         postcode => $postcode, 
         region => $region, 
         country => $country, 
-        unit => $unit, 
     );
     ##`«««
-    my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1);
-    while $email.trim eq '' || !$valid.address($email) {
+    #my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1);
+    my $valid = Email::Valid.new(:!simple, :allow-ip, :mx_check);
+    #while $email.trim eq '' || !$valid.address($email) 
+    while $email.trim eq '' || !$valid.validate($email) || !$valid.mx_validate($email) {
         $email = prompt "must supply a valid email > ";
     }
     # »»»
     my Bool $same-as-residential = !$not-the-same-as-residential;
-    if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, %residential-address, $same-as-residential, $email, $mobile, $landline) {
+    if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, $given-names, $surname, $display-name,
+                                                           %residential-address, $same-as-residential, $email, $mobile, $landline) {
        exit 0;
     } else {
        exit 1;

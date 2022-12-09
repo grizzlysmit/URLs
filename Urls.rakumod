@@ -9,6 +9,7 @@ use Session;
 use Inline::Perl5;
 use DBI:from<Perl5>;
 use Crypt::PBKDF2:from<Perl5>;
+use Terminal::ANSI::OO :t;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
@@ -388,17 +389,140 @@ sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd -->
     return False;
 } # sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd --> Bool) is export #
 
-sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $repeat-pwd,
-                      Str:D $group is copy, @Groups, %residential-address is copy, Bool $same-as-residential is copy,
-                      Str $email is copy, Str $mobile is copy, Str $landline is copy --> Bool) is export {
-    return False unless $passwd eq $repeat-pwd;
-    return True;
-    my Str:D $hassed-passwd = generate-hash($username, $passwd);
-    my $sql               = qq{INSERT INTO _group(_name) VALUES(?);\n};
+subset GroupId of Int where 0 <= * <= 1_000_000_000;
+
+sub create-or-find-group(Str:D $group --> GroupId) {
+    my $sql    = qq{SELECT g.id FROM _group g WHERE g._name = ?;};
     my $sth;
     try {
-        $sth               = $dbh.execute($sql, $username);
+        CATCH {
+           when X::DBDish::DBError {
+              say .message;
+           }
+        }
+
+        $sth   = $dbh.execute($sql, $group);
+    } # try #
+    my %values = $sth.row(:hash);
+    my $id     = %values«id»;
+    return $id if so $id;
+    $sql       = qq{INSERT INTO _group(_name) VALUES(?);\n};
+    try {
+        CATCH {
+           when X::DBDish::DBError {
+              say .message;
+           }
+        }
+
+        $sth               = $dbh.execute($sql, $group);
+    } # try #
+    %values    = $sth.row(:hash);
+    $id        = %values«id»;
+    return $id;
+} # sub create-or-find-group(Str:D $group --> GroupId) #
+
+sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups is rw, Str:D $given-names is rw,
+                            Str:D $surname is rw, Str:D $display-name is rw, %residential-address is rw,
+                            Bool:D $same-as-residential is rw, %postal-address is rw, Str:D $mobile is rw,
+                            Str:D $landline is rw --> Bool) {
+    put t.save-screen;
+    loop {
+        put t.clear-screen;
+        my Int $cnt = 0;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'username',     $username;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'group',        $group;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'Groups',       $Groups;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'given names',  $given-names;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'surname',      $surname;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'display-name', $display-name;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'mobile',       $mobile;
+        $cnt++;
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'landline',     $landline;
+        $cnt++;
+        constant @address-order = (
+            'unit', 
+            'street', 
+            'city_suberb', 
+            'postcode', 
+            'region', 
+            'country', 
+        );
+        for @address-order -> $key {
+            printf "%-10d\t%22s: \t%-32s\n" $cnt, $key, %residential-address{$key};
+            $cnt++;
+        }
+        printf "%-10d\t%22s: \t%-32s\n" $cnt, 'same-as-residential', $same-as-residential;
+        $cnt++;
+        if $same-as-residential {
+            for @address-order -> $key {
+                printf "%-10d\t%22s: \t%-32s\n" $cnt, $key, %postal-address{$key};
+                $cnt++;
+            }
+        } # if $same-as-residential #
+        printf "%-10d\t%22s: \t%-32s\n" 99, 'exit', 'bye';
+        $cnt++;
+        $choice = prompt 'choice > ';
+        given $choice {
+            when 0  { $username                         = prompt 'username > '; }
+            when 1  { $group                            = prompt 'group > '; }
+            when 2  { $Groups                           = prompt 'Groups > '; }
+            when 3  { $given-names                      = prompt 'given names > '; }
+            when 4  { $surname                          = prompt 'surname > '; }
+            when 5  { $display-name                     = prompt 'display name > '; }
+            when 6  { $mobile                           = prompt 'mobile > '; }
+            when 7  { $landline                         = prompt 'landline > '; }
+            when 8  { %residential-address<unit>        = prompt %residential-address<unit> ~ ' > '; }
+            when 9  { %residential-address<street>      = prompt %residential-address<street> ~ ' > '; }
+            when 10 { %residential-address<city_suberb> = prompt %residential-address<city_suberb> ~ ' > '; }
+            when 11 { %residential-address<postcode>    = prompt %residential-address<postcode> ~ ' > '; }
+            when 12 { %residential-address<region>      = prompt %residential-address<region> ~ ' > '; }
+            when 13 { %residential-address<country>     = prompt %residential-address<country> ~ ' > '; }
+            when 14 { $same-as-residential              = prompt 'same as residential > '; }
+            when 15 { %postal-address<unit>             = prompt %postal-address<unit> ~ ' > '; }
+            when 16 { %postal-address<street>           = prompt %postal-address<street> ~ ' > '; }
+            when 17 { %postal-address<city_suberb>      = prompt %postal-address<city_suberb> ~ ' > '; }
+            when 18 { %postal-address<postcode>         = prompt %postal-address<postcode> ~ ' > '; }
+            when 19 { %postal-address<region>           = prompt %postal-address<region> ~ ' > '; }
+            when 20 { %postal-address<country>          = prompt %postal-address<country> ~ ' > '; }
+            when 99 { last; }
+            when rx:i/^^ ['exit'|'bye'|'bye' \s* 'bye'] $$/ { last; }
+            default {
+                       $choice = prompt 'do you want to exit y/N > ';
+                       last if $choice.lc.trim eq 'y';
+                    }
+        } # given $prompt #
+    } # loop #
+    put t.restore-screen;
+}
+
+sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $repeat-pwd,
+                      Str:D $group is copy, @Groups, Str:D :f(:$given-names) is copy = '', Str:D :s(:$surname) is copy = '',
+                      Str:D :d(:$display-name) is copy = '', %residential-address is copy, Bool:D $same-as-residential is copy,
+                      Str $email is copy, Str $mobile is copy, Str $landline is copy --> Bool) is export {
+    return False unless $passwd eq $repeat-pwd;
+    my Str:D $hassed-passwd = generate-hash($username, $passwd);
+    if !validate($hashed-passwd, $passwd) {
+        "Error: password validation failed.".say;
+        return False;
     }
+    my %postal-address = (
+        unit => '', 
+        street => '', 
+        city_suberb => '', 
+        postcode => '', 
+        region => '', 
+        country => '', 
+    );
+    my $Groups = @Groups.join(', ');
+    ask-for-all-user-values($username, $group, $Groups, $given-names, $surname, $display-name, %residential-address, $same-as-residential, %postal-address, $mobile, $landline);
+    @Groups    = $Groups.split(rx/\s*,\s*/);
+    return True;
 } # sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $verifypwd --> Bool) is export #
 
 END {
