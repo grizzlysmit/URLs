@@ -151,7 +151,7 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
     # »»»
     my Bool $same-as-residential = !$not-the-same-as-residential;
     if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, $given-names, $surname, $display-name,
-                                                           %residential-address, $same-as-residential, $email, $mobile, $landline) {
+                           $unit, $street, $city_suberb, $postcode, $region, $country, $same-as-residential, $email, $mobile, $landline) {
        exit 0;
     } else {
        exit 1;
