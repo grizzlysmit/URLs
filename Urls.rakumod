@@ -424,7 +424,7 @@ sub create-or-find-group(Str:D $group --> GroupId) {
 } # sub create-or-find-group(Str:D $group --> GroupId) #
 
 sub dots(Str $ind, Int:D $width --> Str) {
-    my Str $result = $ind;
+    my Str $result = "$ind). ";
     $result ~= '.' x ($width - $result.chars);
     return $result;
 }
@@ -445,55 +445,55 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups i
     loop {
         put t.clear-screen;
         my Int $cnt = 0;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'username',     $username) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'username',     $username) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'group',        $group) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'group',        $group) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'Groups',       $Groups) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'Groups',       $Groups) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'given names',  $given-names) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'given names',  $given-names) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'surname',      $surname) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'surname',      $surname) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'display-name', $display-name) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'display-name', $display-name) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'email',       $email) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'email',       $email) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'mobile',       $mobile) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'mobile',       $mobile) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'landline',     $landline) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'landline',     $landline) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential unit',     $residential-unit) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential unit',     $residential-unit) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential street',       $residential-street) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential street',       $residential-street) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential city_suberb',       $residential-city_suberb) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential city_suberb',       $residential-city_suberb) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential postcode',       $residential-postcode) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential postcode',       $residential-postcode) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential region',       $residential-region) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential region',       $residential-region) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'residential country',       $residential-country) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential country',       $residential-country) ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'same-as-residential', $same-as-residential) ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'same-as-residential', $same-as-residential) ~ t.text-reset;
         $cnt++;
         if !$same-as-residential {
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-unit',       $postal-unit) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-unit',       $postal-unit) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-street',       $postal-street) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-street',       $postal-street) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-city_suberb',       $postal-city_suberb) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-city_suberb',       $postal-city_suberb) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-postcode',       $postal-postcode) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-postcode',       $postal-postcode) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-region',       $postal-region) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-region',       $postal-region) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'postal-country',       $postal-country) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-country',       $postal-country) ~ t.text-reset;
             $cnt++;
         } # if !$same-as-residential #
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("$cnt", 22), 'continue', 'enter') ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'continue', 'enter') ~ t.text-reset;
         $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-32s", dots("22..99", 22), 'exit', 'bye') ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("22..99", 22), 'exit', 'bye') ~ t.text-reset;
         $choice = prompt 'choice > ';
         given $choice {
             when '' {   # have to explicitly match here otherwise it will match with 0 #
@@ -582,7 +582,7 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/
                       Str:D $display-name is copy, Str:D $residential-unit is copy, Str:D $residential-street is copy,
                       Str:D $residential-city_suberb is copy, Str:D $residential-postcode is copy, Str:D $residential-region is copy,
                       Str:D $residential-country is copy, Bool:D $same-as-residential is copy,
-                      Str $email is copy, Str $mobile is copy, Str $landline is copy --> Bool) is export {
+                      Str:D $email is copy, Str:D $mobile is copy, Str:D $landline is copy --> Bool) is export {
     return False unless $passwd eq $repeat-pwd;
     my Str:D $hashed-passwd = generate-hash($passwd);
     if !validate($hashed-passwd, $passwd) {
