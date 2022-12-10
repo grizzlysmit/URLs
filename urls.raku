@@ -117,9 +117,9 @@ multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w
 multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D :p(:$passwd) is copy = '',
                Str:D :r(:$repeat-pwd) is copy = '', Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
                Str:D :f(:$given-names) = '', Str:D :s(:$surname) = '', Str:D :d(:$display-name) = '', 
-               Str:D :u(:$unit) = '', Str:D :s(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
-               Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :S(:$not-the-same-as-residential),
-               Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) is copy = '', :l(:$landline) is copy = '') returns Int {
+               Str:D :u(:$unit) = '', Str:D :S(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
+               Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :N(:$not-the-same-as-residential) = False,
+               Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) = '', :l(:$landline) = '') returns Int {
     while $username !~~ rx/^^ \w ** 2..32 $$/ {
         $username = prompt "username must be between 2 and 32 characters in [a-zA-Z0-9_] > ";
     }
@@ -133,25 +133,18 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
         dd $group;
     }
     my @Groups = $Groups.split(',', :skip-empty);
-    my %residential-address = (
-        unit => $unit, 
-        street => $street, 
-        city_suberb => $city-suberb, 
-        postcode => $postcode, 
-        region => $region, 
-        country => $country, 
-    );
     ##`«««
-    #my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1);
-    my $valid = Email::Valid.new(:!simple, :allow-ip, :mx_check);
-    #while $email.trim eq '' || !$valid.address($email) 
-    while $email.trim eq '' || !$valid.validate($email) || !$valid.mx_validate($email) {
+    #my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1); # Perl5 version
+    #my $valid = Email::Valid.new(:!simple, :allow-ip, :mx_check);
+    my $valid = Email::Valid.new(:simple(True), :allow-ip);
+    #while $email.trim eq '' || !$valid.address($email)  # Perl5 version
+    while $email.trim eq '' || !$valid.validate($email) {
         $email = prompt "must supply a valid email > ";
     }
     # »»»
     my Bool $same-as-residential = !$not-the-same-as-residential;
     if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, $given-names, $surname, $display-name,
-                           $unit, $street, $city_suberb, $postcode, $region, $country, $same-as-residential, $email, $mobile, $landline) {
+                           $unit, $street, $city-suberb, $postcode, $region, $country, $same-as-residential, $email, $mobile, $landline) {
        exit 0;
     } else {
        exit 1;
