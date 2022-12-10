@@ -423,11 +423,17 @@ sub create-or-find-group(Str:D $group --> GroupId) {
     return $id;
 } # sub create-or-find-group(Str:D $group --> GroupId) #
 
+sub lead-dots(Str $text, Int:D $width --> Str) {
+    my Str $result = " $text";
+    $result = '.' x ($width - $result.chars) ~ $result;
+    return $result;
+} # sub lead-dots(Str $text, Int:D $width --> Str) #
+
 sub dots(Str $ind, Int:D $width --> Str) {
     my Str $result = "$ind). ";
     $result ~= '.' x ($width - $result.chars);
     return $result;
-}
+} # sub dots(Str $ind, Int:D $width --> Str) #
 
 sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups is rw, Str:D $given-names is rw,
                             Str:D $surname is rw, Str:D $display-name is rw,
@@ -437,145 +443,172 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups i
                             Str:D $postal-unit is rw, Str:D $postal-street is rw, Str:D $postal-city_suberb is rw,
                             Str:D $postal-postcode is rw, Str:D $postal-region is rw, Str:D $postal-country is rw,
                             Str:D $email is rw, Str:D $mobile is rw, Str:D $landline is rw --> Bool) {
-    put t.save-screen;
-    my Str $choice        = '';
-    my Bool $display-auto = True;
-    my Bool $return       = True;
-    my $valid = Email::Valid.new(:simple(True), :allow-ip);
-    loop {
-        put t.clear-screen;
-        my Int $cnt = 0;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'username',     $username) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'group',        $group) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'Groups',       $Groups) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'given names',  $given-names) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'surname',      $surname) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'display-name', $display-name) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'email',       $email) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'mobile',       $mobile) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'landline',     $landline) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential unit',     $residential-unit) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential street',       $residential-street) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential city_suberb',       $residential-city_suberb) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential postcode',       $residential-postcode) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential region',       $residential-region) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'residential country',       $residential-country) ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'same-as-residential', $same-as-residential) ~ t.text-reset;
-        $cnt++;
-        if !$same-as-residential {
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-unit',       $postal-unit) ~ t.text-reset;
+    try {
+        put t.save-screen;
+        signal(SIGINT, SIGHUP, SIGQUIT, SIGTERM, SIGQUIT).tap( { put t.restore-screen; say "$_ Caught"; exit 0 } );
+        my Str $choice        = '';
+        my Bool $display-auto = True;
+        my Bool $return       = True;
+        my $valid = Email::Valid.new(:simple(True), :allow-ip);
+        loop {
+            put t.clear-screen;
+            my Int $cnt = 0;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('username', 24),     $username) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-street',       $postal-street) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('group', 24),        $group) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-city_suberb',       $postal-city_suberb) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('Groups', 24),       $Groups) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-postcode',       $postal-postcode) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('given names', 24),  $given-names) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-region',       $postal-region) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('surname', 24),      $surname) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'postal-country',       $postal-country) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('display-name', 24), $display-name) ~ t.text-reset;
             $cnt++;
-        } # if !$same-as-residential #
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("$cnt", 22), 'continue', 'enter') ~ t.text-reset;
-        $cnt++;
-        put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s\t%22s: \t%-34s", dots("22..99", 22), 'exit', 'bye') ~ t.text-reset;
-        $choice = prompt 'choice > ';
-        given $choice {
-            when '' {   # have to explicitly match here otherwise it will match with 0 #
-                        $return = True;
-                        last;
-                    }
-            when 0  { $username                = prompt 'username > '; }
-            when 1  { $group                   = prompt 'group > '; }
-            when 2  { $Groups                  = prompt 'Groups > '; }
-            when 3  {
-                        $given-names           = prompt 'given names > ';
-                        $display-name          = "$given-names $surname" if $display-auto;
-                    }
-            when 4  {
-                        $surname               = prompt 'surname > ';
-                        $display-name          = "$given-names $surname" if $display-auto;
-                    }
-            when 5  {
-                        $display-name          = prompt 'display name > ';
-                        $display-auto          = False;
-                    }
-            when 6  {
-                        my $email1             = prompt 'email > ';
-                        $email = $email1 if $email1.trim ne '' && $valid.validate($email1);
-                    }
-            when 7  { $mobile                  = prompt 'mobile > '; }
-            when 8  { $landline                = prompt 'landline > '; }
-            when 9  { $residential-unit        = prompt "residential unit > "; }
-            when 10 { $residential-street      = prompt "residential street > "; }
-            when 11 { $residential-city_suberb = prompt "residential city_suberb > "; }
-            when 12 { $residential-postcode    = prompt "residential postcode > "; }
-            when 13 { $residential-region      = prompt "residential region > "; }
-            when 14 { $residential-country     = prompt "residential country > "; }
-            when 15 { $same-as-residential     = !$same-as-residential; }
-            when 16..* {
-                if !$same-as-residential {
-                    given $choice {
-                        when 16 { $postal-unit             = prompt "postal unit > "; }
-                        when 17 { $postal-street           = prompt "postal street > "; }
-                        when 18 { $postal-city_suberb      = prompt "postal city_suberb > "; }
-                        when 19 { $postal-postcode         = prompt "postal postcode > "; }
-                        when 20 { $postal-region           = prompt "postal region > "; }
-                        when 21 { $postal-country          = prompt "postal country > "; }
-                        when 22 {
-                                    $return    = True;
-                                    last;
-                                }
-                        when 23..* {
-                                       $return = False;
-                                       last;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('email', 24),       $email) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('mobile', 24),       $mobile) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('landline', 24),     $landline) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential unit', 24),     $residential-unit) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential street', 24),       $residential-street) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential city_suberb', 24),       $residential-city_suberb) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential postcode', 24),       $residential-postcode) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential region', 24),       $residential-region) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential country', 24),       $residential-country) ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('same-as-residential', 24), $same-as-residential) ~ t.text-reset;
+            $cnt++;
+            if !$same-as-residential {
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-unit', 24),       $postal-unit) ~ t.text-reset;
+                $cnt++;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-street', 24),       $postal-street) ~ t.text-reset;
+                $cnt++;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24),       $postal-city_suberb) ~ t.text-reset;
+                $cnt++;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-postcode', 24),       $postal-postcode) ~ t.text-reset;
+                $cnt++;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-region', 24),       $postal-region) ~ t.text-reset;
+                $cnt++;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-country', 24),       $postal-country) ~ t.text-reset;
+                $cnt++;
+            } # if !$same-as-residential #
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('continue', 24), 'enter') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("22..inf", 10), lead-dots('cancel', 24), 'quit') ~ t.text-reset;
+            $choice = prompt 'choice > ';
+            given $choice {
+                when '' {   # have to explicitly match here otherwise it will match with 0 #
+                            $return = True;
+                            last;
+                        }
+                when 0  { $username                = prompt 'username > '; }
+                when 1  { $group                   = prompt 'group > '; }
+                when 2  { $Groups                  = prompt 'Groups > '; }
+                when 3  {
+                            $given-names           = prompt 'given names > ';
+                            $display-name          = "$given-names $surname" if $display-auto;
+                        }
+                when 4  {
+                            $surname               = prompt 'surname > ';
+                            $display-name          = "$given-names $surname" if $display-auto;
+                        }
+                when 5  {
+                            $display-name          = prompt 'display name > ';
+                            $display-auto          = False;
+                        }
+                when 6  {
+                            my $email1             = prompt 'email > ';
+                            $email = $email1 if $email1.trim ne '' && $valid.validate($email1);
+                        }
+                when 7  { $mobile                  = prompt 'mobile > '; }
+                when 8  { $landline                = prompt 'landline > '; }
+                when 9  { $residential-unit        = prompt "residential unit > "; }
+                when 10 { $residential-street      = prompt "residential street > "; }
+                when 11 { $residential-city_suberb = prompt "residential city_suberb > "; }
+                when 12 { $residential-postcode    = prompt "residential postcode > "; }
+                when 13 { $residential-region      = prompt "residential region > "; }
+                when 14 { $residential-country     = prompt "residential country > "; }
+                when 15 { $same-as-residential     = !$same-as-residential; }
+                when 16..* {
+                    if !$same-as-residential {
+                        given $choice {
+                            when 16 { $postal-unit             = prompt "postal unit > "; }
+                            when 17 { $postal-street           = prompt "postal street > "; }
+                            when 18 { $postal-city_suberb      = prompt "postal city_suberb > "; }
+                            when 19 { $postal-postcode         = prompt "postal postcode > "; }
+                            when 20 { $postal-region           = prompt "postal region > "; }
+                            when 21 { $postal-country          = prompt "postal country > "; }
+                            when 22 {
+                                        $return    = True;
+                                        last;
                                     }
-                    }
-                } else {
-                    given $choice {
-                        when 16 {
-                                    $return    = True;
-                                    last;
-                                }
-                        when 17..* {
-                                       $return = False;
-                                       last;
+                            when 23..* {
+                                           $return = False;
+                                           last;
+                                        }
+                        }
+                    } else {
+                        given $choice {
+                            when 16 {
+                                        $return    = True;
+                                        last;
                                     }
+                            when 17..* {
+                                           $return = False;
+                                           last;
+                                        }
+                        }
                     }
                 }
-            }
-            when rx:i/^^ ['continue'|'enter'] $$/ { # match explict enter (i.e '') above as otherwise it matches with 0 #
-                        $return = True;
-                        last;
+                when rx:i/^^ ['continue'|'enter'] $$/ { # match explict enter (i.e '') above as otherwise it matches with 0 #
+                            $return = True;
+                            last;
+                        }
+                when rx:i/^^ ['cancel'|'quit'] $$/ {
+                            $return = False;
+                            last;
+                        }
+                default {
+                           $choice = prompt 'do you want to quit y/N > ';
+                           if $choice.lc.trim eq 'y' {
+                               $return = False;
+                               last;
+                           }
+                        }
+            } # given $prompt #
+        } # loop #
+        put t.restore-screen;
+        return $return;
+        CATCH {
+            # will definitely catch all the exception 
+            default {
+                        put t.restore-screen;
+                        .Str.say;
                     }
-            when rx:i/^^ ['exit'|'bye'|'bye' \s* 'bye'] $$/ {
-                        $return = False;
-                        last;
-                    }
-            default {
-                       $choice = prompt 'do you want to exit y/N > ';
-                       last if $choice.lc.trim eq 'y';
-                    }
-        } # given $prompt #
-    } # loop #
-    put t.restore-screen;
-    return $return;
-}
+        }
+    }
+} #`««« sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups is rw, Str:D $given-names is rw,
+                            Str:D $surname is rw, Str:D $display-name is rw,
+                            Str:D $residential-unit is rw, Str:D $residential-street is rw, Str:D $residential-city_suberb is rw,
+                            Str:D $residential-postcode is rw, Str:D $residential-region is rw, Str:D $residential-country is rw,
+                            Bool:D $same-as-residential is rw,
+                            Str:D $postal-unit is rw, Str:D $postal-street is rw, Str:D $postal-city_suberb is rw,
+                            Str:D $postal-postcode is rw, Str:D $postal-region is rw, Str:D $postal-country is rw,
+                            Str:D $email is rw, Str:D $mobile is rw, Str:D $landline is rw --> Bool) »»»
+
+sub valid-pwd(Str:D $passwd, Bool :$nowhitespace = False --> Bool) is export {
+    return False if $nowhitespace && $passwd.match(rx/\s/);
+    return False if $passwd.match(rx/\v/);
+    return True  if $passwd.chars >= 10 && $passwd ~~ rx/ <punct> / && $passwd ~~ rx/ \d / && ($passwd ~~ rx/ <lower> / || $passwd ~~ rx/ <upper> /);
+    return False;
+} # sub valid-pwd(Str:D $passwd --> Bool) is export #
 
 sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $repeat-pwd,
                       Str:D $group is copy, @Groups, Str:D $given-names is copy, Str:D $surname is copy,
@@ -596,7 +629,7 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/
     my $postal-region = '';
     my $postal-country = '';
     my $Groups = @Groups.join(', ');
-    ask-for-all-user-values($username, $group, $Groups, $given-names, $surname, $display-name,
+    my Bool:D $result = ask-for-all-user-values($username, $group, $Groups, $given-names, $surname, $display-name,
                             $residential-unit, $residential-street, $residential-city_suberb,
                             $residential-postcode, $residential-region, $residential-country, $same-as-residential,
                             $postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country,
@@ -606,7 +639,7 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/
                             $residential-unit, $residential-street, $residential-city_suberb,
                             $residential-postcode, $residential-region, $residential-country, $same-as-residential,
                             $postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country,
-                            $email, $mobile, $landline;
+                            $email, $mobile, $landline, $result;
     return True;
 } # sub login(Str:D $username where { $username ~~ rx/^^ \w+ $$/}, Str:D $passwd, Str:D $verifypwd --> Bool) is export #
 

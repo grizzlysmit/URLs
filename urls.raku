@@ -115,15 +115,17 @@ multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w
 }
 
 multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D :p(:$passwd) is copy = '',
-               Str:D :r(:$repeat-pwd) is copy = '', Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
+               Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
                Str:D :f(:$given-names) = '', Str:D :s(:$surname) = '', Str:D :d(:$display-name) = '', 
                Str:D :u(:$unit) = '', Str:D :S(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
                Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :N(:$not-the-same-as-residential) = False,
                Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) = '', :l(:$landline) = '') returns Int {
+    my Str:D $repeat-pwd = '';
+    $repeat-pwd       = $passwd if valid-pwd($passwd, :nowhitespace);
     while $username !~~ rx/^^ \w ** 2..32 $$/ {
         $username = prompt "username must be between 2 and 32 characters in [a-zA-Z0-9_] > ";
     }
-    while $passwd.chars < 10 || $passwd ne $repeat-pwd {
+    while !valid-pwd($passwd, :nowhitespace) || $passwd ne $repeat-pwd {
         $passwd = getpass "password: ";
         $repeat-pwd = getpass "repeat-password: ";
     }
