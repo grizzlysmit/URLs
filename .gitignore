@@ -7,3 +7,4 @@ cde.options
 flags/*.zip
 flags/old/*
 flags/new/*
+.precomp/*
