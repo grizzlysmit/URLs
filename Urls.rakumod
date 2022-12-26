@@ -13,6 +13,7 @@ use Terminal::ANSI::OO :t;
 #use Email::Valid:from<Perl5>;
 use Email::Valid; # using the raku one #
 use IO::Prompt;
+use GzzPrompt;
 
 
 enum Status is export ( invalid => 0, unassigned => 1, assigned => 2, both => 3 );
@@ -451,6 +452,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups i
         my Bool $display-auto = True;
         my Bool $return       = True;
         my $valid = Email::Valid.new(:simple(True), :allow-ip);
+        my $gzzreadline = Gzz_readline.new;
         loop {
             put t.clear-screen;
             my Int $cnt = 0;
@@ -509,43 +511,43 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups i
                             $return = True;
                             last;
                         }
-                when 0  { $username                = ask 'username > ', $username, :type(Str); }
-                when 1  { $group                   = ask 'group > ', $group, :type(Str); }
-                when 2  { $Groups                  = ask 'Groups > ', $Groups, :type(Str); }
+                when 0  { $username                = $gzzreadline.gzzreadline 'username > ', $username; }
+                when 1  { $group                   = $gzzreadline.gzzreadline 'group > ', $group; }
+                when 2  { $Groups                  = $gzzreadline.gzzreadline 'Groups > ', $Groups; }
                 when 3  {
-                            $given-names           = ask 'given names > ', $given-names, :type(Str);
+                            $given-names           = $gzzreadline.gzzreadline 'given names > ', $given-names;
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
                 when 4  {
-                            $surname               = ask 'surname > ', $surname, :type(Str);
+                            $surname               = $gzzreadline.gzzreadline 'surname > ', $surname;
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
                 when 5  {
-                            $display-name          = ask 'display name > ', $display-name, :type(Str);
+                            $display-name          = $gzzreadline.gzzreadline 'display name > ', $display-name;
                             $display-auto          = False;
                         }
                 when 6  {
-                            my $email1             = ask 'email > ', $email, :type(Str);
+                            my $email1             = $gzzreadline.gzzreadline 'email > ', $email;
                             $email = $email1 if $email1.trim ne '' && $valid.validate($email1);
                         }
-                when 7  { $mobile                  = ask 'mobile > ', $mobile, :type(Str); }
-                when 8  { $landline                = ask 'landline > ', $landline, :type(Str); }
-                when 9  { $residential-unit        = ask "residential unit > ", $residential-unit, :type(Str); }
-                when 10 { $residential-street      = ask "residential street > ", $residential-street, :type(Str); }
-                when 11 { $residential-city_suberb = ask "residential city_suberb > ", $residential-city_suberb, :type(Str); }
-                when 12 { $residential-postcode    = ask "residential postcode > ", $residential-postcode, :type(Str); }
-                when 13 { $residential-region      = ask "residential region > ", $residential-region, :type(Str); }
-                when 14 { $residential-country     = ask "residential country > ", $residential-country, :type(Str); }
+                when 7  { $mobile                  = $gzzreadline.gzzreadline 'mobile > ', $mobile; }
+                when 8  { $landline                = $gzzreadline.gzzreadline 'landline > ', $landline; }
+                when 9  { $residential-unit        = $gzzreadline.gzzreadline "residential unit > ", $residential-unit; }
+                when 10 { $residential-street      = $gzzreadline.gzzreadline "residential street > ", $residential-street; }
+                when 11 { $residential-city_suberb = $gzzreadline.gzzreadline "residential city_suberb > ", $residential-city_suberb; }
+                when 12 { $residential-postcode    = $gzzreadline.gzzreadline "residential postcode > ", $residential-postcode; }
+                when 13 { $residential-region      = $gzzreadline.gzzreadline "residential region > ", $residential-region; }
+                when 14 { $residential-country     = $gzzreadline.gzzreadline "residential country > ", $residential-country; }
                 when 15 { $same-as-residential     = !$same-as-residential; }
                 when 16..* {
                     if !$same-as-residential {
                         given $choice {
-                            when 16 { $postal-unit             = ask "postal unit > ", $postal-unit, :type(Str); }
-                            when 17 { $postal-street           = ask "postal street > ", $postal-street, :type(Str); }
-                            when 18 { $postal-city_suberb      = ask "postal city_suberb > ", $postal-city_suberb, :type(Str); }
-                            when 19 { $postal-postcode         = ask "postal postcode > ", $postal-postcode, :type(Str); }
-                            when 20 { $postal-region           = ask "postal region > ", $postal-region, :type(Str); }
-                            when 21 { $postal-country          = ask "postal country > ", $postal-country, :type(Str); }
+                            when 16 { $postal-unit             = $gzzreadline.gzzreadline "postal unit > ", $postal-unit; }
+                            when 17 { $postal-street           = $gzzreadline.gzzreadline "postal street > ", $postal-street; }
+                            when 18 { $postal-city_suberb      = $gzzreadline.gzzreadline "postal city_suberb > ", $postal-city_suberb; }
+                            when 19 { $postal-postcode         = $gzzreadline.gzzreadline "postal postcode > ", $postal-postcode; }
+                            when 20 { $postal-region           = $gzzreadline.gzzreadline "postal region > ", $postal-region; }
+                            when 21 { $postal-country          = $gzzreadline.gzzreadline "postal country > ", $postal-country; }
                             when 22 {
                                         $return    = True;
                                         last;
