@@ -511,43 +511,43 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, $Groups i
                             $return = True;
                             last;
                         }
-                when 0  { $username                = $gzzreadline.gzzreadline 'username > ', $username; }
-                when 1  { $group                   = $gzzreadline.gzzreadline 'group > ', $group; }
-                when 2  { $Groups                  = $gzzreadline.gzzreadline 'Groups > ', $Groups; }
+                when 0  { $username                = $gzzreadline.gzzreadline('username > ', $username); }
+                when 1  { $group                   = $gzzreadline.gzzreadline('group > ', $group); }
+                when 2  { $Groups                  = $gzzreadline.gzzreadline('Groups > ', $Groups); }
                 when 3  {
-                            $given-names           = $gzzreadline.gzzreadline 'given names > ', $given-names;
+                            $given-names           = $gzzreadline.gzzreadline('given names > ', $given-names);
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
                 when 4  {
-                            $surname               = $gzzreadline.gzzreadline 'surname > ', $surname;
+                            $surname               = $gzzreadline.gzzreadline('surname > ', $surname);
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
                 when 5  {
-                            $display-name          = $gzzreadline.gzzreadline 'display name > ', $display-name;
+                            $display-name          = $gzzreadline.gzzreadline('display name > ', $display-name);
                             $display-auto          = False;
                         }
                 when 6  {
-                            my $email1             = $gzzreadline.gzzreadline 'email > ', $email;
+                            my $email1             = $gzzreadline.gzzreadline('email > ', $email);
                             $email = $email1 if $email1.trim ne '' && $valid.validate($email1);
                         }
-                when 7  { $mobile                  = $gzzreadline.gzzreadline 'mobile > ', $mobile; }
-                when 8  { $landline                = $gzzreadline.gzzreadline 'landline > ', $landline; }
-                when 9  { $residential-unit        = $gzzreadline.gzzreadline "residential unit > ", $residential-unit; }
-                when 10 { $residential-street      = $gzzreadline.gzzreadline "residential street > ", $residential-street; }
-                when 11 { $residential-city_suberb = $gzzreadline.gzzreadline "residential city_suberb > ", $residential-city_suberb; }
-                when 12 { $residential-postcode    = $gzzreadline.gzzreadline "residential postcode > ", $residential-postcode; }
-                when 13 { $residential-region      = $gzzreadline.gzzreadline "residential region > ", $residential-region; }
-                when 14 { $residential-country     = $gzzreadline.gzzreadline "residential country > ", $residential-country; }
+                when 7  { $mobile                  = $gzzreadline.gzzreadline('mobile > ', $mobile); }
+                when 8  { $landline                = $gzzreadline.gzzreadline('landline > ', $landline); }
+                when 9  { $residential-unit        = $gzzreadline.gzzreadline("residential unit > ", $residential-unit); }
+                when 10 { $residential-street      = $gzzreadline.gzzreadline("residential street > ", $residential-street); }
+                when 11 { $residential-city_suberb = $gzzreadline.gzzreadline("residential city_suberb > ", $residential-city_suberb); }
+                when 12 { $residential-postcode    = $gzzreadline.gzzreadline("residential postcode > ", $residential-postcode); }
+                when 13 { $residential-region      = $gzzreadline.gzzreadline("residential region > ", $residential-region); }
+                when 14 { $residential-country     = $gzzreadline.gzzreadline("residential country > ", $residential-country); }
                 when 15 { $same-as-residential     = !$same-as-residential; }
                 when 16..* {
                     if !$same-as-residential {
                         given $choice {
-                            when 16 { $postal-unit             = $gzzreadline.gzzreadline "postal unit > ", $postal-unit; }
-                            when 17 { $postal-street           = $gzzreadline.gzzreadline "postal street > ", $postal-street; }
-                            when 18 { $postal-city_suberb      = $gzzreadline.gzzreadline "postal city_suberb > ", $postal-city_suberb; }
-                            when 19 { $postal-postcode         = $gzzreadline.gzzreadline "postal postcode > ", $postal-postcode; }
-                            when 20 { $postal-region           = $gzzreadline.gzzreadline "postal region > ", $postal-region; }
-                            when 21 { $postal-country          = $gzzreadline.gzzreadline "postal country > ", $postal-country; }
+                            when 16 { $postal-unit             = $gzzreadline.gzzreadline("postal unit > ", $postal-unit); }
+                            when 17 { $postal-street           = $gzzreadline.gzzreadline("postal street > ", $postal-street); }
+                            when 18 { $postal-city_suberb      = $gzzreadline.gzzreadline("postal city_suberb > ", $postal-city_suberb); }
+                            when 19 { $postal-postcode         = $gzzreadline.gzzreadline("postal postcode > ", $postal-postcode); }
+                            when 20 { $postal-region           = $gzzreadline.gzzreadline("postal region > ", $postal-region); }
+                            when 21 { $postal-country          = $gzzreadline.gzzreadline("postal country > ", $postal-country); }
                             when 22 {
                                         $return    = True;
                                         last;
