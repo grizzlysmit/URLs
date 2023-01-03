@@ -132,14 +132,13 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
     while $group eq '' || $group !~~ rx/^^ \w ** 2..32 $$/ {
         $group = prompt "main group: [$username] > ";
         $group = $username if $group eq '';
-        dd $group;
+        #dd $group;
     }
     my @Groups = $Groups.split(',', :skip-empty);
     ##`«««
     #my $valid = Email::Valid.new('-mxcheck' => 1, '-tldcheck' => 1, '-allow_ip' => 1); # Perl5 version
     #my $valid = Email::Valid.new(:!simple, :allow-ip, :mx_check);
     my $valid = Email::Valid.new(:simple(True), :allow-ip);
-    #while $email.trim eq '' || !$valid.address($email)  # Perl5 version
     while $email.trim eq '' || !$valid.validate($email) {
         $email = prompt "must supply a valid email > ";
     }

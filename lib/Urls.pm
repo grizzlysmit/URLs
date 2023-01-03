@@ -4417,7 +4417,7 @@ use HTML::Entities;
             }
             say "$indent_str                                    },";
             say "$indent_str                                },";
-        }
+        } # while(($key, $row) = each (%countries)) #
         say "$indent_str                };";
         say "$indent_str            function country_onchange() {";
         say "$indent_str                var cc_id_elt               = document.getElementById('country_id');";
@@ -5713,7 +5713,7 @@ use HTML::Entities;
         my @_country;
 
         $sql  = "SELECT\n";
-        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, c._flag, c._escape\n";
         $sql .= "FROM country c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);

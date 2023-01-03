@@ -73,7 +73,7 @@ class Gzz_readline:ver<0.0.1.1> is export {
             }
         }
 
-        ( $library, $version )
+        return ( $library, $version );
     }
 
     #
