@@ -160,6 +160,14 @@ multi sub MAIN('who', 'am', 'i' ) returns Int {
    } 
 }
 
+multi sub MAIN('whoami' ) returns Int {
+   if whoami() {
+       exit 0;
+   } else {
+       exit 1;
+   } 
+}
+
 multi sub MAIN('logout', Bool:D :s(:$sure) = False) returns Int {
    if logout($sure) {
        exit 0;

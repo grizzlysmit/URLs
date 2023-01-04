@@ -441,7 +441,29 @@ sub whoami( --> Bool) is export {
     my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
     my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
     my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    dd $loggedin, $loggedin_id, $loggedin_username, $_admin, $display_name, $given, $family, $loggedin_email, $phone_number, $groupname, $primary_group_id;
+    my Int $cnt = 0;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin', 40),          $loggedin) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_id', 40),       $loggedin_id) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_username', 40), $loggedin_username) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('_admin', 40),            $_admin) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('display_name', 40),      $display_name) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('given', 40),             $given) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('family', 40),            $family) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_email', 40),    $loggedin_email) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('phone_number', 40),      $phone_number) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('groupname', 40),         $groupname) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('primary_group_id', 40),  $primary_group_id) ~ t.text-reset;
+    $cnt++;
     return True;
 } # sub whoami( --> Bool) is export #
 
@@ -686,7 +708,6 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
     my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
     my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
     my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    dd $loggedin, $loggedin_id, $loggedin_username, $_admin, $display_name, $given, $family, $loggedin_email, $phone_number, $groupname, $primary_group_id;
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
@@ -821,7 +842,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
             } # if !$same-as-residential #
             put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('continue', 24), 'enter') ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt..inf", 10), lead-dots('cancel', 24), 'quit') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt..∞", 10), lead-dots('cancel', 24), 'quit') ~ t.text-reset;
             $choice = prompt 'choice > ';
             given $choice {
                 when '' {   # have to explicitly match here otherwise it will match with 0 #
@@ -863,7 +884,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $tmp               = gzzreadline_call('given names > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
-                            $tmp ~~ s:g/ \h+ /\x20/; # normalise no doble spaces no tabs etc #
+                            $tmp ~~ s:g/ \h ** 2..* /\x20/; # normalise no doble spaces no tabs etc #
                             $given-names           = $tmp if $tmp ~~ rx/^ \w+ [ \h+ \w+ ]* $/;
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
@@ -874,7 +895,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $tmp               = gzzreadline_call('surname > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
-                            $tmp ~~ s:g/ \h+ /\x20/; # normalise no doble spaces no tabs etc #
+                            $tmp ~~ s:g/ \h ** 2..* /\x20/; # normalise no doble spaces no tabs etc #
                             $surname               = $tmp if $tmp ~~ rx/^ \w+ [ \h+ \w+ ]* $/;
                             $display-name          = "$given-names $surname" if $display-auto;
                         }
@@ -885,6 +906,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $tmp               = gzzreadline_call('display name > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
+                            $tmp ~~ s:g/ \h ** 2..* /\x20/; # normalise no doble spaces no tabs etc #
                             if $tmp ~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
                                 $display-name          = $tmp;
                                 $display-auto          = False;
@@ -1047,32 +1069,33 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             my $tmp                = gzzreadline_call("residential unit > ", $residential-unit, $gzzreadline);
                             $tmp .=trim;
                             while $tmp !~~ rx/^ <-['";]>* $/ {
+                                $tmp              ~~ s/ <['";]> //;  # strip the crap out  #
                                 $tmp               = gzzreadline_call("residential unit > ", $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
                             $residential-unit        = $tmp if $tmp ~~ rx/^ <-['";]>* $/;
                         }
-                when 12 { $residential-street      = gzzreadline_call("residential street > ", $residential-street, $gzzreadline); }
-                when 13 { $residential-city_suberb = gzzreadline_call("residential city_suberb > ", $residential-city_suberb, $gzzreadline); }
-                when 14 { $residential-postcode    = gzzreadline_call("residential postcode > ", $residential-postcode, $gzzreadline); }
-                when 15 { $residential-region      = gzzreadline_call("residential region > ", $residential-region, $gzzreadline); }
-                when 16 { $residential-country     = gzzreadline_call("residential country > ", $residential-country, $gzzreadline); }
+                when 12 { $residential-street      = gzzreadline_call("residential street > ", $residential-street, $gzzreadline); $residential-street ~~ s:g/ <['";]>//; }
+                when 13 { $residential-city_suberb = gzzreadline_call("residential city_suberb > ", $residential-city_suberb, $gzzreadline); $residential-city_suberb ~~ s:g/ <['";]>//; }
+                when 14 { $residential-postcode    = gzzreadline_call("residential postcode > ", $residential-postcode, $gzzreadline); $residential-postcode ~~ s:g/ <['";]>//; }
+                when 15 { $residential-region      = gzzreadline_call("residential region > ", $residential-region, $gzzreadline); $residential-region ~~ s:g/ <['";]>//; }
+                when 16 { $residential-country     = gzzreadline_call("residential country > ", $residential-country, $gzzreadline); $residential-country ~~ s:g/ <['";]>//; }
                 when 17 { $admin     = !$admin if $_admin; }
                 when 18 { $same-as-residential     = !$same-as-residential; }
-                when 19..* {
+                when 19..∞ {
                     if !$same-as-residential {
                         given $choice {
-                            when 19 { $postal-unit             = gzzreadline_call("postal unit > ", $postal-unit, $gzzreadline); }
-                            when 20 { $postal-street           = gzzreadline_call("postal street > ", $postal-street, $gzzreadline); }
-                            when 21 { $postal-city_suberb      = gzzreadline_call("postal city_suberb > ", $postal-city_suberb, $gzzreadline); }
-                            when 22 { $postal-postcode         = gzzreadline_call("postal postcode > ", $postal-postcode, $gzzreadline); }
-                            when 23 { $postal-region           = gzzreadline_call("postal region > ", $postal-region, $gzzreadline); }
-                            when 24 { $postal-country          = gzzreadline_call("postal country > ", $postal-country, $gzzreadline); }
+                            when 19 { $postal-unit             = gzzreadline_call("postal unit > ", $postal-unit, $gzzreadline); $postal-unit ~~ s:g/ <['";]>//; }
+                            when 20 { $postal-street           = gzzreadline_call("postal street > ", $postal-street, $gzzreadline); $postal-street ~~ s:g/ <['";]>//; }
+                            when 21 { $postal-city_suberb      = gzzreadline_call("postal city_suberb > ", $postal-city_suberb, $gzzreadline); $postal-city_suberb ~~ s:g/ <['";]>//; }
+                            when 22 { $postal-postcode         = gzzreadline_call("postal postcode > ", $postal-postcode, $gzzreadline); $postal-postcode ~~ s:g/ <['";]>//; }
+                            when 23 { $postal-region           = gzzreadline_call("postal region > ", $postal-region, $gzzreadline); $postal-region ~~ s:g/ <['";]>//; }
+                            when 24 { $postal-country          = gzzreadline_call("postal country > ", $postal-country, $gzzreadline); $postal-country ~~ s:g/ <['";]>//; }
                             when 25 {
                                         $return    = True;
                                         last;
                                     }
-                            when 26..* {
+                            when 26..∞ {
                                            $return = False;
                                            last;
                                         }
@@ -1083,7 +1106,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                         $return    = True;
                                         last;
                                     }
-                            when 20..* {
+                            when 20..∞ {
                                            $return = False;
                                            last;
                                         }
@@ -1100,8 +1123,8 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             last;
                         }
                 default {
-                           $choice = prompt 'do you want to quit y/N > ';
-                           if $choice.lc.trim.substr(0, 1) eq 'y' {
+                           my Bool:D $tmp = ask 'do you want to quit y/N > ', 'y', :type(Bool);
+                           if $tmp {
                                $return = False;
                                last;
                            }
@@ -1246,7 +1269,7 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
         "Error: password validation failed.".say;
         return False;
     }
-    say "$?FILE {$?MODULE.gist} This is \&?ROUTINE.name: {&?ROUTINE.name}";
+    #say "$?FILE {$?MODULE.gist} This is \&?ROUTINE.name: {&?ROUTINE.name}";
     my Str:D $postal-unit = '';
     my Str:D $postal-street = '';
     my Str:D $postal-city_suberb = '';
@@ -1272,7 +1295,6 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
     my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
     my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
     my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    dd $loggedin, $loggedin_id, $loggedin_username, $_admin, $display_name, $given, $family, $loggedin_email, $phone_number, $groupname, $primary_group_id;
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
