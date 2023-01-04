@@ -118,8 +118,8 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
                Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
                Str:D :f(:$given-names) = '', Str:D :s(:$surname) = '', Str:D :d(:$display-name) = '', 
                Str:D :u(:$unit) = '', Str:D :S(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
-               Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool :N(:$not-the-same-as-residential) = False,
-               Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) = '', :l(:$landline) = '') returns Int {
+               Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool:D :N(:$not-the-same-as-residential) = False,
+               Str:D :e(:$email) is copy = '', Str:D :m(:$mobile) = '', :l(:$landline) = '', Bool:D :a(:$admin) = False) returns Int {
     my Str:D $repeat-pwd = '';
     $repeat-pwd       = $passwd if valid-pwd($passwd, :nowhitespace);
     while $username !~~ rx/^^ \w ** 2..32 $$/ {
@@ -145,9 +145,25 @@ multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w
     # »»»
     my Bool $same-as-residential = !$not-the-same-as-residential;
     if register-new-user($username, $passwd, $repeat-pwd, $group, @Groups, $given-names, $surname, $display-name,
-                           $unit, $street, $city-suberb, $postcode, $region, $country, $same-as-residential, $email, $mobile, $landline) {
+                           $unit, $street, $city-suberb, $postcode, $region, $country, $same-as-residential, $email, $mobile, $landline, $admin) {
        exit 0;
     } else {
        exit 1;
     } 
+}
+
+multi sub MAIN('who', 'am', 'i' ) returns Int {
+   if whoami() {
+       exit 0;
+   } else {
+       exit 1;
+   } 
+}
+
+multi sub MAIN('logout', Bool:D :s(:$sure) = False) returns Int {
+   if logout($sure) {
+       exit 0;
+   } else {
+       exit 1;
+   } 
 }
