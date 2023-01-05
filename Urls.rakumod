@@ -16,6 +16,7 @@ use ECMA262Regex;
 use Email::Valid; # using the raku one #
 use IO::Prompt;
 use Terminal::Getpass;
+use Terminal::Width;
 use GzzPrompt;
 
 my @signal;
@@ -361,24 +362,34 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
 } # sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export #
 
 sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is copy --> Bool) is export {
-    my $sql               = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
-    $sql                 ~= "e._email, ph._number phone_number, g._name groupname, g.id group_id\n";
-    $sql                 ~= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
-    $sql                 ~= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
-    $sql                 ~= "WHERE p.username = ?\n";
-    my $sth               = $dbh.execute($sql, $username);
-    my %val               = $sth.row(:hash);
-    my $loggedin_id       = %val«id»;
-    my $loggedin_username = %val«username»;
-    my $primary_group_id  = %val«group_id»;
-    my $hashed-password   = %val«_password»;
-    my $_admin            =  so %val«_admin»;
-    my $display_name      = %val«display_name»;
-    my $given             = %val«given»;
-    my $family            = %val«_family»;
-    my $email             = %val«_email»;
-    my $phone_number      = %val«phone_number»;
-    my $groupname         = %val«groupname»;
+    my $sql                      = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, c.prefix, c._escape, c.punct, pd.display_name, pd.given, pd._family,\n";
+    $sql                        ~= "e._email, ph._number phone_number, g._name groupname, g.id group_id, cr.landline_pattern, cr.mobile_pattern\n";
+    $sql                        ~= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+    $sql                        ~= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+    $sql                        ~= "         LEFT JOIN country  c ON c.id = pd.country_id JOIN country_regions cr ON cr.country_id = c.id\n";
+    $sql                        ~= "WHERE p.username = ?\n";
+    my $sth                      = $dbh.execute($sql, $username);
+    my %val                      = $sth.row(:hash);
+    my $loggedin_id              = %val«id»;
+    my $loggedin_username        = %val«username»;
+    my $primary_group_id         = %val«group_id»;
+    my $hashed-password          = %val«_password»;
+    my $_admin                   =  so %val«_admin»;
+    my $display_name             = %val«display_name»;
+    my $given                    = %val«given»;
+    my $family                   = %val«_family»;
+    my $email                    = %val«_email»;
+    my $phone_number             = %val«phone_number»;
+    my $groupname                = %val«groupname»;
+    my $prefix                   = %val«prefix»;
+    my $escape                   = %val«_escape»;
+    my $punct                    = %val«punct»;
+    my $land_pattern             = %val«landline_pattern»;
+    my $mob_pattern              = %val«mobile_pattern»;
+    $land_pattern               ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
+    $mob_pattern                ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+    my Regex:D $landline_pattern = ECMA262Regex.compile("^$land_pattern\$");
+    my Regex:D $mobile_pattern   = ECMA262Regex.compile("^$mob_pattern\$");
     my Int:D $cnt = 0;
     while !validate($hashed-password, $passwd) && $cnt < 4 {
         $passwd = getpass "password > ";
@@ -389,20 +400,26 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
         return False;
     }
     if validate($hashed-password, $passwd) {
-        %session«loggedin»               = $loggedin_id;
-        %session«loggedin_id»            = $loggedin_id;
-        %session«loggedin_username»      = $loggedin_username;
-        %session«loggedin_admin»         = $_admin;
-        %session«loggedin_display_name»  = $display_name;
-        %session«loggedin_given»         = $given;
-        %session«loggedin_family»        = $family;
-        %session«loggedin_email»         = $email;
-        %session«loggedin_phone_number»  = $phone_number;
-        %session«loggedin_groupname»     = $groupname;
-        %session«loggedin_groupnname_id» = $primary_group_id;
+        %session«loggedin»                  = $loggedin_id;
+        %session«loggedin_id»               = $loggedin_id;
+        %session«loggedin_username»         = $loggedin_username;
+        %session«loggedin_admin»            = $_admin;
+        %session«loggedin_display_name»     = $display_name;
+        %session«loggedin_given»            = $given;
+        %session«loggedin_family»           = $family;
+        %session«loggedin_email»            = $email;
+        %session«loggedin_phone_number»     = $phone_number;
+        %session«loggedin_groupname»        = $groupname;
+        %session«loggedin_groupnname_id»    = $primary_group_id;
+        %session«loggedin_prefix»           = $prefix;
+        %session«loggedin_escape»           = $escape;
+        %session«loggedin_punct»            = $punct;
+        %session«loggedin_landline_pattern» = $landline_pattern.gist;
+        %session«loggedin_mobile_pattern»   = $mobile_pattern.gist;
         %session.save;
         return True;
     }
+    say "Failed to login for user: $username";
     return False;
 } # sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd --> Bool) is export #
 
@@ -412,17 +429,22 @@ sub logout(Bool:D $sure is copy --> Bool) is export {
         $sure = ask 'are you sure you realy want to logout y/N > ', 'N', :type(Bool);
     }
     if $sure {
-        %session«loggedin»               = False;
-        %session«loggedin_id»            = 0;
-        %session«loggedin_username»      = Nil;
-        %session«loggedin_admin»         = False;
-        %session«loggedin_display_name»  = Nil;
-        %session«loggedin_given»         = Nil;
-        %session«loggedin_family»        = Nil;
-        %session«loggedin_email»         = Nil;
-        %session«loggedin_phone_number»  = Nil;
-        %session«loggedin_groupname»     = Nil;
-        %session«loggedin_groupnname_id» = 0;
+        %session«loggedin»                  = False;
+        %session«loggedin_id»               = 0;
+        %session«loggedin_username»         = Nil;
+        %session«loggedin_admin»            = False;
+        %session«loggedin_display_name»     = Nil;
+        %session«loggedin_given»            = Nil;
+        %session«loggedin_family»           = Nil;
+        %session«loggedin_email»            = Nil;
+        %session«loggedin_phone_number»     = Nil;
+        %session«loggedin_groupname»        = Nil;
+        %session«loggedin_groupnname_id»    = 0;
+        %session«loggedin_prefix»           = Nil;
+        %session«loggedin_escape»           = Nil;
+        %session«loggedin_punct»            = Nil;
+        %session«loggedin_landline_pattern» = Nil;
+        %session«loggedin_mobile_pattern»   = Nil;
         %session.save;
         return True;
     }
@@ -430,39 +452,61 @@ sub logout(Bool:D $sure is copy --> Bool) is export {
 } # sub logout(Bool:D $sure is copy --> Bool) is export #
 
 sub whoami( --> Bool) is export {
-    my Bool:D $loggedin          = so %session«loggedin»;
-    my Int    $loggedin_id       =    ((%session«loggedin_id» === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username =    ((%session«loggedin_username» === Any) ?? Str !! %session«loggedin_username» );
-    my Bool:D $_admin            = so %session«loggedin_admin»;
-    my Str    $display_name      =    ((%session«loggedin_display_name» === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given             =    ((%session«loggedin_given» === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family            =    ((%session«loggedin_family» === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email    =    ((%session«loggedin_email» === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? 'Str' !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? 'Str' !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? 'Str' !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? 'Str' !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? 'Str' !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? 'Str' !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? 'Str' !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? 'Str' !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? 'Str' !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? 'Str' !! %session«loggedin_punct» );
+    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? 'Str' !! %session«loggedin_landline_pattern» );
+    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? 'Str' !! %session«loggedin_mobile_pattern» );
+    my Str    $punct             =    $loggedin_punct;
+    $punct                      ~~    s/ \x20 /\\x20/;
+    my Int $width = terminal-width;
+    my Int $m = max(("$loggedin", "$loggedin_id", $loggedin_username, "$_admin", $display_name, $given, $loggedin_email, $phone_number, $groupname,
+                         "$primary_group_id", $loggedin_prefix, $loggedin_escape, $loggedin_punct, $loggedin_landline_pattern, $loggedin_mobile_pattern,
+                                                       "'$loggedin_punct' ==> '$punct'", ).map: { .chars });
+    my Int $w = min($width - 28 - 2, $m + 2);
     my Int $cnt = 0;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin', 40),          $loggedin) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin',                  28), $w, $loggedin) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_id', 40),       $loggedin_id) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_id',               28), $w, (($loggedin_id === Int) ?? 'Int' !! $loggedin_id)) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_username', 40), $loggedin_username) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_username',         28), $w, $loggedin_username) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('_admin', 40),            $_admin) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('_admin',                    28), $w, $_admin) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('display_name', 40),      $display_name) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('display_name',              28), $w, $display_name) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('given', 40),             $given) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('given',                     28), $w, $given) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('family', 40),            $family) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('family',                    28), $w, $family) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('loggedin_email', 40),    $loggedin_email) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_email',            28), $w, $loggedin_email) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('phone_number', 40),      $phone_number) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('phone_number',              28), $w, $phone_number) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('groupname', 40),         $groupname) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('groupname',                 28), $w, $groupname) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('primary_group_id', 40),  $primary_group_id) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('primary_group_id',          28), $w, (($primary_group_id === Int) ?? 'Int' !! $primary_group_id)) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_prefix',           28), $w, $loggedin_prefix) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_escape',           28), $w, $loggedin_escape) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_punct',            28), $w, "'$loggedin_punct' ==> '$punct'") ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_landline_pattern', 28), $w, $loggedin_landline_pattern) ~ t.text-reset;
+    $cnt++;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_mobile_pattern',   28), $w, $loggedin_mobile_pattern) ~ t.text-reset;
     $cnt++;
     return True;
 } # sub whoami( --> Bool) is export #
@@ -501,7 +545,7 @@ sub get-countries(--> Hash) {
         my $result;
         my Str:D $sql = '';
         $sql  = "SELECT\n";
-        $sql ~= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
+        $sql ~= "c.id, c.cc, c.prefix, c._name, _flag, c._escape, c.punct\n";
         $sql ~= "FROM country c\n";
         $sql ~= "ORDER BY c._name, c.cc\n";
         my $query  = $dbh.prepare($sql);
@@ -693,21 +737,26 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             Bool:D $same-as-residential is rw,
                             Str:D $postal-unit is rw, Str:D $postal-street is rw, Str:D $postal-city_suberb is rw,
                             Str:D $postal-postcode is rw, Str:D $postal-region is rw, Str:D $postal-country is rw,
-                            Str:D $email is rw, Int:D $cc_id is rw, Int:D $country_region_id is rw, Str:D $mobile is rw, Str:D $landline is rw,
-                            Regex $mobile_pattern is rw, Regex $landline_pattern is rw, Str:D $escape is rw, Str:D $prefix is rw, Bool:D $admin is rw --> Bool) {
+                            Str:D $email is rw, Int:D $cc_id is rw, Int $country_region_id is rw, Str:D $mobile is rw, Str:D $landline is rw,
+                            Regex $mobile_pattern is rw, Regex $landline_pattern is rw, Str:D $escape is rw, Str:D $prefix is rw, Str:D $punct is rw, Bool:D $admin is rw --> Bool) {
 
-    my Bool $return       = True;
-    my Bool:D $loggedin          = so %session«loggedin»;
-    my Int    $loggedin_id       =    ((%session«loggedin_id» === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username =    ((%session«loggedin_username» === Any) ?? Str !! %session«loggedin_username» );
-    my Bool:D $_admin            = so %session«loggedin_admin»;
-    my Str    $display_name      =    ((%session«loggedin_display_name» === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given             =    ((%session«loggedin_given» === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family            =    ((%session«loggedin_family» === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email    =    ((%session«loggedin_email» === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Bool $return                      = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
+    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
+    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
@@ -745,6 +794,8 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
         $cc_id                 = 27 unless %countries{$cc_id}:exists;
         my %row                = %countries{$cc_id};
         my Str $name           = %row«_name»;
+        $residential-country   = $name;
+        $postal-country        = $name;
         my Str $cc             = %row«cc»;
         my Str $flag           = uniparse 'Australia';
         try {
@@ -763,7 +814,8 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
             $flag   = uniparse $name;
         }
         $prefix                = %row«prefix»;
-        $escape                = %row«_escape»;
+        $escape                = ((%row«_escape» === Str || %row«_escape» === Any) ?? '0'  !! %row«_escape»); #  guess a common value #
+        $punct                 = ((%row«punct» === Str   || %row«punct» === Any  ) ?? '- ' !! %row«punct»  ); #  guess a common value #
         my @country_regions    = |@(%row«country_regions»);
         my Int $ind            = 0;
         @country_regions       = |@country_regions.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«region».lc.trim cmp %v«region».lc.trim; (($res == Same) ?? (%u«distinguishing».trim cmp %v«distinguishing».trim) !! $res ) };
@@ -773,9 +825,13 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
         my %value                = @country_regions[$ind];
         $cr-id                   = %value«cr_id»;
         $region                  = %value«region»;
+        $residential-region      = $region;
+        $postal-region           = $region;
         $distinguishing          = %value«distinguishing»;
         my $mob_pattern          = %value«mobile_pattern»;
         my $lndlne_pattern       = %value«landline_pattern»;
+        $lndlne_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
+        $mob_pattern            ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
         $mobile_pattern          = ECMA262Regex.compile("^$mob_pattern\$");
         $landline_pattern        = ECMA262Regex.compile("^$lndlne_pattern\$");
         my $landline_placeholder = %value«landline_placeholder»;
@@ -880,7 +936,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                 when 3  {
                             my $tmp                = gzzreadline_call('given names > ', $given-names, $gzzreadline);
                             $tmp .=trim;
-                            while $given-names !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
+                            while $tmp !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
                                 $tmp               = gzzreadline_call('given names > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
@@ -891,7 +947,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                 when 4  {
                             my $tmp                = gzzreadline_call('surname > ', $surname, $gzzreadline);
                             $tmp .=trim;
-                            while $given-names !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
+                            while $tmp !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
                                 $tmp               = gzzreadline_call('surname > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
@@ -902,7 +958,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                 when 5  {
                             my $tmp                = gzzreadline_call('display name > ', $display-name, $gzzreadline);
                             $tmp .=trim;
-                            while $given-names !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
+                            while $tmp !~~ rx/^ \w+ [ \h+ \w+ ]* $/ {
                                 $tmp               = gzzreadline_call('display name > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
@@ -915,7 +971,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                 when 6  {
                             my $tmp                = gzzreadline_call('email > ', $email, $gzzreadline);
                             $tmp .=trim;
-                            while $tmp ne '' && $valid.validate($tmp) {
+                            while $tmp eq '' || !$valid.validate($tmp) {
                                 $tmp            = gzzreadline_call('email > ', $tmp, $gzzreadline);
                                 $tmp .=trim;
                             }
@@ -968,13 +1024,16 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $cc-id             = dropdown($cc-id, 20, 'id', &setup-option-str, &get-result, @_country);
                             }
                             if valid-country-cc-id($cc-id, %countries) {
-                                $cc_id             = $cc-id;
-                                my %_row           = %countries{$cc_id};
-                                $name              = %_row«_name»;
-                                $cc                = %_row«cc»;
-                                $flag              = uniparse 'Australia';
-                                $prefix            = %_row«prefix»;
-                                $escape            = %_row«_escape»;
+                                $cc_id               = $cc-id;
+                                my %_row             = %countries{$cc_id};
+                                $name                = %_row«_name»;
+                                $cc                  = %_row«cc»;
+                                $flag                = uniparse 'Australia';
+                                $residential-country = $name;
+                                $postal-country      = $name;
+                                $prefix              = %_row«prefix»;
+                                $escape              = ((%_row«_escape» === Str || %_row«_escape» === Any) ?? '0'  !! %_row«_escape»); #  guess a common value #
+                                $punct               = ((%row«punct» === Str    || %row«punct» === Any   ) ?? '- ' !! %row«punct»   ); #  guess a common value #
                                 try {
                                     CATCH {
                                         default {
@@ -990,15 +1049,25 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                     }
                                     $flag          = uniparse $name;
                                 }
-                                @country_regions    = |@(%_row«country_regions»);
-                                @country_regions    = |@country_regions.sort: { my %u = %($^a); my %v = %($^b);
+                                @country_regions      = |@(%_row«country_regions»);
+                                @country_regions      = |@country_regions.sort: { my %u = %($^a); my %v = %($^b);
                                                                                 my $res = %u«region».lc.trim cmp %v«region».lc.trim;
                                                     (($res == Same) ?? (%u«distinguishing».trim cmp %v«distinguishing».trim) !! $res ) };
-                                my %_row_           = @country_regions[0];
-                                $country_region_id  = %_row_«cr_id»;
-                                $cr-id              = %_row_«cr_id»;
-                                $region             = %_row_«region»;
-                                $distinguishing     = %_row_«distinguishing»;
+                                my %_row_             = @country_regions[0];
+                                $country_region_id    = %_row_«cr_id»;
+                                $cr-id                = %_row_«cr_id»;
+                                $region               = %_row_«region»;
+                                $residential-region   = $region;
+                                $postal-region        = $region;
+                                $distinguishing       = %_row_«distinguishing»;
+                                $mob_pattern          = %_row_«mobile_pattern»;
+                                $lndlne_pattern       = %_row_«landline_pattern»;
+                                $lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
+                                $mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+                                $mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
+                                $landline_pattern     = ECMA262Regex.compile("^$lndlne_pattern\$");
+                                $landline_placeholder = %_row_«landline_placeholder»;
+                                $mobile_placeholder   = %_row_«mobile_placeholder»;
                             }
                         }
                 when 8  {
@@ -1038,21 +1107,27 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 my %_value            = @country_regions[$ind];
                                 $cr-id                = %_value«cr_id»;
                                 $region               = %_value«region»;
+                                $residential-region   = $region;
+                                $postal-region        = $region;
                                 $distinguishing       = %_value«distinguishing»;
                                 $mob_pattern          = %_value«mobile_pattern»;
-                                $mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
                                 $lndlne_pattern       = %_value«landline_pattern»;
+                                $lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
+                                $mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+                                $mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
                                 $landline_pattern     = ECMA262Regex.compile("^$lndlne_pattern\$");
-                                $landline_placeholder = %value«landline_placeholder»;
-                                $mobile_placeholder   = %value«mobile_placeholder»;
+                                $landline_placeholder = %_value«landline_placeholder»;
+                                $mobile_placeholder   = %_value«mobile_placeholder»;
                             }
                         }
                 when 9  {
                             my $tmp                = gzzreadline_call("mobile: [$mobile_placeholder] > ", $mobile, $gzzreadline);
                             $tmp .=trim;
+                            dd $mobile_pattern, $tmp;
                             while $tmp !~~ $mobile_pattern {
                                 $tmp               = gzzreadline_call("mobile: [$mobile_placeholder] > ", $tmp, $gzzreadline);
                                 $tmp .=trim;
+                                dd $mobile_pattern, $tmp;
                             }
                             $mobile                = $tmp if $tmp ~~ $mobile_pattern;
                         }
@@ -1141,8 +1216,8 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             Bool:D $same-as-residential is rw,
                             Str:D $postal-unit is rw, Str:D $postal-street is rw, Str:D $postal-city_suberb is rw,
                             Str:D $postal-postcode is rw, Str:D $postal-region is rw, Str:D $postal-country is rw,
-                            Str:D $email is rw, Int:D $cc_id is rw, Int:D $country_region_id is rw, Str:D $mobile is rw, Str:D $landline is rw,
-                            Str:D $mobile_pattern is rw, Str:D $landline_pattern is rw, Str:D $escape is rw, Str:D $prefix is rw --> Bool) »»»
+                            Str:D $email is rw, Int:D $cc_id is rw, Int $country_region_id is rw, Str:D $mobile is rw, Str:D $landline is rw,
+                            Str:D $mobile_pattern is rw, Str:D $landline_pattern is rw, Str:D $escape is rw, Str:D $prefix is rw, Str:D $punct is rw, Bool:D $admin is rw --> Bool) »»»
 
 sub valid-pwd(Str:D $passwd, Bool :$nowhitespace = False --> Bool) is export {
     return False if $nowhitespace && $passwd.match(rx/\s/);
@@ -1178,6 +1253,34 @@ sub create-group(Str:D $group --> IdType) {
     return $return;
 } # sub create-group(Str:D $group --> IdType) #
 
+sub  create-groups(IdType:D $group-id, IdType:D $passwd-id --> IdType) {
+    my Int $return;
+    try {
+        CATCH {
+            # will definitely catch all the exception 
+            default {
+                        .backtrace;
+                        .Str.say;
+                        .rethrow;
+                    }
+        }
+        my $sql    = "INSERT INTO groups(group_id, passwd_id) VALUES(?, ?)\n";
+        #$sql      ~= "ON CONFLICT (group_id, passwd_id) DO UPDATE SET group_id = EXCLUDED.group_id, EXCLUDED.passwd_id = passwd_id\n";
+        $sql      ~= "RETURNING id;\n";
+        say "Got here $?LINE";
+        my $query  = $dbh.prepare($sql);
+        my $result = $query.execute($group-id, $passwd-id);
+        die "could not add group ($group-id, $passwd-id) query: $sql; failed" unless $result;
+        my %val = $result.row(:hash);
+        unless %val {
+            die "could not add group ($group-id, $passwd-id) query: $sql; failed";
+        }
+        say "Got here $?LINE";
+        $return = %val«id»;
+    }
+    return $return;
+} # sub  create-groups(IdType:D $group-id, IdType:D $passwd-id --> IdType) #
+
 sub create-email(Str:D $email --> IdType) {
     my Int $return;
     try {
@@ -1190,7 +1293,7 @@ sub create-email(Str:D $email --> IdType) {
                     }
         }
         my $sql    = "INSERT INTO email(_email) VALUES(?)\n";
-        $sql      ~= "ON CONFLICT (_email) DO UPDATE SET _email = EXCLUDED._email\n";
+        #$sql      ~= "ON CONFLICT (_email) DO UPDATE SET _email = EXCLUDED._email\n";
         $sql      ~= "RETURNING id;\n";
         my $query  = $dbh.prepare($sql);
         my $result = $query.execute($email);
@@ -1216,7 +1319,7 @@ sub create-phone(Str:D $phone --> IdType) {
                     }
         }
         my $sql    = "INSERT INTO phone(_number) VALUES(?)\n";
-        $sql      ~= "ON CONFLICT (_number) DO UPDATE SET _number = EXCLUDED._number\n";
+        #$sql      ~= "ON CONFLICT (_number) DO UPDATE SET _number = EXCLUDED._number\n";
         $sql      ~= "RETURNING id;\n";
         my $query  = $dbh.prepare($sql);
         my $result = $query.execute($phone);
@@ -1257,6 +1360,92 @@ sub create-address(Str:D $unit, Str:D $street, Str:D $city_suburb, Str:D $postco
     return $return;
 } # sub create-address(Str:D $unit, Str:D $street, Str:D $city_suburb, Str:D $postcode, Str:D $region, Str:D $country --> IdType) #
 
+sub create-passwd-details(Str:D $display-name, Str:D $given, Str:D $surname, IdType:D $residential-address-id, IdType:D $postal-address-id, IdType $primary-phone-id, IdType $secondary-phone-id, IdType:D $country-id, IdType $country-region-id --> IdType) {
+    my Int $return;
+    try {
+        CATCH {
+            # will definitely catch all the exception 
+            default {
+                        .backtrace;
+                        .Str.say;
+                        .rethrow;
+                    }
+        }
+        my Str:D $sql = qq{INSERT INTO passwd_details(display_name, given, _family, residential_address_id, postal_address_id, primary_phone_id, secondary_phone_id, country_id, country_region_id)\n
+                           VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)\n
+                           RETURNING id;\n};
+        my $query  = $dbh.prepare($sql);
+        my $result = $query.execute($display-name, $given, $surname, $residential-address-id, $postal-address-id, $primary-phone-id, $secondary-phone-id, $country-id, $country-region-id);
+        die "could not add passwd_details ($display-name, $given, $surname, $residential-address-id, $postal-address-id, $primary-phone-id, $secondary-phone-id, $country-id, $country-region-id) query: $sql; failed" unless $result;
+        my %val = $result.row(:hash);
+        unless %val {
+            die "could not add passwd_details ($display-name, $given, $surname, $residential-address-id, $postal-address-id, $primary-phone-id, $secondary-phone-id, $country-id, $country-region-id) query: $sql; failed";
+        }
+        $return = %val«id»;
+    }
+    return $return;
+} # sub create-passwd-details(Str:D $display-name, Str:D $given, Str:D $surname, IdType:D $residential-address-id, IdType:D $postal-address-id, IdType $primary-phone-id, IdType $secondary-phone-id, IdType:D $country-id, IdType $country-region-id --> IdType) #
+
+sub create-passwd(Str:D $username, Str:D $hashed-passwd, Int:D $passwd-details-id, Int:D $primary-group-id, Bool:D $admin, Int:D $email-id --> IdType) {
+    my Int $return;
+    try {
+        CATCH {
+            # will definitely catch all the exception 
+            default {
+                        .backtrace;
+                        .Str.say;
+                        .rethrow;
+                    }
+        }
+        my Str:D $obscured-passwd = '*' x 20;
+        my Str:D $sql = qq{INSERT INTO passwd(username, _password, passwd_details_id, primary_group_id, _admin, email_id)\n
+                           VALUES(?, ?, ?, ?, ?, ?)\n
+                           RETURNING id;\n};
+        my $query  = $dbh.prepare($sql);
+        my $result = $query.execute($username, $hashed-passwd, $passwd-details-id, $primary-group-id, $admin, $email-id);
+        die "could not add passwd_details ($username, $obscured-passwd, $passwd-details-id, $primary-group-id, $admin, $email-id) query: $sql; failed" unless $result;
+        my %val = $result.row(:hash);
+        unless %val {
+            die "could not add passwd_details ($username, $obscured-passwd, $passwd-details-id, $primary-group-id, $admin, $email-id) query: $sql; failed";
+        }
+        $return = %val«id»;
+    }
+    return $return;
+} # sub create-passwd(Str:D $username, Str:D $hashed-passwd, Int:D $passwd-details-id, Int:D $primary-group-id, Bool:D $admin, Int:D $email-id --> IdType) #
+
+sub normalise-phone(Str:D $phone_number, Str:D $escape, Str:D $prefix, Regex:D $phone-pattern, Str:D $punct is copy --> Str) {
+    my Str:D $result = $phone_number;
+    try  {
+        CATCH {
+            # will definitely catch all the exception 
+            default {
+                        .backtrace;
+                        .Str.say;
+                        .rethrow;
+                    }
+        }
+        $punct ~~ s:g/ \x20 /\\x20/;
+        my Str:D $pg = "<[$punct]>";
+        $result ~~ s:g/ <$pg> //; # remove punctuation. Note: \x20 is ord 32 or space #
+        if $result.starts-with($escape) {
+            $result ~~ s/^<$escape>/$prefix/;
+        }
+        if $result !~~ rx/^\+/ {
+            if $result.starts-with($prefix.substr(1)) {
+                $result = '+' ~ $result if $result ~~ $phone-pattern;
+            }
+            if $result ~~ rx/^ \+ / {
+                $result = $prefix ~ $result;
+            }
+        }
+        unless $result ~~ $phone-pattern {
+            $*ERR.say: "could not normailse phone_number: '$phone_number' ==> '$result' does not , match pattern: $phone-pattern";
+            return $phone_number; # bail something is wrong #
+        }
+    }
+    return $result;
+} # sub normalise-phone(Str:D $landline, Str:D $escape, Str:D $prefix, Regex:D $phone-pattern, Str:D $punct --> Str) #
+
 sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/}, Str:D $passwd, Str:D $repeat-pwd,
                       Str:D $group is copy, @Groups, Str:D $given-names is copy, Str:D $surname is copy,
                       Str:D $display-name is copy, Str:D $residential-unit is copy, Str:D $residential-street is copy,
@@ -1281,20 +1470,26 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
     my Int $country_region_id = 490;
     my Str $prefix = '';
     my Str $escape = '';
+    my Str $punct  = '';
     my Regex $mobile_pattern;
     my Regex $landline_pattern;
-    my Bool:D $result = True;
-    my Bool:D $loggedin          = so %session«loggedin»;
-    my Int    $loggedin_id       =    ((%session«loggedin_id» === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username =    ((%session«loggedin_username» === Any) ?? Str !! %session«loggedin_username» );
-    my Bool:D $_admin            = so %session«loggedin_admin»;
-    my Str    $display_name      =    ((%session«loggedin_display_name» === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given             =    ((%session«loggedin_given» === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family            =    ((%session«loggedin_family» === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email    =    ((%session«loggedin_email» === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number      =    ((%session«loggedin_phone_number» === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname         =    ((%session«loggedin_groupname» === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id  =    ((%session«loggedin_groupnname_id» === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Bool:D $result                    = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
+    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
+    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
@@ -1317,23 +1512,30 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
                                 $residential-unit, $residential-street, $residential-city_suberb,
                                 $residential-postcode, $residential-region, $residential-country, $same-as-residential,
                                 $postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country,
-                                $email, $cc_id, $country_region_id, $mobile, $landline, $mobile_pattern, $landline_pattern, $escape, $prefix, $admin);
+                                $email, $cc_id, $country_region_id, $mobile, $landline, $mobile_pattern, $landline_pattern, $escape, $prefix, $punct, $admin);
         unless $result {
             return False;
         }
         $mobile   .=trim;
         if $mobile ne '' && $mobile !~~ $mobile_pattern {
             die "bad mobile value: $mobile";
+        } elsif $mobile ~~ $mobile_pattern {
+            $mobile = normalise-phone($mobile, $escape, $prefix, $mobile_pattern, $punct);
         }
         $landline .=trim;
         if $landline ne '' && $landline !~~ $landline_pattern {
             die "bad landline value: $landline";
+        } elsif $landline ~~ $landline_pattern {
+            $landline = normalise-phone($landline, $escape, $prefix, $landline_pattern, $punct);
         }
         if $residential-street eq '' || $residential-city_suberb eq '' || $residential-postcode eq '' || $residential-region eq '' || $residential-country eq '' {
             die "bad address ($residential-unit, $residential-street, $residential-city_suberb, $residential-postcode, $residential-region, $residential-country)";
         }
         if !$same-as-residential && ($postal-street eq '' || $postal-city_suberb eq '' || $postal-postcode eq '' || $postal-region eq '' || $postal-country eq '') {
             die "bad address ($postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country)";
+        }
+        if $display-name eq '' || $given-names eq '' || $surname eq '' || $country_region_id == 0 {
+            die "bad values for passwd_details ($display-name, $given-names, $surname, ..., $country_region_id)";
         }
         @Groups    = $Groups.split(rx/ \s* ',' \s* /, :skip-empty);
         my IdType:D $group-id = create-group($group);
@@ -1342,14 +1544,36 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
         my IdType $landline-id = (($landline eq '') ?? Int !! create-phone($landline));
         my IdType:D $residential-address-id = create-address($residential-unit, $residential-street, $residential-city_suberb, $residential-postcode, $residential-region, $residential-country);
         my IdType:D $postal-address-id = $residential-address-id;
+        my IdType   $primary-phone-id;
+        my IdType   $secondary-phone-id;
+        if $mobile-id !=== Int {
+            $primary-phone-id   = $mobile-id;
+            $secondary-phone-id = $landline-id;
+        } elsif $landline-id !=== Int {
+            $primary-phone-id   = $landline-id;
+            $secondary-phone-id = $mobile-id;
+        }
         if !$same-as-residential {
             $postal-address-id = create-address($postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country);
+        }
+        my IdType:D $passwd-details-id = create-passwd-details($display-name, $given-names, $surname, $residential-address-id, $postal-address-id, $primary-phone-id, $secondary-phone-id, $cc_id, $country_region_id);
+        my IdType:D $passwd-id         = create-passwd($username, $hashed-passwd, $passwd-details-id, $group-id, $admin, $email-id);
+        my @Group-ids;
+        say "Got here $?LINE";
+        for @Groups -> $name {
+            if $name !~~ rx/^ \w+ $/ {
+                say "bad group name: $name skipping.";
+                next;
+            }
+            next if $name eq $groupname;
+            my IdType:D $id = create-group($name);
+            @Group-ids.push:  create-groups($id, $passwd-id);
         }
         dd $username, $group, @Groups, $given-names, $surname, $display-name,
                                 $residential-unit, $residential-street, $residential-city_suberb,
                                 $residential-postcode, $residential-region, $residential-country, $same-as-residential,
                                 $postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country,
-                                $email, $cc_id, $country_region_id, $mobile, $landline, $admin, $result, $group-id, $email-id, $residential-address-id,
+                                $email, $cc_id, $country_region_id, $mobile, $landline, $escape, $prefix, $punct, $admin, $result, $group-id, $email-id, $residential-address-id,
                                 $postal-address-id;
     }
     return $result;
