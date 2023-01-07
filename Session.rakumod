@@ -5,6 +5,13 @@ use DBI:from<Perl5>;
 use Apache::Session::Postgres:from<Perl5>;
 use Init_session:from<Perl5>;
 
+class X::Session::FailedToSupplyArg is Exception {
+    has Str $.argname;
+    method message() {
+        "Failed to supply Argument $!argname!";
+    }
+}
+
 class Postgres does Associative is export {
     subset StrOrArrayOfStr where Str | ( Array & {.all ~~ Str} );
 
@@ -13,8 +20,8 @@ class Postgres does Associative is export {
     has %!args;
     has $!db;
     has Bool $!dirty;
-    submethod BUILD (:$id, :%args, :$db, :$dirty) {
-        if $id ~~ Str && $id ~~ rx/^^ \w+ $$/ {
+    submethod BUILD (Str :$id, :%args, :$db, :$dirty) {
+        if $id !=== Str && $id ~~ rx/^^ \w+ $$/ {
             $!apsesspg = tiehash_with_id($id, { Handle => $db, TableName => 'sessions', });
         } else {
             $!apsesspg = tiehash_without_id({ Handle => $db, TableName => 'sessions', });
@@ -27,23 +34,26 @@ class Postgres does Associative is export {
         $!db     = $db;
         $!dirty  = $dirty;
     }
-    multi method new ( $_id, $_args where Hash = {} ) {
+    multi method new (Str $_id, $_args where Hash = {} ) {
         #"new positional".say;
         return self.new( :$_id, :args(%$_args) );
     }
-    multi method new ( :$_id is copy = Nil, :%args = Hash.new() ) {
+    multi method new (Str :$_id is copy = Str, :%args = Hash.new() ) {
         #"new names only".say;
         #dd %args;
-        my $id;
+        my Str $id;
         my Bool $dirty = False;
-        if $_id ~~ Str && $_id.trim ne '' {
+        if $_id !=== Str && $_id.trim ne '' {
             $id = $_id;
         } else {
             $dirty = True;
         }
         #dd $id;
-        my $db;
+        my DBI $db;
         if %args«Handle»:exists {
+            without %args«Handle» {
+                say "Bad value for Handle supplied! should be Perl5 DBI!";
+            }
             $db   = %args«Handle»;
         } else {
             {
@@ -51,17 +61,42 @@ class Postgres does Associative is export {
                     when X::AdHoc {
                         say "Caught a Perl 5 exception: $_";
                     }                        
+                    when X::TypeCheck::Assignment {
+                        say "you tried to assign a bad value or did not supply one!";
+                        .rethrow;
+                    }
                     default {
-                        #.resume;
+                        .say;
+                        .rethrow;
                     }
                 }
-                my Str $dbserver = %args«dbserver»;
-                my Int $dbport   = %args«dbport»;
-                my Str $dbuser   = %args«dbuser»;
-                my Str $dbpass   = %args«dbpasswd»;
-                my Str $dbname   = %args«dbname»;
-                dd $dbserver, $dbport, $dbpass, $dbname, $dbuser;
-                $db = DBI.connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpass", { AutoCommit => 1, RaiseError => 1});
+                unless %args«dbserver»:exists {
+                    "you must supply hash elt \%args«dbserver» of type Str:D since you did not supply a Handle of perl5 type DBI!".say;
+                    X::Session::FailedToSupplyArg.new(:argname("\%args«dbserver»")).die;
+                }
+                unless %args«dbport»:exists {
+                    "you must supply hash elt \%args«dbport» of type Int:D since you did not supply a Handle of perl5 type DBI!".say;
+                    X::Session::FailedToSupplyArg.new(:argname("\%args«dbport»")).die;
+                }
+                unless %args«dbuser»:exists {
+                    "you must supply hash elt \%args«dbuser» of type Str:D since you did not supply a Handle of perl5 type DBI!".say;
+                    X::Session::FailedToSupplyArg.new(:argname("\%args«dbuser»")).die;
+                }
+                unless %args«dbpasswd»:exists {
+                    "you must supply hash elt \%args«dbpasswd» of type Str:D since you did not supply a Handle of perl5 type DBI!".say;
+                    X::Session::FailedToSupplyArg.new(:argname("\%args«dbpasswd»")).die;
+                }
+                unless %args«dbname»:exists {
+                    "you must supply hash elt \%args«dbname» of type Str:D since you did not supply a Handle of perl5 type DBI!".say;
+                    X::Session::FailedToSupplyArg.new(:argname("\%args«dbname»")).die;
+                }
+                my Str:D $dbserver = %args«dbserver»;
+                my Int:D $dbport   = %args«dbport»;
+                my Str:D $dbuser   = %args«dbuser»;
+                my Str:D $dbpasswd = %args«dbpasswd»;
+                my Str:D $dbname   = %args«dbname»;
+                #dd $dbserver, $dbport, $dbpass, $dbname, $dbuser;
+                $db = DBI.connect("dbi:Pg:database=$dbname;host=$dbserver;port=$dbport;", "$dbuser", "$dbpasswd", { AutoCommit => 1, RaiseError => 1});
             }
         }
         return self.bless(:$id, :%args, :$db, :$dirty, |%_);
