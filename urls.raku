@@ -175,3 +175,14 @@ multi sub MAIN('logout', Bool:D :s(:$sure) = False) returns Int {
        exit 1;
    } 
 }
+
+multi sub MAIN('change', 'passwd' )  returns Int {
+    Str:D $old-passwd  = getpass "old password: ";
+    Str:D $passwd = getpass "new password: ";
+    Str:D $repeat-pwd = getpass "repeat new password: ";
+    if change-passwd($old-passwd, $passwd, $repeat-pwd) {
+        exit 0;
+    } else {
+        exit 1;
+    } 
+} # multi sub MAIN('change', 'passwd' )  returns Int #

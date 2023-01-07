@@ -328,8 +328,8 @@ sub generate-hash(Str:D $password --> Str) is export {
     my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
-            iterations => 2048,
-            output_len => 64,
+            iterations => 134_217_728,
+            output_len => 128,
             salt_len => 16,
             length_limit => 144
         );
@@ -340,12 +340,20 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
     my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
+            iterations => 134_217_728,
+            output_len => 128,
+            salt_len => 16,
+            length_limit => 144
+        );
+    my $pbkdf2_old = Crypt::PBKDF2.new( 
+            hash_class => 'HMACSHA2', 
+            hash_args => {sha_size => 512},
             iterations => 2048,
             output_len => 64,
             salt_len => 16,
             length_limit => 144
         );
-    my Bool $result = False;
+    my Bool:D $result = False;
     try {
         CATCH {
             default {
@@ -357,12 +365,13 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
         }
 
         $result = $pbkdf2.validate($hashed-password, $password) != 0;
+        $result = $pbkdf2_old.validate($hashed-password, $password) != 0 unless $result; # TODO: remove this when all accounts are upgraded #
     }
     return $result;
 } # sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export #
 
 sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is copy --> Bool) is export {
-    my $sql                      = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, c.prefix, c._escape, c.punct, pd.display_name, pd.given, pd._family,\n";
+    my $sql                      = "SEECT p.id, p.username, p._password, p.primary_group_id, p._admin, c.prefix, c._escape, c.punct, pd.display_name, pd.given, pd._family,\n";
     $sql                        ~= "e._email, ph._number phone_number, g._name groupname, g.id group_id, cr.landline_pattern, cr.mobile_pattern\n";
     $sql                        ~= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
     $sql                        ~= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
@@ -370,22 +379,22 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     $sql                        ~= "WHERE p.username = ?\n";
     my $sth                      = $dbh.execute($sql, $username);
     my %val                      = $sth.row(:hash);
-    my $loggedin_id              = %val«id»;
-    my $loggedin_username        = %val«username»;
-    my $primary_group_id         = %val«group_id»;
-    my $hashed-password          = %val«_password»;
-    my $_admin                   =  so %val«_admin»;
-    my $display_name             = %val«display_name»;
-    my $given                    = %val«given»;
-    my $family                   = %val«_family»;
-    my $email                    = %val«_email»;
-    my $phone_number             = %val«phone_number»;
-    my $groupname                = %val«groupname»;
-    my $prefix                   = %val«prefix»;
-    my $escape                   = %val«_escape»;
-    my $punct                    = %val«punct»;
-    my $land_pattern             = %val«landline_pattern»;
-    my $mob_pattern              = %val«mobile_pattern»;
+    my Int:D $loggedin_id        = %val«id»;
+    my Str:D $loggedin_username  = %val«username»;
+    my Int:D $primary_group_id   = %val«group_id»;
+    my Str:D $hashed-password    = %val«_password»;
+    my Bool:D $_admin            =  so %val«_admin»;
+    my Str:D $display_name       = %val«display_name»;
+    my Str:D $given              = %val«given»;
+    my Str:D $family             = %val«_family»;
+    my Str:D $email              = %val«_email»;
+    my Str:D $phone_number       = %val«phone_number»;
+    my Str:D $groupname          = %val«groupname»;
+    my Str:D $prefix             = %val«prefix»;
+    my Str:D $escape             = %val«_escape»;
+    my Str:D $punct              = %val«punct»;
+    my Str:D $land_pattern       = %val«landline_pattern»;
+    my Str:D $mob_pattern        = %val«mobile_pattern»;
     #$land_pattern               ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundant he fixed ECMA262Regex #
     #$mob_pattern                ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
     my Regex:D $landline_pattern = ECMA262Regex.compile("^$land_pattern\$");
@@ -422,6 +431,90 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     say "Failed to login for user: $username";
     return False;
 } # sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd --> Bool) is export #
+ 
+sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repeat-pwd is copy --> Bool) is export {
+    my Bool:D $result                    = False;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
+    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
+    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "you must be loggedin to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
+        return False;
+    }
+    without $loggedin_username {
+        say "something is wrong with your login no defined username, logout and in again";
+        return False;
+    }
+    unless $loggedin_username ~~ rx/^ \w+ $/ {
+        say "something is wrong with your login bad username: $loggedin_username, logout and in again";
+        return False;
+    }
+    my Str:D $username           = $loggedin_username;
+    my $sql                      = "SEECT p.id, p.username, p._password\n";
+    $sql                        ~= "FROM passwd p\n";
+    $sql                        ~= "WHERE p.username = ?\n";
+    my $sth                      = $dbh.execute($sql, $username);
+    my %val                      = $sth.row(:hash);
+    my $id                       = %val«id»;
+    my $hashed-password          = %val«_password»;
+    unless $id == $loggedin_id {
+        say "something is wrong with your login id's dont match, logout and in again";
+        return False;
+    }
+    my Int:D $retrys = 0;
+    while $old-passwd eq '' || !validate($hashed-password, $old-passwd) {
+        say "wrong old password";
+        $passwd = getpass "Old password: ";
+        $retrys++;
+        last if $retrys >= 4;
+    }
+    unless validate($hashed-password, $old-passwd) {
+        say "too many retrys";
+        return False;
+    }
+    $retrys = 0;
+    while !valid-pwd($passwd, :nowhitespace) || $passwd ne $repeat-pwd {
+        $passwd = getpass "password: ";
+        $repeat-pwd = getpass "repeat-password: ";
+        $retrys++;
+        last if $retrys >= 4;
+    }
+    unless $passwd eq $repeat-pwd && valid-pwd($passwd, :nowhitespace) {
+        "too many retrys".say;
+        return False;
+    }
+    my Str:D $hashed-passwd = generate-hash($passwd);
+    if validate($hashed-passwd, $passwd) {
+        CATCH {
+            when X::DBDish::DBError {
+                .message.say; .rethrow;
+            }
+            default {
+                .say; .rethrow;
+            }
+        }
+        $sql  = qq{UPDATE passwd SET _password = ? WHERE id = ?};
+        my $sth2                 = $dbh.execute($sql, $id);
+        $result = True;
+    } else {
+        "Error: password validation failed.".say;
+        $result = False;
+    }
+    return $result;
+} # sub change-passwd(Str:D $old-password, Str:D $password, Str:D $repeat --> Bool) is export #
 
 sub logout(Bool:D $sure is copy --> Bool) is export {
     my Bool:D $tmp = False;
