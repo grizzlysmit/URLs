@@ -328,7 +328,7 @@ sub generate-hash(Str:D $password --> Str) is export {
     my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
-            iterations => 134_217_728,
+            iterations => 32_768,
             output_len => 128,
             salt_len => 16,
             length_limit => 144
@@ -340,11 +340,12 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
     my $pbkdf2 = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
-            iterations => 134_217_728,
+            iterations => 32_768,
             output_len => 128,
             salt_len => 16,
             length_limit => 144
         );
+    #`«««
     my $pbkdf2_old = Crypt::PBKDF2.new( 
             hash_class => 'HMACSHA2', 
             hash_args => {sha_size => 512},
@@ -353,10 +354,12 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
             salt_len => 16,
             length_limit => 144
         );
+    # »»»
     my Bool:D $result = False;
     try {
         CATCH {
             default {
+                say "Got here catching error";
                 $result = False;
                 .backtrace;
                 .Str.say;
@@ -365,13 +368,12 @@ sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export {
         }
 
         $result = $pbkdf2.validate($hashed-password, $password) != 0;
-        $result = $pbkdf2_old.validate($hashed-password, $password) != 0 unless $result; # TODO: remove this when all accounts are upgraded #
     }
     return $result;
 } # sub validate(Str:D $hashed-password, Str:D $password --> Bool) is export #
 
 sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is copy --> Bool) is export {
-    my $sql                      = "SEECT p.id, p.username, p._password, p.primary_group_id, p._admin, c.prefix, c._escape, c.punct, pd.display_name, pd.given, pd._family,\n";
+    my $sql                      = "SELECT p.id, p.username, p._password, p.primary_group_id, p._admin, c.prefix, c._escape, c.punct, pd.display_name, pd.given, pd._family,\n";
     $sql                        ~= "e._email, ph._number phone_number, g._name groupname, g.id group_id, cr.landline_pattern, cr.mobile_pattern\n";
     $sql                        ~= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
     $sql                        ~= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
@@ -379,6 +381,10 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     $sql                        ~= "WHERE p.username = ?\n";
     my $sth                      = $dbh.execute($sql, $username);
     my %val                      = $sth.row(:hash);
+    without %val«id» {
+        "Failed to login for user: $username".say;
+        return False;
+    }
     my Int:D $loggedin_id        = %val«id»;
     my Str:D $loggedin_username  = %val«username»;
     my Int:D $primary_group_id   = %val«group_id»;
@@ -401,12 +407,12 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     my Regex:D $mobile_pattern   = ECMA262Regex.compile("^$mob_pattern\$");
     my Int:D $cnt = 0;
     while !validate($hashed-password, $passwd) && $cnt < 4 {
+        unless $cnt < 4 {
+            say "too many retrys bailing";
+            return False;
+        }
         $passwd = getpass "password > ";
         $cnt++;
-    }
-    if $cnt >= 4 {
-        say "too many retrys bailing";
-        return False;
     }
     if validate($hashed-password, $passwd) {
         %session«loggedin»                  = $loggedin_id;
@@ -432,7 +438,7 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     return False;
 } # sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd --> Bool) is export #
  
-sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repeat-pwd is copy --> Bool) is export {
+sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repeat-pwd is copy, Str:D $user, Bool:D $force --> Bool) is export {
     my Bool:D $result                    = False;
     my Bool:D $loggedin                  = so %session«loggedin»;
     my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
@@ -450,6 +456,10 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
     my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
     my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
+    if $force && !$_admin {
+        "option force not alloed for non admin user".say;
+        return False;
+    }
     unless $loggedin {
         say "you must be loggedin to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
@@ -463,40 +473,51 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
         return False;
     }
     my Str:D $username           = $loggedin_username;
-    my $sql                      = "SEECT p.id, p.username, p._password\n";
+    if $user ne $loggedin_username && $_admin {
+        $username = $user;
+    } else {
+        "only an admin can changee some one elses password".say;
+        return False;
+    }
+    my $sql                      = "SELECT p.id, p.username, p._password\n";
     $sql                        ~= "FROM passwd p\n";
     $sql                        ~= "WHERE p.username = ?\n";
     my $sth                      = $dbh.execute($sql, $username);
     my %val                      = $sth.row(:hash);
     my $id                       = %val«id»;
-    my $hashed-password          = %val«_password»;
-    unless $id == $loggedin_id {
+    my $old-hashed-password      = %val«_password»;
+    without $id {
+        "username not found in the db".say;
+        return False;
+    }
+    if $id != $loggedin_id && !$_admin {
         say "something is wrong with your login id's dont match, logout and in again";
         return False;
     }
     my Int:D $retrys = 0;
-    while $old-passwd eq '' || !validate($hashed-password, $old-passwd) {
-        say "wrong old password";
-        $passwd = getpass "Old password: ";
-        $retrys++;
+    while !$force && ($old-passwd eq '' || !validate($old-hashed-password, $old-passwd)) {
         last if $retrys >= 4;
+        say "wrong old password";
+        $old-passwd = getpass "Old password: ";
+        $retrys++;
     }
-    unless validate($hashed-password, $old-passwd) {
+    unless $force || validate($old-hashed-password, $old-passwd) {
         say "too many retrys";
         return False;
     }
     $retrys = 0;
     while !valid-pwd($passwd, :nowhitespace) || $passwd ne $repeat-pwd {
+        unless $retrys < 4 {
+            "too many retrys".say;
+            return False;
+        }
         $passwd = getpass "password: ";
         $repeat-pwd = getpass "repeat-password: ";
         $retrys++;
-        last if $retrys >= 4;
-    }
-    unless $passwd eq $repeat-pwd && valid-pwd($passwd, :nowhitespace) {
-        "too many retrys".say;
-        return False;
     }
     my Str:D $hashed-passwd = generate-hash($passwd);
+    my $len = $hashed-passwd.chars;
+    dd $hashed-passwd, $len;
     if validate($hashed-passwd, $passwd) {
         CATCH {
             when X::DBDish::DBError {
@@ -507,7 +528,7 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
             }
         }
         $sql  = qq{UPDATE passwd SET _password = ? WHERE id = ?};
-        my $sth2                 = $dbh.execute($sql, $id);
+        my $sth2                 = $dbh.execute($sql, $hashed-passwd, $id);
         $result = True;
     } else {
         "Error: password validation failed.".say;
@@ -720,7 +741,8 @@ sub normalise_top(Int:D $top is copy, Int:D $pos, Int:D $window-height, Int:D $l
 #       Emulates dropdown/list behaviour as best you can on a terminal. not a real dropdown always down!!!    #
 #                                                                                                             #
 ###############################################################################################################
-sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str, &get-result, @array --> Int) {
+sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str:(Int:D $c, @a --> Str:D),
+                &get-result:(Int:D $res, Int:D $p, Int:D $l, @a --> Int:D), @array --> Int) {
     my Int $result = $id;
     try {
         my Int $pos    = -1;
@@ -750,6 +772,7 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str,
         loop (my Int $i = 0; $i < $length; $i++) {
             $m = max($m, &setup-option-str($i, @array).chars);
         } # loop (my Int $i = 0; $i < $length; $i++) #
+        $m = max($m, 'use up and down arrows or page up and down : and enter to select'.chars);
         my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
         loop {
             put t.clear-screen;
@@ -1091,7 +1114,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             $email = $tmp if $tmp ne '' && $valid.validate($tmp);
                         }
                 when 7  {
-                            my &setup-option-str = sub (Int:D $cnt, @array --> Str ) {
+                            my &setup-option-str = sub (Int:D $cnt, @array --> Str:D ) {
                                 my Str $name;
                                 my Str $cc;
                                 my Str $flag;
@@ -1124,7 +1147,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 }
                                 return "$flag $name: $cc ($prefix)"
                             };
-                            my &get-result = sub (Int:D $result, Int:D $pos, Int:D $length, @array --> Int ) {
+                            my &get-result = sub (Int:D $result, Int:D $pos, Int:D $length, @array --> Int:D ) {
                                 my $res = $result;
                                 if $pos ~~ 0..^$length {
                                   my %row = |%(@array[$pos]);
@@ -1184,7 +1207,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                             }
                         }
                 when 8  {
-                            my &setup-option-str = sub (Int:D $cnt, @array --> Str ) {
+                            my &setup-option-str = sub (Int:D $cnt, @array --> Str:D ) {
                                 my Str $region;
                                 my Str $distinguishing;
                                 if $cnt == -1 {
@@ -1197,7 +1220,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 }
                                 return "$region ($distinguishing)";
                             };
-                            my &get-result = sub (Int:D $result, Int:D $pos, Int:D $length, @array --> Int ) {
+                            my &get-result = sub (Int:D $result, Int:D $pos, Int:D $length, @array --> Int:D ) {
                                 my $res = $result;
                                 if $pos ~~ 0..^$length {
                                   my %row = |%(@country_regions[$pos]);

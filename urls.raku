@@ -101,8 +101,14 @@ multi sub MAIN('launch', 'link', Str $section where { $section !~~ rx/^^ \s+ $$/
 }
 
 multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w* $$/} = '', Str :p(:$passwd) is copy = '') returns Int {
-    if $username eq '' {
+    my Int:D $retrys = 0;
+    while $username eq '' || $username !~~ rx/^ \w+ $/ {
+        unless $retrys < 4 {
+            "too many retrys".say;
+            exit 1;
+        }
         $username = prompt "username > ";
+        $retrys++;
     }
     if $passwd eq '' {
         $passwd = getpass "password > ";
@@ -176,11 +182,11 @@ multi sub MAIN('logout', Bool:D :s(:$sure) = False) returns Int {
    } 
 }
 
-multi sub MAIN('change', 'passwd' )  returns Int {
-    Str:D $old-passwd  = getpass "old password: ";
-    Str:D $passwd = getpass "new password: ";
-    Str:D $repeat-pwd = getpass "repeat new password: ";
-    if change-passwd($old-passwd, $passwd, $repeat-pwd) {
+multi sub MAIN('change', 'passwd', Str:D :u(:$username) where { $username ~~ rx/^ \w* $/ } = '', Bool:D :f(:$force) = False )  returns Int {
+    my Str:D $old-passwd  = $force ?? '' !! getpass "old password: ";
+    my Str:D $passwd = getpass "new password: ";
+    my Str:D $repeat-pwd = getpass "repeat new password: ";
+    if change-passwd($old-passwd, $passwd, $repeat-pwd, $username, $force) {
         exit 0;
     } else {
         exit 1;
