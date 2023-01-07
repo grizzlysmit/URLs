@@ -386,8 +386,8 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
     my $punct                    = %val«punct»;
     my $land_pattern             = %val«landline_pattern»;
     my $mob_pattern              = %val«mobile_pattern»;
-    $land_pattern               ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
-    $mob_pattern                ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+    #$land_pattern               ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundant he fixed ECMA262Regex #
+    #$mob_pattern                ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
     my Regex:D $landline_pattern = ECMA262Regex.compile("^$land_pattern\$");
     my Regex:D $mobile_pattern   = ECMA262Regex.compile("^$mob_pattern\$");
     my Int:D $cnt = 0;
@@ -651,6 +651,13 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str,
         $flags.unset_lflags('ICANON');
         $flags.unset_lflags('ECHO');
         $flags.setattr(:NOW);
+        my Int $width = terminal-width;
+        $width = 80 if $width === Int;
+        my Int:D $m = 0;
+        loop (my Int $i = 0; $i < $length; $i++) {
+            $m = max($m, &setup-option-str($i, @array).chars);
+        } # loop (my Int $i = 0; $i < $length; $i++) #
+        my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
         loop {
             put t.clear-screen;
             loop (my Int $cnt = $top; $cnt < $top + $window-height && $cnt < $length; $cnt++) {
@@ -664,10 +671,11 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str,
                     $bgcolour = t.bg-color(0,255,0);
                     $fgcolour = t.bright-blue;
                 }
-                put $bgcolour ~ t.bold ~ $fgcolour ~ sprintf("%-80s", &setup-option-str($cnt, @array)) ~ t.text-reset;
+                put $bgcolour ~ t.bold ~ $fgcolour ~ sprintf("%-*s", $w, &setup-option-str($cnt, @array)) ~ t.text-reset;
             } # loop (my Int $cnt = $top; $cnt <= $top + $window-height; $cnt++) #
             $cnt = $top + $window-height;
-            put t.bg-green ~ t.bold ~ t.bright-blue ~ sprintf("%-40s: %-40s", trailing-dots('use up and down arrows or page up and down', 40), 'and enter to select') ~ t.text-reset;
+            my Int:D $wdth = $w div 2;
+            put t.bg-green ~ t.bold ~ t.bright-blue ~ sprintf("%-*s: %-*s", $wdth, trailing-dots('use up and down arrows or page up and down', 40), $w - $wdth, 'and enter to select') ~ t.text-reset;
             $cnt++;
             $key = $*IN.read(10).decode;
             given $key {
@@ -830,75 +838,87 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
         $distinguishing          = %value«distinguishing»;
         my $mob_pattern          = %value«mobile_pattern»;
         my $lndlne_pattern       = %value«landline_pattern»;
-        $lndlne_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
-        $mob_pattern            ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+        #$lndlne_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundat he fixed ECMA262Regex #
+        #$mob_pattern            ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
         $mobile_pattern          = ECMA262Regex.compile("^$mob_pattern\$");
         $landline_pattern        = ECMA262Regex.compile("^$lndlne_pattern\$");
         my $landline_placeholder = %value«landline_placeholder»;
         my $mobile_placeholder   = %value«mobile_placeholder»;
         loop {
+            my Int $width = terminal-width;
+            $width = 80 if $width === Int;
+            my Int:D $m = max(($username, $group, $Groups, $given-names,
+                                $surname, $display-name,
+                                $residential-unit, $residential-street, $residential-city_suberb,
+                                $residential-postcode, $residential-region, $residential-country,
+                                $same-as-residential,
+                                $postal-unit, $postal-street, $postal-city_suberb,
+                                $postal-postcode, $postal-region, $postal-country,
+                                $email, $cc_id, $country_region_id, $mobile, $landline,
+                                $escape, "$flag $name: $cc ($prefix)", $punct, $admin, "$region ($distinguishing)", ).map: { .chars });
+            my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
             put t.clear-screen;
             my Int $cnt = 0;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('username', 24),                $username) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('username', 24), $w,                $username) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('group', 24),                   $group) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('group', 24), $w,                   $group) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('Groups', 24),                  $Groups) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Groups', 24), $w,                  $Groups) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('given names', 24),             $given-names) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('given names', 24), $w,             $given-names) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('surname', 24),                 $surname) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('surname', 24), $w,                 $surname) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('display-name', 24),            $display-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('display-name', 24), $w,            $display-name) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('email', 24),                   $email) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('email', 24), $w,                   $email) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('country and coutry code', 24), "$flag $name: $cc ($prefix)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('country and coutry code', 24), $w, "$flag $name: $cc ($prefix)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('region', 24),                  "$region ($distinguishing)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('region', 24), $w,                  "$region ($distinguishing)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('mobile', 24),                  $mobile) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('mobile', 24), $w,                  $mobile) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('landline', 24),                $landline) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('landline', 24), $w,                $landline) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential unit', 24),        $residential-unit) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential unit', 24), $w,        $residential-unit) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential street', 24),      $residential-street) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential street', 24), $w,      $residential-street) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential city_suberb', 24), $residential-city_suberb) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential city_suberb', 24), $w, $residential-city_suberb) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential postcode', 24),    $residential-postcode) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential postcode', 24), $w,    $residential-postcode) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential region', 24),       $residential-region) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential region', 24), $w,       $residential-region) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('residential country', 24),     $residential-country) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential country', 24), $w,     $residential-country) ~ t.text-reset;
             $cnt++;
             if $_admin {
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('Admin', 24),                   $admin) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             } else {
                 # Greyed out as it is disabled for a non admin user. This is a strong visual hint of the fact. #
-                put t.bg-color(127,127,127) ~ t.bold ~ t.color(200,200,200) ~                                  sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('Admin', 24),                   $admin) ~ t.text-reset;
+                put t.bg-color(127,127,127) ~ t.bold ~ t.color(200,200,200) ~                                  sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             }
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('same-as-residential', 24),     $same-as-residential) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('same-as-residential', 24), $w,     $same-as-residential) ~ t.text-reset;
             $cnt++;
             if !$same-as-residential {
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-unit', 24),         $postal-unit) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-unit', 24), $w,         $postal-unit) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-street', 24),       $postal-street) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-street', 24), $w,       $postal-street) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24),  $postal-city_suberb) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24), $w,  $postal-city_suberb) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-postcode', 24),     $postal-postcode) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-postcode', 24), $w,     $postal-postcode) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-region', 24),       $postal-region) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-region', 24), $w,       $postal-region) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('postal-country', 24),      $postal-country) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-country', 24), $w,      $postal-country) ~ t.text-reset;
                 $cnt++;
             } # if !$same-as-residential #
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt", 10), lead-dots('continue', 24), 'enter') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('continue', 24), $w, 'enter') ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-42s", dots("$cnt..∞", 10), lead-dots('cancel', 24), 'quit') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt..∞", 10), lead-dots('cancel', 24), $w, 'quit') ~ t.text-reset;
             $choice = prompt 'choice > ';
             given $choice {
                 when '' {   # have to explicitly match here otherwise it will match with 0 #
@@ -1062,10 +1082,10 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $distinguishing       = %_row_«distinguishing»;
                                 $mob_pattern          = %_row_«mobile_pattern»;
                                 $lndlne_pattern       = %_row_«landline_pattern»;
-                                $lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
-                                $mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
-                                $mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
-                                $landline_pattern     = ECMA262Regex.compile("^$lndlne_pattern\$");
+                                #$lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundat he fixed ECMA262Regex #
+                                #$mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+                                #$mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
+                                #$landline_pattern     = ECMA262Regex.compile("^$lndlne_pattern\$");
                                 $landline_placeholder = %_row_«landline_placeholder»;
                                 $mobile_placeholder   = %_row_«mobile_placeholder»;
                             }
@@ -1112,8 +1132,8 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $distinguishing       = %_value«distinguishing»;
                                 $mob_pattern          = %_value«mobile_pattern»;
                                 $lndlne_pattern       = %_value«landline_pattern»;
-                                $lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() #
-                                $mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
+                                #$lndlne_pattern      ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundat he fixed ECMA262Regex #
+                                #$mob_pattern         ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
                                 $mobile_pattern       = ECMA262Regex.compile("^$mob_pattern\$");
                                 $landline_pattern     = ECMA262Regex.compile("^$lndlne_pattern\$");
                                 $landline_placeholder = %_value«landline_placeholder»;
