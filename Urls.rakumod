@@ -429,8 +429,8 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
         %session«loggedin_prefix»           = $prefix;
         %session«loggedin_escape»           = $escape;
         %session«loggedin_punct»            = $punct;
-        %session«loggedin_landline_pattern» = $landline_pattern.gist;
-        %session«loggedin_mobile_pattern»   = $mobile_pattern.gist;
+        %session«loggedin_landline_pattern» = $landline_pattern;
+        %session«loggedin_mobile_pattern»   = $mobile_pattern;
         %session.save;
         return True;
     }
@@ -441,21 +441,21 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
 sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repeat-pwd is copy, Str:D $user, Bool:D $force --> Bool) is export {
     my Bool:D $result                    = False;
     my Bool:D $loggedin                  = so %session«loggedin»;
-    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
     my Bool:D $_admin                    = so %session«loggedin_admin»;
-    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
-    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
-    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
-    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
-    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     if $force && !$_admin {
         "option force not alloed for non admin user".say;
         return False;
@@ -580,13 +580,13 @@ sub whoami( --> Bool) is export {
     my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? 'Str' !! %session«loggedin_prefix» );
     my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? 'Str' !! %session«loggedin_escape» );
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? 'Str' !! %session«loggedin_punct» );
-    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? 'Str' !! %session«loggedin_landline_pattern» );
-    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? 'Str' !! %session«loggedin_mobile_pattern» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     my Str    $punct             =    $loggedin_punct;
     $punct                      ~~    s/ \x20 /\\x20/;
     my Int $width = terminal-width;
     my Int $m = max(("$loggedin", "$loggedin_id", $loggedin_username, "$_admin", $display_name, $given, $loggedin_email, $phone_number, $groupname,
-                         "$primary_group_id", $loggedin_prefix, $loggedin_escape, $loggedin_punct, $loggedin_landline_pattern, $loggedin_mobile_pattern,
+                         "$primary_group_id", $loggedin_prefix, $loggedin_escape, $loggedin_punct, $loggedin_landline_pattern.raku, $loggedin_mobile_pattern.raku,
                                                        "'$loggedin_punct' ==> '$punct'", ).map: { .chars });
     my Int $w = min($width - 28 - 2, $m + 2);
     my Int $cnt = 0;
@@ -618,9 +618,9 @@ sub whoami( --> Bool) is export {
     $cnt++;
     put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_punct',            28), $w, "'$loggedin_punct' ==> '$punct'") ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_landline_pattern', 28), $w, $loggedin_landline_pattern) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_landline_pattern', 28), $w, $loggedin_landline_pattern.raku) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_mobile_pattern',   28), $w, $loggedin_mobile_pattern) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_mobile_pattern',   28), $w, $loggedin_mobile_pattern.raku) ~ t.text-reset;
     $cnt++;
     return True;
 } # sub whoami( --> Bool) is export #
@@ -866,21 +866,21 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
 
     my Bool $return                      = True;
     my Bool:D $loggedin                  = so %session«loggedin»;
-    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
     my Bool:D $_admin                    = so %session«loggedin_admin»;
-    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
-    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
-    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
-    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
-    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
@@ -1611,21 +1611,21 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
     my Regex $landline_pattern;
     my Bool:D $result                    = True;
     my Bool:D $loggedin                  = so %session«loggedin»;
-    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int !! %session«loggedin_id» );
-    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str !! %session«loggedin_username» );
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
     my Bool:D $_admin                    = so %session«loggedin_admin»;
-    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str !! %session«loggedin_display_name» );
-    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str !! %session«loggedin_given» );
-    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str !! %session«loggedin_family» );
-    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str !! %session«loggedin_email» );
-    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str !! %session«loggedin_phone_number» );
-    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str !! %session«loggedin_groupname» );
-    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int !! %session«loggedin_groupnname_id» );
-    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str !! %session«loggedin_prefix» );
-    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str !! %session«loggedin_escape» );
-    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str !! %session«loggedin_punct» );
-    my Str    $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Str !! %session«loggedin_landline_pattern» );
-    my Str    $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Str !! %session«loggedin_mobile_pattern» );
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     if !$loggedin {
         say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
         return False;
