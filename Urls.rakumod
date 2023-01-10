@@ -93,7 +93,7 @@ sub section-exists(Str $section --> Bool) is export {
     my $n = %values«n»;
     return False if $n == 0;
     return True;
-}
+} # sub section-exists(Str $section --> Bool) is export #
 
 sub alias-exists(Str $name --> Bool) is export {
     my $sth = $dbh.execute('SELECT COUNT(*) n FROM alias WHERE name = ?', $name);
@@ -138,7 +138,28 @@ sub in-a-page(Str $section --> Bool) {
 }
 
 sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
-    my $sth0 = $dbh.execute('SELECT * FROM page_link_view ORDER BY page_name, full_name, section, name, link;');
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    my Str:D $sql       = "SELECT * FROM page_link_view pv\n";
+    $sql               ~= "WHERE (? = true OR (pv.userid = ? AND (pv)._perms._user._read = true)\n";
+    $sql               ~= "       OR ((pv.groupid = ? OR pv.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (pv)._perms._group._read = true) OR (pv)._perms._other._read = true)\n";
+    $sql               ~= "ORDER BY pv.page_name, pv.full_name, pv.full_name, pv.section, pv.name, pv.link;\n";
+    my $sth0 = $dbh.execute($sql, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     my @values = $sth0.allrows(:array-of-hash);
     my $last_page_name = '';
     my $page_name      = '';
@@ -161,9 +182,12 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
         $last_section   = $section;
         $last_page_name = $page_name;
     }
-    my $sql = "SELECT pp.name \"page_name\", ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
+    $sql    = "SELECT pp.name \"page_name\", ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
+    $sql   ~= "WHERE (? = true OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
+    $sql   ~= "       OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql   ~= "                             AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
     $sql   ~= "ORDER BY pp.name, ls.section, l.name, l.link";
-    my $sth1 = $dbh.execute($sql);
+    my $sth1 = $dbh.execute($sql, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     my @values1 = $sth1.allrows(:array-of-hash);
     $last_page_name = '';
     $page_name      = '';
@@ -191,47 +215,99 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
         $last_page_name = $page_name;
     }
     return True;
-}
+} # sub list-pages(Str $page-name, Str $prefix --> Bool) is export #
 
 sub add-page(Str $page, Str $name, @links --> Bool) is  export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     my $sth = $dbh.execute('SELECT COUNT(*) n FROM pages WHERE name = ?', $page);
     my %_values = $sth.row(:hash);
     my $n = %_values«n»;
     if $n == 0 {
-        $dbh.execute('INSERT INTO pages(name, full_name) VALUES(?, ?)', $page, $name);
+        $dbh.execute('INSERT INTO pages(name, full_name, userid, groupid) VALUES(?, ?, ?, ?)', $page, $name, $loggedin_id, $primary_group_id);
     }
     my $sth0 = $dbh.execute('SELECT id FROM pages WHERE name = ?', $page);
     my %values = $sth0.row(:hash);
+    without %values«id» {
+        note "something is wrong failed to insert page: $page";
+        return False;
+    }
     my $pages_id = %values«id»;
-    my $sth3 = $dbh.prepare('INSERT INTO page_section(pages_id, links_section_id) VALUES (?, ?)');
+    my $sth3 = $dbh.prepare('INSERT INTO page_section(pages_id, links_section_id, userid, groupid) VALUES (?, ?, ?, ?)');
     for @links -> $link {
         my $sth1 = $dbh.execute('SELECT id FROM links_sections WHERE section = ?', $link);
         my %val = $sth1.row(:hash);
         next unless %val;
         my $links_section_id = %val«id»;
-        $sth3.execute($pages_id, $links_section_id);
+        $sth3.execute($pages_id, $links_section_id, $loggedin_id, $primary_group_id);
     }
-}
+} # sub add-page(Str $page, Str $name, @links --> Bool) is  export #
 
 sub add-links(Str $link-section, %links --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     die "link-section must have a value." if $link-section ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT count(*) n FROM links_sections WHERE section = ?', $link-section);
     my %val = $sth0.row(:hash);
     my $n = %val«n»;
     if $n == 0 {
-        $dbh.execute('INSERT INTO links_sections(section) VALUES(?)', $link-section);
+        $dbh.execute('INSERT INTO links_sections(section, userid, groupid) VALUES(?, ?, ?)', $link-section, $loggedin_id, $primary_group_id);
     }
     my $sth1 = $dbh.execute('SELECT id FROM links_sections WHERE section = ?', $link-section);
     my %values = $sth1.row(:hash);
     my $id = %values«id»;
-    my $sth = $dbh.prepare('INSERT INTO links(section_id, name, link) VALUES (?, ?, ?)');
+    my $sth = $dbh.prepare('INSERT INTO links(section_id, name, link, userid, groupid) VALUES (?, ?, ?, ?, ?)');
     for %links.kv -> $key, $val {
-        $sth.execute($id, $key, $val);
+        $sth.execute($id, $key, $val, $loggedin_id, $primary_group_id);
     }
     return True;
-}
+} # sub add-links(Str $link-section, %links --> Bool) is export #
 
 sub add-alias(Str $alias-name, Str $link-section is copy --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     die "Error: alias-name: $alias-name already exists and is not a alias" if section-exists($alias-name) && !alias-exists($alias-name);
     die "Error: link-section: $link-section does not exist" unless link-exists($link-section) || alias-exists($link-section);
     my $sth0 = $dbh.execute('SELECT count(*) n FROM links_sections WHERE section = ?', $link-section);
@@ -247,43 +323,92 @@ sub add-alias(Str $alias-name, Str $link-section is copy --> Bool) is export {
         my %val = $sth2.row(:hash);
         $target = %val«id»;
     }
-    $dbh.execute('INSERT INTO alias(name, target) VALUES(?, ?)', $alias-name, $target);
+    $dbh.execute('INSERT INTO alias(name, target, userid, groupid) VALUES(?, ?, ?, ?)', $alias-name, $target, $loggedin_id, $primary_group_id);
     return True;
-}
+} # sub add-alias(Str $alias-name, Str $link-section is copy --> Bool) is export #
 
 sub delete-links(Str $link-section, Bool $remove-section, @links --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     die "link-section must have a value." if $link-section ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT id FROM links_sections WHERE section = ?', $link-section);
     my %val = $sth0.row(:hash);
     die "Error: links_sections: $link-section does not exist" unless %val;
     my $id = %val«id»;
-    my $sth = $dbh.prepare("DELETE FROM links WHERE section_id = ? AND name = ?;");
+    my Str:D $sql       = "DELETE FROM links WHERE section_id = ? AND name = ? AND\n";
+    $sql               ~= "(? = true OR (userid = ? AND (_perms)._user._del = true)\n";
+    $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
+    my $sth = $dbh.prepare($sql);
     for @links -> $link {
-        $sth.execute($id, $link);
+        $sth.execute($id, $link, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     }
+    $sql                = "DELETE FROM links_sections WHERE id = ? AND\n";
+    $sql               ~= "(? = true OR (userid = ? AND (_perms)._user._del = true)\n";
+    $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
+    my $sth2 = $dbh.prepare($sql);
     if $remove-section {
         my $sth1 = $dbh.execute('SELECT COUNT(*) n FROM links WHERE section_id = ?', $id);
         my %value = $sth1.row(:hash);
         my $n = %value«n»;
         if $n == 0 {
-            $dbh.execute("DELETE FROM links_sections WHERE id = ?;", $id);
+            $sth2.execute($id, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
         } else {
             "Warning: $link-section still contains links not deleting section.".say;
         }
     }
     return True;
-}
+} # sub delete-links(Str $link-section, Bool $remove-section, @links --> Bool) is export #
 
 sub delete-page(Str $page-name --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
     die "link-section must have a value." if $page-name ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT id FROM pages WHERE name = ?', $page-name);
     my %val = $sth0.row(:hash);
     die "Error: page-name: $page-name does not exist" unless %val;
     my $pages_id = %val«id»;
-    $dbh.execute("DELETE FROM page_section WHERE pages_id = ?;", $pages_id);
-    $dbh.execute("DELETE FROM pages WHERE id = ?;", $pages_id);
+    my Str:D $sql       = "DELETE FROM page_section\n";
+    $sql               ~= "WHERE pages_id = ? AND (? = true OR (userid = ? AND (_perms)._user._read = true)\n";
+    $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (_perms)._group._read = true) OR (_perms)._other._read = true);\n";
+    $dbh.execute($sql, $pages_id, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
+    $sql                = "DELETE FROM pages\n";
+    $sql               ~= "WHERE  id = ? AND (? = true OR (userid = ? AND (_perms)._user._read = true)\n";
+    $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (_perms)._group._read = true) OR (_perms)._other._read = true);\n";
+    $dbh.execute($sql, $pages_id, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     return True;
-}
+} # sub delete-page(Str $page-name --> Bool) is export #
 
 sub delete-pseudo-page(Str $page-name --> Bool) is export {
     die "link-section must have a value." if $page-name ~~ rx/^ \s+ $/;
@@ -385,26 +510,26 @@ sub login(Str:D $username where { $username ~~ rx/^ \w+ $/}, Str:D $passwd is co
         "Failed to login for user: $username".say;
         return False;
     }
-    my Int:D $loggedin_id        = %val«id»;
-    my Str:D $loggedin_username  = %val«username»;
-    my Int:D $primary_group_id   = %val«group_id»;
-    my Str:D $hashed-password    = %val«_password»;
-    my Bool:D $_admin            =  so %val«_admin»;
-    my Str:D $display_name       = %val«display_name»;
-    my Str:D $given              = %val«given»;
-    my Str:D $family             = %val«_family»;
-    my Str:D $email              = %val«_email»;
-    my Str:D $phone_number       = %val«phone_number»;
-    my Str:D $groupname          = %val«groupname»;
-    my Str:D $prefix             = %val«prefix»;
-    my Str:D $escape             = %val«_escape»;
-    my Str:D $punct              = %val«punct»;
-    my Str:D $land_pattern       = %val«landline_pattern»;
-    my Str:D $mob_pattern        = %val«mobile_pattern»;
+    my Int:D   $loggedin_id       = %val«id»;
+    my Str:D   $loggedin_username = %val«username»;
+    my Int:D   $primary_group_id  = %val«group_id»;
+    my Str:D   $hashed-password   = %val«_password»;
+    my Bool:D  $_admin            = so %val«_admin»;
+    my Str:D   $display_name      = %val«display_name»;
+    my Str:D   $given             = %val«given»;
+    my Str:D   $family            = %val«_family»;
+    my Str:D   $email             = %val«_email»;
+    my Str:D   $phone_number      = %val«phone_number»;
+    my Str:D   $groupname         = %val«groupname»;
+    my Str:D   $prefix            = %val«prefix»;
+    my Str:D   $escape            = %val«_escape»;
+    my Str:D   $punct             = %val«punct»;
+    my Str:D   $land_pattern      = %val«landline_pattern»;
+    my Str:D   $mob_pattern       = %val«mobile_pattern»;
     #$land_pattern               ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/; # fixup for error in  ECMA262Regex.compile() # redundant he fixed ECMA262Regex #
     #$mob_pattern                ~~ s:g/ '[' (<-[\ \x5D\x5B]>*) ' ' (<-[\x5D\x5B]>*) ']' /[$0\\ $1]/;
-    my Regex:D $landline_pattern = ECMA262Regex.compile("^$land_pattern\$");
-    my Regex:D $mobile_pattern   = ECMA262Regex.compile("^$mob_pattern\$");
+    my Regex:D $landline_pattern  = ECMA262Regex.compile("^$land_pattern\$");
+    my Regex:D $mobile_pattern    = ECMA262Regex.compile("^$mob_pattern\$");
     my Int:D $cnt = 0;
     while !validate($hashed-password, $passwd) && $cnt < 4 {
         unless $cnt < 4 {

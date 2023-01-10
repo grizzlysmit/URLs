@@ -175,15 +175,7 @@ class Postgres does Associative is export {
         $!dirty = True;
         return self!unserialise($!apsesspg.FETCH($key));
     }
-    #`«««
-    method BIND-KEY ($key, \new) {
-        my $result = $!apsesspg.FETCH($key) = \new;
-        $!dirty    = True;
-        return $result;
-    }
-    # »»»
     method save {
-        #dd $!id;
         if $!dirty {
             $!apsesspg.save;
         }

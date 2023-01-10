@@ -34,7 +34,7 @@ multi sub MAIN('list', 'pages', Str $page-name = '', Str $prefix = '') returns I
    } 
 }
 
-multi sub MAIN('add', 'page', Str $page where { $page !~~ rx/^^ \s+ $$/ }, Str :$name = '', *@links) returns Int {
+multi sub MAIN('add', 'page', Str $page where { $page !~~ rx/^ \s+ $/ }, Str :$name = '', *@links) returns Int {
    if add-page($page, $name, @links) {
        exit 0;
    } else {
@@ -50,7 +50,7 @@ multi sub MAIN('add', 'links', Str $link-section where { $link-section !~~ rx/^^
    } 
 }
 
-multi sub MAIN('add', 'alias', Str $alias-name where { $alias-name !~~ rx/^^ \s* $$/ && (!section-exists($alias-name) || alias-exists($alias-name)) }, Str $link-section where { $link-section !~~ rx/^^ \s* $$/ && (link-exists($link-section) || alias-exists($link-section))  }) returns Int {
+multi sub MAIN('add', 'alias', Str $alias-name where { $alias-name !~~ rx/^^ \s* $$/ && (!section-exists($alias-name) && !alias-exists($alias-name)) }, Str $link-section where { $link-section !~~ rx/^^ \s* $$/ && (link-exists($link-section) || alias-exists($link-section))  }) returns Int {
    if add-alias($alias-name, $link-section) {
        exit 0;
    } else {
