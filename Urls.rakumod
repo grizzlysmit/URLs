@@ -154,6 +154,10 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     my Str:D $sql       = "SELECT * FROM page_link_view pv\n";
     $sql               ~= "WHERE (? = true OR (pv.userid = ? AND (pv)._perms._user._read = true)\n";
     $sql               ~= "       OR ((pv.groupid = ? OR pv.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
@@ -234,6 +238,10 @@ sub add-page(Str $page, Str $name, @links --> Bool) is  export {
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     my $sth = $dbh.execute('SELECT COUNT(*) n FROM pages WHERE name = ?', $page);
     my %_values = $sth.row(:hash);
     my $n = %_values«n»;
@@ -274,6 +282,10 @@ sub add-links(Str $link-section, %links --> Bool) is export {
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "link-section must have a value." if $link-section ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT count(*) n FROM links_sections WHERE section = ?', $link-section);
     my %val = $sth0.row(:hash);
@@ -308,6 +320,10 @@ sub add-alias(Str $alias-name, Str $link-section is copy --> Bool) is export {
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "Error: alias-name: $alias-name already exists and is not a alias" if section-exists($alias-name) && !alias-exists($alias-name);
     die "Error: link-section: $link-section does not exist" unless link-exists($link-section) || alias-exists($link-section);
     my $sth0 = $dbh.execute('SELECT count(*) n FROM links_sections WHERE section = ?', $link-section);
@@ -344,6 +360,10 @@ sub delete-links(Str $link-section, Bool $remove-section, @links --> Bool) is ex
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "link-section must have a value." if $link-section ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT id FROM links_sections WHERE section = ?', $link-section);
     my %val = $sth0.row(:hash);
@@ -392,46 +412,122 @@ sub delete-page(Str $page-name --> Bool) is export {
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "link-section must have a value." if $page-name ~~ rx/^ \s+ $/;
     my $sth0 = $dbh.execute('SELECT id FROM pages WHERE name = ?', $page-name);
     my %val = $sth0.row(:hash);
     die "Error: page-name: $page-name does not exist" unless %val;
     my $pages_id = %val«id»;
     my Str:D $sql       = "DELETE FROM page_section\n";
-    $sql               ~= "WHERE pages_id = ? AND (? = true OR (userid = ? AND (_perms)._user._read = true)\n";
+    $sql               ~= "WHERE pages_id = ? AND (? = true OR (userid = ? AND (_perms)._user._del = true)\n";
     $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
-    $sql               ~= "                             AND (_perms)._group._read = true) OR (_perms)._other._read = true);\n";
+    $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
     $dbh.execute($sql, $pages_id, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     $sql                = "DELETE FROM pages\n";
-    $sql               ~= "WHERE  id = ? AND (? = true OR (userid = ? AND (_perms)._user._read = true)\n";
+    $sql               ~= "WHERE  id = ? AND (? = true OR (userid = ? AND (_perms)._user._del = true)\n";
     $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
-    $sql               ~= "                             AND (_perms)._group._read = true) OR (_perms)._other._read = true);\n";
+    $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
     $dbh.execute($sql, $pages_id, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     return True;
 } # sub delete-page(Str $page-name --> Bool) is export #
 
 sub delete-pseudo-page(Str $page-name --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "link-section must have a value." if $page-name ~~ rx/^ \s+ $/;
-    $dbh.execute("DELETE FROM pseudo_pages WHERE name = ?;", $page-name);
+    my Str:D $sql       = "DELETE FROM pseudo_pages\n";
+    $sql               ~= "WHERE  name = ? AND (? = true OR (userid = ? AND (_perms)._user._del = true)\n";
+    $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
+    $dbh.execute($sql, $page-name, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     return True;
-}
+} # sub delete-pseudo-page(Str $page-name --> Bool) is export #
 
 sub add-pseudo-pages(Str $page, Status $status is copy, Str $full-name, Str $pattern --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     die "Error: pages is an system section." if $page eq 'pages';
     my $sth0 = $dbh.execute('SELECT COUNT(*) n FROM pages WHERE name = ?', $page);
     my %val = $sth0.row(:hash);
     my $n = %val«n»;
     $status = Status::unassigned if $status == Status::invalid;
     if $n == 0 {
-        $dbh.execute('INSERT INTO pseudo_pages(name, full_name, pattern, status) VALUES(?, ?, ?, ?)', $page, $full-name, $pattern, $status);
+        $dbh.execute('INSERT INTO pseudo_pages(name, full_name, pattern, status, userid, groupid) VALUES(?, ?, ?, ?, ?, ?)', $page, $full-name, $pattern, $status, $loggedin_id, $primary_group_id);
     } else {
-        $dbh.execute('UPDATE pseudo_pages SET name = ?, full_name = ?, pattern = ?, status = ? WHERE name = ?', $page, $full-name, $pattern, $status, $page);
+        my Str:D $sql       = "UPDATE pseudo_pages SET name = ?, full_name = ?, pattern = ?, status = ?\n";
+        $sql               ~= "WHERE  name = ? AND (? = true OR (userid = ? AND (_perms)._user._del = true)\n";
+        $sql               ~= "       OR ((groupid = ? OR groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+        $sql               ~= "                             AND (_perms)._group._del = true) OR (_perms)._other._del = true);\n";
+        $dbh.execute($sql, $page, $full-name, $pattern, $status, $page, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     }
     return True;
-}
+} # sub add-pseudo-pages(Str $page, Status $status is copy, Str $full-name, Str $pattern --> Bool) is export #
 
 sub launch-link(Str $section, Str $link --> Bool) is export {
-    my $sth = $dbh.execute('SELECT link FROM alias_union_links WHERE alias_name = ? AND name = ?;', $section, $link);
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my Str:D $sql       = "SELECT link FROM alias_union_links aul\n";
+    $sql               ~= "WHERE aul.alias_name = ? AND aul.name = ? AND (? = true OR (aul.userid = ? AND (aul)._perms._user._read = true)\n";
+    $sql               ~= "       OR ((aul.groupid = ? OR aul.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
+    $sql               ~= "                             AND (aul)._perms._group._read = true) OR (aul)._perms._other._read = true);\n";
+    my $sth = $dbh.execute($sql, $section, $link, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     my @values = $sth.allrows(:array-of-hash);
     my @cmd = qqww{xdg-open};
     my @lnks;
@@ -447,7 +543,7 @@ sub launch-link(Str $section, Str $link --> Bool) is export {
     }else{
         "no such link found".say;
     }
-}
+} # sub launch-link(Str $section, Str $link --> Bool) is export #
 
 sub generate-hash(Str:D $password --> Str) is export {
     my $pbkdf2 = Crypt::PBKDF2.new( 
@@ -581,12 +677,12 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
-    if $force && !$_admin {
-        "option force not alloed for non admin user".say;
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
         return False;
     }
-    unless $loggedin {
-        say "you must be loggedin to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
+    if $force && !$_admin {
+        "option force not alloed for non admin user".say;
         return False;
     }
     without $loggedin_username {
@@ -1751,8 +1847,8 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
-    if !$loggedin {
-        say "you must be logged in to use this function\t{$?MODULE.gist}\t{&?ROUTINE.name} in $?FILE";
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
         return False;
     }
     if $admin && !$_admin {
@@ -1830,12 +1926,14 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
             my IdType:D $id = create-group($name);
             @Group-ids.push:  create-groups($id, $passwd-id);
         }
+        #`«««
         dd $username, $group, @Groups, $given-names, $surname, $display-name,
                                 $residential-unit, $residential-street, $residential-city_suberb,
                                 $residential-postcode, $residential-region, $residential-country, $same-as-residential,
                                 $postal-unit, $postal-street, $postal-city_suberb, $postal-postcode, $postal-region, $postal-country,
                                 $email, $cc_id, $country_region_id, $mobile, $landline, $escape, $prefix, $punct, $admin, $result, $group-id, $email-id, $residential-address-id,
                                 $postal-address-id;
+        # »»»
     }
     return $result;
 } #`««« sub login(Str:D $username is copy where { $username ~~ rx/^ \w+ $/}, Str:D $passwd, Str:D $repeat-pwd,
