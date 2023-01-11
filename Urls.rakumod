@@ -1943,6 +1943,24 @@ sub register-new-user(Str:D $username is copy where { $username ~~ rx/^ \w+ $/},
                       Str:D $residential-country is copy, Bool:D $same-as-residential is copy,
                       Str:D $email is copy, Str:D $mobile is copy, Str:D $landline is copy --> Bool) is export »»»
 
+sub perms-good(Int $perms, Str $user, Str $group, Str $other) is export {
+    my $result = False;
+    #dd $perms, $user, $group, $other, $result;
+    if $perms !=== Int && (($user // $group // $other) === Str) {
+        $result = True;
+        dd $perms, $user, $group, $other, $result;
+    } elsif $perms === Int && (($user // $group // $other) !=== Str) {
+        $result = True;
+    }
+    return $result;
+}
+
+sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
+    my Bool:D $result = False;
+    $result = True;
+    return $result;
+} # sub chmod-pages(Str:D $page-name, Bool:D $recursive, *%perms --> Bool:D) is export #
+
 END {
     %session.save;
     $db.disconnect;
