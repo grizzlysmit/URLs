@@ -849,24 +849,36 @@ sub whoami( --> Bool) is export {
 
 subset IdType of Int where 0 <= * <= 9_223_372_036_854_775_807;
 
-sub lead-dots(Str $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
+sub centre(Str:D $text, Int:D $width is copy, Str:D $fill = ' ' --> Str) {
+    my Str $result = $text;
+    $width -= wcswidth($result);
     $width = $width div wcswidth($fill);
+    my Int:D $w  = $width div 2;
+    $result = $fill x $w ~ $result ~ $fill x ($width - $w);
+    return $result;
+}
+
+sub lead-dots(Str:D $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
     my Str $result = " $text";
-    $result = $fill x ($width - $result.chars) ~ $result;
+    $width -= wcswidth($result);
+    $width = $width div wcswidth($fill);
+    $result = $fill x $width ~ $result;
     return $result;
 } # sub lead-dots(Str $text, Int:D $width --> Str) #
 
-sub trailing-dots(Str $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
-    $width = $width div wcswidth($fill);
+sub trailing-dots(Str:D $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
     my Str $result = " $text";
-    $result = $result ~ ($fill x ($width - $result.chars));
+    $width -= wcswidth($result);
+    $width = $width div wcswidth($fill);
+    $result ~= $fill x $width;
     return $result;
 } # sub trailing-dots(Str $text, Int:D $width --> Str) #
 
-sub dots(Str $ind, Int:D $width is copy, Str:D $fill = '.' --> Str) {
-    $width = $width div wcswidth($fill);
+sub dots(Str:D $ind, Int:D $width is copy, Str:D $fill = '.' --> Str) {
     my Str $result = "$ind). ";
-    $result ~= $fill x ($width - $result.chars);
+    $width -= wcswidth($result);
+    $width = $width div wcswidth($fill);
+    $result ~= $fill x $width;
     return $result;
 } # sub dots(Str $ind, Int:D $width --> Str) #
 
