@@ -1957,6 +1957,78 @@ sub perms-good(Int $perms, Str $user, Str $group, Str $other) is export {
 
 sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
     my Bool:D $result = False;
+    constant $URead  = 0o400;
+    constant $UWrite = 0o200;
+    constant $UDel   = 0o100;
+    constant $GRead  = 0o040;
+    constant $GWrite = 0o020;
+    constant $GDel   = 0o010;
+    constant $ORead  = 0o004;
+    constant $OWrite = 0o002;
+    constant $ODel   = 0o001;
+    my Str:D $theperms = '';
+    my Str:D $user  = '';
+    my Str:D $group = '';
+    my Str:D $other = '';
+    if %perms«perms»:exists {
+        my Int:D $p = %perms«perms»;
+        $user  ~= '=';
+        $group ~= '=';
+        $other ~= '=';
+        if $p +& $URead {
+            $user ~= 'r';
+        } else {
+            $user ~= '-';
+        }
+        if $p +& $UWrite {
+            $user ~= 'w';
+        } else {
+            $user ~= '-';
+        }
+        if $p +& $UDel {
+            $user ~= 'd';
+        } else {
+            $user ~= '-';
+        }
+        if $p +& $GRead {
+            $group ~= 'r';
+        } else {
+            $group ~= '-';
+        }
+        if $p +& $GWrite {
+            $group ~= 'w';
+        } else {
+            $group ~= '-';
+        }
+        if $p +& $GDel {
+            $group ~= 'd';
+        } else {
+            $group ~= '-';
+        }
+        if $p +& $ORead {
+            $other ~= 'r';
+        } else {
+            $other ~= '-';
+        }
+        if $p +& $OWrite {
+            $other ~= 'w';
+        } else {
+            $other ~= '-';
+        }
+        if $p +& $ODel {
+            $other ~= 'd';
+        } else {
+            $other ~= '-';
+        }
+    } else {
+        $user  = %perms«user»  if %perms«user»:exists;
+        $group = %perms«group» if %perms«group»:exists;
+        $other = %perms«other» if %perms«other»:exists;
+    }
+    if so ($user, $group, $other)».starts-with('=').any {
+        dd $user, $group, $other;
+    }
+    my Str:D $sql = qq{UPDATE pages };
     $result = True;
     return $result;
 } # sub chmod-pages(Str:D $page-name, Bool:D $recursive, *%perms --> Bool:D) is export #
