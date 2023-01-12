@@ -849,21 +849,24 @@ sub whoami( --> Bool) is export {
 
 subset IdType of Int where 0 <= * <= 9_223_372_036_854_775_807;
 
-sub lead-dots(Str $text, Int:D $width --> Str) {
+sub lead-dots(Str $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
+    $width = $width div wcswidth($fill);
     my Str $result = " $text";
-    $result = '.' x ($width - $result.chars) ~ $result;
+    $result = $fill x ($width - $result.chars) ~ $result;
     return $result;
 } # sub lead-dots(Str $text, Int:D $width --> Str) #
 
-sub trailing-dots(Str $text, Int:D $width --> Str) {
+sub trailing-dots(Str $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
+    $width = $width div wcswidth($fill);
     my Str $result = " $text";
-    $result = $result ~ ('.' x ($width - $result.chars));
+    $result = $result ~ ($fill x ($width - $result.chars));
     return $result;
 } # sub trailing-dots(Str $text, Int:D $width --> Str) #
 
-sub dots(Str $ind, Int:D $width --> Str) {
+sub dots(Str $ind, Int:D $width is copy, Str:D $fill = '.' --> Str) {
+    $width = $width div wcswidth($fill);
     my Str $result = "$ind). ";
-    $result ~= '.' x ($width - $result.chars);
+    $result ~= $fill x ($width - $result.chars);
     return $result;
 } # sub dots(Str $ind, Int:D $width --> Str) #
 
@@ -2179,10 +2182,10 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
         my %perms = GPerms.parse($_perms, actions => Perms.new).made;
         my Str:D $perms = perms-to-str(%perms);
         if $show-id && $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s    %-*s%-*s", $id, $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s    %-*s%-*s", $id, lead-dots($perms, 14, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-14s    %-*s%-*s", $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-14s    %-*s%-*s", lead-dots($perms, 14, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $cols >= $num {
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
