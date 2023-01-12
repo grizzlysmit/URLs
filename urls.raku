@@ -211,7 +211,16 @@ multi sub MAIN('chmod', 'pages', Bool:D :r(:$recursive) = False, Str :u(:$user) 
     }
 }
 
-multi sub MAIN('list', 'pages', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str:D :p(:$pattern) = '^ .* $') returns Int {
+multi sub MAIN('page', 'perms', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str:D :p(:$pattern) = '^ .* $') returns Int {
+    my Regex:D $_pattern = rx:i/ <$pattern> /;
+    if list-page-perms($show-id, $full, $_pattern) {
+        exit 0;
+    } else {
+        exit 1;
+    }
+}
+
+multi sub MAIN('ls', 'pages', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str:D :p(:$pattern) = '^ .* $') returns Int {
     my Regex:D $_pattern = rx:i/ <$pattern> /;
     if list-page-perms($show-id, $full, $_pattern) {
         exit 0;
