@@ -2182,7 +2182,7 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s    %-*s%-*s", $id, $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%14s    %-*s%-*s", $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-14s    %-*s%-*s", $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $cols >= $num {
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
