@@ -120,8 +120,8 @@ multi sub MAIN('login', Str :u(:$username) is copy where { $username ~~ rx/^^ \w
     } 
 }
 
-multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^^ \w+ $$/}, Str:D :p(:$passwd) is copy = '',
-               Str:D :g(:$group) is copy = '', Str:D :G(:$Groups) = '',
+multi sub MAIN('register', Str:D $username is copy where { $username ~~ rx/^ \w+ $/ }, Str:D :p(:password(:$passwd)) is copy = '',
+               Str:D :g(:$group) is copy = $username, Str:D :G(:$Groups) = '',
                Str:D :f(:$given-names) = '', Str:D :s(:$surname) = '', Str:D :d(:$display-name) = '', 
                Str:D :u(:$unit) = '', Str:D :S(:$street) = '', Str:D :c(:$city-suberb) = '', Str:D :P(:$postcode) = '',
                Str:D :R(:$region) = '', Str:D :C(:$country) = '', Bool:D :N(:$not-the-same-as-residential) = False,
@@ -205,6 +205,15 @@ multi sub MAIN('chmod', 'pages', Bool:D :r(:$recursive) = False, Str :u(:$user) 
         with $other { %the-perms«other» = $other; }
     }
     if chmod-pages($recursive, %the-perms, @page-names) {
+        exit 0;
+    } else {
+        exit 1;
+    }
+}
+
+multi sub MAIN('list', 'pages', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str:D :p(:$pattern) = '^ .* $') returns Int {
+    my Regex:D $_pattern = rx:i/ <$pattern> /;
+    if list-page-perms($show-id, $full, $_pattern) {
         exit 0;
     } else {
         exit 1;

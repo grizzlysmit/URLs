@@ -17,6 +17,7 @@ use Email::Valid; # using the raku one #
 use IO::Prompt;
 use Terminal::Getpass;
 use Terminal::Width;
+use Terminal::WCWidth;
 use GzzPrompt;
 
 my @signal;
@@ -811,37 +812,37 @@ sub whoami( --> Bool) is export {
                                                        "'$loggedin_punct' ==> '$punct'", ).map: { .chars });
     my Int $w = min($width - 28 - 2, $m + 2);
     my Int $cnt = 0;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin',                  28), $w, $loggedin) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin',                  28), $w, $loggedin) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_id',               28), $w, (($loggedin_id === Int) ?? 'Int' !! $loggedin_id)) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_id',               28), $w, (($loggedin_id === Int) ?? 'Int' !! $loggedin_id)) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_username',         28), $w, $loggedin_username) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_username',         28), $w, $loggedin_username) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('_admin',                    28), $w, $_admin) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('_admin',                    28), $w, $_admin) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('display_name',              28), $w, $display_name) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('display_name',              28), $w, $display_name) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('given',                     28), $w, $given) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('given',                     28), $w, $given) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('family',                    28), $w, $family) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('family',                    28), $w, $family) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_email',            28), $w, $loggedin_email) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_email',            28), $w, $loggedin_email) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('phone_number',              28), $w, $phone_number) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('phone_number',              28), $w, $phone_number) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('groupname',                 28), $w, $groupname) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('groupname',                 28), $w, $groupname) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('primary_group_id',          28), $w, (($primary_group_id === Int) ?? 'Int' !! $primary_group_id)) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('primary_group_id',          28), $w, (($primary_group_id === Int) ?? 'Int' !! $primary_group_id)) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_prefix',           28), $w, $loggedin_prefix) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_prefix',           28), $w, $loggedin_prefix) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_escape',           28), $w, $loggedin_escape) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_escape',           28), $w, $loggedin_escape) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_punct',            28), $w, "'$loggedin_punct' ==> '$punct'") ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_punct',            28), $w, "'$loggedin_punct' ==> '$punct'") ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_landline_pattern', 28), $w, $loggedin_landline_pattern.raku) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_landline_pattern', 28), $w, $loggedin_landline_pattern.raku) ~ t.text-reset;
     $cnt++;
-    put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_mobile_pattern',   28), $w, $loggedin_mobile_pattern.raku) ~ t.text-reset;
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-28s: %-*s", trailing-dots('loggedin_mobile_pattern',   28), $w, $loggedin_mobile_pattern.raku) ~ t.text-reset;
     $cnt++;
     return True;
 } # sub whoami( --> Bool) is export #
@@ -1002,7 +1003,7 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str:
                     $bgcolour = t.bg-color(0,0,255);
                     $fgcolour = t.bright-yellow;
                 } elsif $cnt % 2 == 0 {
-                    $bgcolour = t.bg-color(255,0,0);
+                    $bgcolour = t.bg-yellow;
                     $fgcolour = t.bright-blue;
                 } else {
                     $bgcolour = t.bg-color(0,255,0);
@@ -1196,66 +1197,66 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
             my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
             put t.clear-screen;
             my Int $cnt = 0;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('username', 24), $w,                $username) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('username', 24), $w,                $username) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('group', 24), $w,                   $group) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('group', 24), $w,                   $group) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Groups', 24), $w,                  $Groups) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Groups', 24), $w,                  $Groups) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('given names', 24), $w,             $given-names) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('given names', 24), $w,             $given-names) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('surname', 24), $w,                 $surname) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('surname', 24), $w,                 $surname) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('display-name', 24), $w,            $display-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('display-name', 24), $w,            $display-name) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('email', 24), $w,                   $email) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('email', 24), $w,                   $email) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('country and coutry code', 24), $w, "$flag $name: $cc ($prefix)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('country and coutry code', 24), $w, "$flag $name: $cc ($prefix)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('region', 24), $w,                  "$region ($distinguishing)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('region', 24), $w,                  "$region ($distinguishing)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('mobile', 24), $w,                  $mobile) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('mobile', 24), $w,                  $mobile) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('landline', 24), $w,                $landline) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('landline', 24), $w,                $landline) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential unit', 24), $w,        $residential-unit) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential unit', 24), $w,        $residential-unit) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential street', 24), $w,      $residential-street) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential street', 24), $w,      $residential-street) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential city_suberb', 24), $w, $residential-city_suberb) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential city_suberb', 24), $w, $residential-city_suberb) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential postcode', 24), $w,    $residential-postcode) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential postcode', 24), $w,    $residential-postcode) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential region', 24), $w,       $residential-region) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential region', 24), $w,       $residential-region) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential country', 24), $w,     $residential-country) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential country', 24), $w,     $residential-country) ~ t.text-reset;
             $cnt++;
             if $_admin {
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             } else {
                 # Greyed out as it is disabled for a non admin user. This is a strong visual hint of the fact. #
                 put t.bg-color(127,127,127) ~ t.bold ~ t.color(200,200,200) ~                                  sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             }
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('same-as-residential', 24), $w,     $same-as-residential) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('same-as-residential', 24), $w,     $same-as-residential) ~ t.text-reset;
             $cnt++;
             if !$same-as-residential {
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-unit', 24), $w,         $postal-unit) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-unit', 24), $w,         $postal-unit) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-street', 24), $w,       $postal-street) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-street', 24), $w,       $postal-street) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24), $w,  $postal-city_suberb) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24), $w,  $postal-city_suberb) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-postcode', 24), $w,     $postal-postcode) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-postcode', 24), $w,     $postal-postcode) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-region', 24), $w,       $postal-region) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-region', 24), $w,       $postal-region) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-country', 24), $w,      $postal-country) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-country', 24), $w,      $postal-country) ~ t.text-reset;
                 $cnt++;
             } # if !$same-as-residential #
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('continue', 24), $w, 'enter') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('continue', 24), $w, 'enter') ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-color(255,0,0) !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt..∞", 10), lead-dots('cancel', 24), $w, 'quit') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt..∞", 10), lead-dots('cancel', 24), $w, 'quit') ~ t.text-reset;
             $choice = prompt 'choice > ';
             given $choice {
                 when '' {   # have to explicitly match here otherwise it will match with 0 #
@@ -1948,15 +1949,84 @@ sub perms-good(Int $perms, Str $user, Str $group, Str $other) is export {
     #dd $perms, $user, $group, $other, $result;
     if $perms !=== Int && (($user // $group // $other) === Str) {
         $result = True;
-        dd $perms, $user, $group, $other, $result;
     } elsif $perms === Int && (($user // $group // $other) !=== Str) {
         $result = True;
     }
     return $result;
+} # sub perms-good(Int $perms, Str $user, Str $group, Str $other) is export #
+
+sub set-perms(Str:D $perm-spec, %old --> Str:D) {
+    my Str:D $result = '';
+    if $perm-spec.starts-with('=') {
+        my Str:D $read  = ($perm-spec.substr(1).contains('r')) ?? 'true' !! 'false';
+        my Str:D $write = ($perm-spec.substr(1).contains('w')) ?? 'true' !! 'false';
+        my Str:D $del   = ($perm-spec.substr(1).contains('d')) ?? 'true' !! 'false';
+        $result         = "($read,$write,$del)";
+    } elsif $perm-spec.starts-with('+') {
+        my Str:D $read  = ($perm-spec.substr(1).contains('r')) ?? 'true' !! (%old«read»  ?? 'true' !! 'false');
+        my Str:D $write = ($perm-spec.substr(1).contains('w')) ?? 'true' !! (%old«write» ?? 'true' !! 'false');
+        my Str:D $del   = ($perm-spec.substr(1).contains('d')) ?? 'true' !! (%old«del»   ?? 'true' !! 'false');
+        $result         = "($read,$write,$del)";
+    } elsif $perm-spec.starts-with('-') {
+        my Str:D $read  = ($perm-spec.substr(1).contains('r')) ?? 'false' !! (%old«read»  ?? 'true' !! 'false');
+        my Str:D $write = ($perm-spec.substr(1).contains('w')) ?? 'false' !! (%old«write» ?? 'true' !! 'false');
+        my Str:D $del   = ($perm-spec.substr(1).contains('d')) ?? 'false' !! (%old«del»   ?? 'true' !! 'false');
+        $result         = "($read,$write,$del)";
+    } else { # no =, + or - so assume = #
+        my Str:D $read  = ($perm-spec.substr(0).contains('r')) ?? 'true' !! 'false';
+        my Str:D $write = ($perm-spec.substr(0).contains('w')) ?? 'true' !! 'false';
+        my Str:D $del   = ($perm-spec.substr(0).contains('d')) ?? 'true' !! 'false';
+        $result         = "($read,$write,$del)";
+    }
+    return $result;
+} # sub set-perms(Str:D $perm-spec, %old --> Str:D) #
+
+grammar GPerms {
+    rule TOP            { '(' <perms> ')' }
+    rule perms          {  <user> ',' <group> ',' <other>  }
+    rule user           { '"' '(' <read> ',' <write> ',' <del> ')' '"' }
+    rule group          { '"' '(' <read> ',' <write> ',' <del> ')' '"' }
+    rule other          { '"' '(' <read> ',' <write> ',' <del> ')' '"' }
+    token read          { <true_or_false> }
+    token write         { <true_or_false> }
+    token del           { <true_or_false> }
+    token true_or_false { [ 't' | 'f' ] }
+}
+
+class Perms {
+    method TOP ($/)   { make $/<perms>.made }
+    method perms ($/) { make { user => $/<user>.made, group => $/<group>.made, other => $/<other>.made } }
+    method user  ($/) { make { read => $/<read>.made, write => $/<write>.made, del => $/<del>.made } }
+    method group ($/) { make { read => $/<read>.made, write => $/<write>.made, del => $/<del>.made } }
+    method other ($/) { make { read => $/<read>.made, write => $/<write>.made, del => $/<del>.made } }
+    method read  ($/) { make $/<true_or_false>.made }
+    method write ($/) { make $/<true_or_false>.made }
+    method del   ($/) { make $/<true_or_false>.made }
+    method true_or_false ($/) { (make($/ eq 't' ) ?? True !! False) }
 }
 
 sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
-    my Bool:D $result = False;
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
     constant $URead  = 0o400;
     constant $UWrite = 0o200;
     constant $UDel   = 0o100;
@@ -1977,61 +2047,161 @@ sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
         $other ~= '=';
         if $p +& $URead {
             $user ~= 'r';
-        } else {
-            $user ~= '-';
         }
         if $p +& $UWrite {
             $user ~= 'w';
-        } else {
-            $user ~= '-';
         }
         if $p +& $UDel {
             $user ~= 'd';
-        } else {
-            $user ~= '-';
         }
         if $p +& $GRead {
             $group ~= 'r';
-        } else {
-            $group ~= '-';
         }
         if $p +& $GWrite {
             $group ~= 'w';
-        } else {
-            $group ~= '-';
         }
         if $p +& $GDel {
             $group ~= 'd';
-        } else {
-            $group ~= '-';
         }
         if $p +& $ORead {
             $other ~= 'r';
-        } else {
-            $other ~= '-';
         }
         if $p +& $OWrite {
             $other ~= 'w';
-        } else {
-            $other ~= '-';
         }
         if $p +& $ODel {
             $other ~= 'd';
-        } else {
-            $other ~= '-';
         }
     } else {
         $user  = %perms«user»  if %perms«user»:exists;
         $group = %perms«group» if %perms«group»:exists;
         $other = %perms«other» if %perms«other»:exists;
     }
-    if so ($user, $group, $other)».starts-with('=').any {
-        dd $user, $group, $other;
+    dd $user, $group, $other;
+    my Str:D $sql-select = qq{SELECT p.id, p._perms FROM pages p WHERE p.name = ?};
+    my $select           = $dbh.prepare($sql-select);
+    my Str:D $sql        = qq{UPDATE pages SET _perms = ? WHERE id = ?};
+    my $update           = $dbh.prepare($sql);
+    for @page-names -> $name {
+        my $res    = $select.execute($name);
+        my %values = $res.row(:hash);
+        my IdType $id = %values«id»;
+        my Str:D $_old-perms = %values«_perms»;
+        my %old-perms = GPerms.parse($_old-perms, actions => Perms.new).made;
+        my Str:D $user_  = set-perms($user,  %old-perms«user»);
+        my Str:D $group_ = set-perms($group, %old-perms«group»);
+        my Str:D $other_ = set-perms($other, %old-perms«other»);
+        my Str:D $new-perms = qq{("$user_","$group_","$other_")};
+        $result &&= so $update.execute($new-perms, $id);
     }
-    my Str:D $sql = qq{UPDATE pages };
-    $result = True;
     return $result;
-} # sub chmod-pages(Str:D $page-name, Bool:D $recursive, *%perms --> Bool:D) is export #
+} # sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export #
+
+sub perms-str(%perm-spec) {
+    my Str:D $result = '';
+    if %perm-spec«read» {
+        $result ~= 'r';
+    } else {
+        $result ~= '-';
+    }
+    if %perm-spec«write» {
+        $result ~= 'w';
+    } else {
+        $result ~= '-';
+    }
+    if %perm-spec«del» {
+        $result ~= 'd';
+    } else {
+        $result ~= '-';
+    }
+    return $result;
+} # sub perms-str(%perm-spec) #
+
+sub perms-to-str(%perms) {
+    return perms-str(%perms«user») ~ perms-str(%perms«group») ~ perms-str(%perms«other»);
+} # sub perms-to-str(%perms) #
+
+sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export {
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my Int $width = terminal-width;
+    $width = $width // 80;
+    my Str:D $sql-select = qq{SELECT p.id, p._perms, p.name, p.full_name FROM pages p};
+    my $select           = $dbh.prepare($sql-select);
+    my $res   = $select.execute();
+    my @pages = $res.allrows(:array-of-hash);
+    my Int:D $w  = 0;
+    my Int:D $w1 = 0;
+    for @pages -> %values {
+        my IdType $id       = %values«id»;
+        my Str:D $name      = %values«name»;
+        my Str:D $full-name = %values«full_name»;
+        next unless $name ~~ $pattern || $full-name ~~ $pattern;
+        my Str:D $_perms    = %values«_perms»;
+        my %perms = GPerms.parse($_perms, actions => Perms.new).made;
+        my Str:D $perms = perms-to-str(%perms);
+        $w  = max($w,  wcswidth($name));
+        $w1 = max($w1, wcswidth($full-name));
+    }
+    $w  += 2;
+    $w1 += 2;
+    my Int:D $num = $width div $w;
+    $num = 1 if $num < 1;
+    my Int:D $cols = 0;
+    my Str:D $line = '';
+    my Int $cnt = 0;
+    @pages                  = |@pages.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«full_name».lc.trim cmp %v«full_name».lc.trim) !! $res ) };
+    for @pages -> %values {
+        my IdType $id       = %values«id»;
+        my Str:D $name      = %values«name»;
+        my Str:D $full-name = %values«full_name»;
+        next unless $name ~~ $pattern || $full-name ~~ $pattern;
+        my Str:D $_perms    = %values«_perms»;
+        my %perms = GPerms.parse($_perms, actions => Perms.new).made;
+        my Str:D $perms = perms-to-str(%perms);
+        if $show-id && $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%10d%14s    %-*s%-*s", $id, $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
+            $cnt++;
+        } elsif $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%14s    %-*s%-*s", $perms, $w, $name, $w1, $full-name) ~ t.text-reset;
+            $cnt++;
+        } elsif $cols >= $num {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
+            $cnt++;
+            $line = '';
+            $cols = 0;
+        } else {
+            $line ~= sprintf "%*s", $w, $name;
+            $cols++;
+        }
+    }
+    if $line ne '' {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
+        $cnt++;
+        $line = '';
+        $cols = 0;
+    }
+    return $result;
+} # sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export #
 
 END {
     %session.save;
