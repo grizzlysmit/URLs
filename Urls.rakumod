@@ -74,17 +74,49 @@ sub list-links(Str $prefix --> Bool) is export {
     my @values = $sth.allrows(:array-of-hash);
     my $last_section;
     my $section = '';
+    my Int $cnt = 0;
+    my Int:D $w0 = 0;
+    my Int:D $w1 = 0;
+    my Int:D $w  = 0;
+    my Int $width = terminal-width;
+    my Bool:D $start = True;
     for @values -> %row {
         $last_section = $section;
         $section = %row«section»;
         next unless $section.starts-with($prefix);
         if $section ne $last_section {
-            "\n[$section]".say
+            $w0 = max($w0, wcswidth("[$section]"));
         }
         my $name    = %row«name»;
         my $link    = %row«link»;
-        printf("    %-10s = %s\n", $name, $link);
+        $w0 = max($w0, wcswidth(sprintf("    %-10s", $name)));
+        $w1 = max($w1, wcswidth($link));
     }
+    $w   = max($w, $w0 + $w1 + 6);
+    $w   = min($w,  $width);
+    #$w0 -= 4;
+    $w0 -= 2;
+    $w1 += 2;
+    for @values -> %row {
+        $last_section = $section;
+        $section = %row«section»;
+        next unless $section.starts-with($prefix);
+        if $section ne $last_section {
+            unless $start { # don't print a blank line at the start,  but always between pages  #
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset;
+                $cnt++;
+            }
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("[%-*s", $w, $section ~ ']') ~ t.text-reset;
+            $cnt++;
+            $start = False;
+        }
+        my $name    = %row«name»;
+        my $link    = %row«link»;
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("    %-*s = %-*s", $w0, $name, $w1, $link) ~ t.text-reset;
+        $cnt++;
+    }
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset; # add a blank line at the end #
+    $cnt++;
     return True;
 }
 
@@ -2194,7 +2226,7 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
         my %perms = GPerms.parse($_perms, actions => Perms.new).made;
         my Str:D $perms = perms-to-str(%perms);
         if $show-id && $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s%-*s%-*s", $id, centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s    %-*s%-*s", $id, centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $full {
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-14s%-*s%-*s", centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
