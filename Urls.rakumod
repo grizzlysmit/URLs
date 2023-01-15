@@ -69,8 +69,28 @@ if !((%ini«login_details»:exists) && (%ini«login_details»«id»:exists)) {
     Config::INI::Writer::dumpfile(%ini, "$config/settings.ini");
 }
 
-sub list-links(Str $prefix --> Bool) is export {
-    my $sth = $dbh.execute('SELECT * FROM vlinks ORDER BY section, name;');
+sub list-links(Str $prefix is copy --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my $sth = $dbh.execute('SELECT * FROM vlinks ORDER BY LOWER(section), section, LOWER(name), name;');
     my @values = $sth.allrows(:array-of-hash);
     my $last_section;
     my $section = '';
@@ -80,10 +100,11 @@ sub list-links(Str $prefix --> Bool) is export {
     my Int:D $w  = 0;
     my Int $width = terminal-width;
     my Bool:D $start = True;
+    $prefix .=lc;
     for @values -> %row {
         $last_section = $section;
         $section = %row«section»;
-        next unless $section.starts-with($prefix);
+        next unless $section.lc.starts-with($prefix);
         if $section ne $last_section {
             $w0 = max($w0, wcswidth("[$section]"));
         }
@@ -97,10 +118,14 @@ sub list-links(Str $prefix --> Bool) is export {
     #$w0 -= 4;
     $w0 -= 2;
     $w1 += 2;
+    # done in the query 
+    #@values                  = |@values.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«section».lc.trim cmp %v«section».lc.trim; (($res == Same) ?? (%u«name».lc.trim cmp %v«name».lc.trim) !! $res ) };
+    $last_section = '';
+    $section = '';
     for @values -> %row {
         $last_section = $section;
         $section = %row«section»;
-        next unless $section.starts-with($prefix);
+        next unless $section.lc.starts-with($prefix);
         if $section ne $last_section {
             unless $start { # don't print a blank line at the start,  but always between pages  #
                 put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset;
@@ -118,7 +143,7 @@ sub list-links(Str $prefix --> Bool) is export {
     put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset; # add a blank line at the end #
     $cnt++;
     return True;
-}
+} # sub list-links(Str $prefix is copy --> Bool) is export #
 
 sub section-exists(Str $section --> Bool) is export {
     my $sth = $dbh.execute('SELECT COUNT(*) n FROM sections WHERE section = ?', $section);
@@ -144,33 +169,7 @@ sub link-exists(Str $section --> Bool) is export {
     return True;
 }
 
-sub list-aliases(Str $prefix --> Bool) is export {
-    my $sth = $dbh.execute('SELECT a.name, a.section "target" FROM aliases a;');
-    my @values = $sth.allrows(:array-of-hash);
-    my $last_name;
-    my $name = '';
-    for @values -> %row {
-        $last_name = $name;
-        $name = %row«name»;
-        next unless $name.starts-with($prefix);
-        if $name ne $last_name {
-            "\n[$name]".say
-        }
-        my $target    = %row«target»;
-        printf("    %-10s = %s\n", 'alias', $target);
-    }
-    return True;
-}
-
-sub in-a-page(Str $section --> Bool) {
-    my $sth = $dbh.execute('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?;', $section);
-    my %values = $sth.row(:hash);
-    my $n = %values«n»;
-    return False if $n == 0;
-    return True;
-}
-
-sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
+sub list-aliases(Str $prefix is copy --> Bool) is export {
     my Bool:D $loggedin                  = so %session«loggedin»;
     my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
     my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
@@ -191,11 +190,101 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
         say "You must be loggedin to use this function: {&*ROUTINE.name}";
         return False;
     }
-    my Str:D $sql       = "SELECT * FROM page_link_view pv\n";
+    $prefix .=lc;
+    my Int:D $w0 = 0;
+    my Int:D $w1 = 0;
+    my Int:D $w  = 0;
+    my Int $width = terminal-width;
+    my Bool:D $start = True;
+    my $last_name;
+    my $name = '';
+    my $sth = $dbh.execute('SELECT a.name, a.section "target" FROM aliases a ORDER BY LOWER(a.name), a.name, LOWER(a.section), a.section;');
+    my @values = $sth.allrows(:array-of-hash);
+    $w0 = max($w0, wcswidth("    alias"));
+    for @values -> %row {
+        $last_name = $name;
+        $name = %row«name»;
+        next unless $name.lc.starts-with($prefix);
+        if $name ne $last_name {
+            $w0 = max($w0, wcswidth("[$name]"));
+        }
+        my $target    = %row«target»;
+        $w1 = max($w1, wcswidth($target));
+    }
+    $w   = max($w, $w0 + $w1 + 6);
+    $w   = min($w,  $width);
+    #$w0 -= 4;
+    $w0 -= 2;
+    $w1 += 2;
+    my Int $cnt = 0;
+    #@values                  = |@values.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«target».lc.trim cmp %v«target».lc.trim) !! $res ) };
+    $name = '';
+    $last_name = '';
+    for @values -> %row {
+        $last_name = $name;
+        $name = %row«name»;
+        next unless $name.lc.starts-with($prefix);
+        if $name ne $last_name {
+            unless $start { # don't print a blank line at the start,  but always between pages  #
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset;
+                $cnt++;
+            }
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("[%-*s", $w, $name ~ ']') ~ t.text-reset;
+            $cnt++;
+            $start = False;
+        }
+        my $target    = %row«target»;
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("    %-*s = %-*s", $w0, 'alias', $w1, $target) ~ t.text-reset;
+        $cnt++;
+    }
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset; # add a blank line at the end #
+    $cnt++;
+    return True;
+} # sub list-aliases(Str $prefix is copy --> Bool) is export #
+
+sub in-a-page(Str $section --> Bool) {
+    my $sth = $dbh.execute('SELECT COUNT(*) n FROM page_view pv WHERE pv.section = ?;', $section);
+    my %values = $sth.row(:hash);
+    my $n = %values«n»;
+    return False if $n == 0;
+    return True;
+}
+
+sub list-pages(Str $page-name is copy, Str $prefix is copy --> Bool) is export {
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    $prefix    .=lc;
+    $page-name .=lc;
+    my Int:D $w0 = 0;
+    my Int:D $w1 = 0;
+    my Int:D $w  = 0;
+    my Int $width = terminal-width;
+    my Bool:D $start = True;
+    my $last_name;
+    my $name = '';
+    my Str:D $sql       = "SELECT * FROM page_pseudo_link_view pv\n";
     $sql               ~= "WHERE (? = true OR (pv.userid = ? AND (pv)._perms._user._read = true)\n";
     $sql               ~= "       OR ((pv.groupid = ? OR pv.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
     $sql               ~= "                             AND (pv)._perms._group._read = true) OR (pv)._perms._other._read = true)\n";
-    $sql               ~= "ORDER BY pv.page_name, pv.full_name, pv.full_name, pv.section, pv.name, pv.link;\n";
+    $sql               ~= "ORDER BY LOWER(pv.page_name), pv.page_name, LOWER(pv.full_name), pv.full_name, LOWER(pv.section), pv.section, LOWER(pv.name), pv.name;\n";
     my $sth0 = $dbh.execute($sql, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
     my @values = $sth0.allrows(:array-of-hash);
     my $last_page_name = '';
@@ -204,55 +293,71 @@ sub list-pages(Str $page-name, Str $prefix --> Bool) is export {
     my $section        = '';
     for @values -> %row {
         $page_name = %row«page_name»;
-        next unless $page_name.starts-with($page-name);
+        next unless $page_name.lc.starts-with($page-name);
         $section      = %row«section»;
-        next unless $section.starts-with($prefix);
+        next unless $section.lc.starts-with($prefix);
         if $page_name ne $last_page_name {
-            "\n«|$page_name|»".say;
-            "    [$section]".say;
+            $w0 = max($w0, wcswidth("|$page_name|"), wcswidth("    [$section]"));
         }elsif $section ne $last_section {
-            "\n    [$section]".say;
+            $w0 = max($w0, wcswidth("    [$section]"));
         }
         my $name    = %row«name»;
         my $link    = %row«link»;
-        printf("        %-10s = %s\n", $name, $link);
+        $w0 = max($w0, wcswidth(sprintf("        %-10s", $name)));
+        $w1 = max($w1, wcswidth($link));
         $last_section   = $section;
         $last_page_name = $page_name;
     }
-    $sql    = "SELECT pp.name \"page_name\", ls.section, l.name, l.link, pp.status FROM pseudo_pages pp JOIN links_sections ls ON ls.section ~* pp.pattern JOIN links l ON l.section_id = ls.id\n";
-    $sql   ~= "WHERE (? = true OR (pp.userid = ? AND (pp)._perms._user._read = true)\n";
-    $sql   ~= "       OR ((pp.groupid = ? OR pp.groupid IN (SELECT gs.group_id FROM groups gs WHERE gs.passwd_id = ?))\n";
-    $sql   ~= "                             AND (pp)._perms._group._read = true) OR (pp)._perms._other._read = true)\n";
-    $sql   ~= "ORDER BY pp.name, ls.section, l.name, l.link";
-    my $sth1 = $dbh.execute($sql, $_admin, $loggedin_id, $primary_group_id, $loggedin_id);
-    my @values1 = $sth1.allrows(:array-of-hash);
+    $w   = max($w, $w0 + $w1 + 10);
+    $w   = min($w,  $width);
+    #$w0 -= 4;
+    $w0 -= 2;
+    $w1 += 2;
+    my Int $cnt = 0;
+    # moved to SQL #
+    #@values                  = |@values.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«page_name».lc.trim cmp %v«page_name».lc.trim; (($res == Same) ?? (%u«section».lc.trim cmp %v«section».lc.trim) !! $res ) };
     $last_page_name = '';
     $page_name      = '';
     $last_section   = '';
     $section        = '';
-    for @values1 -> %row {
+    for @values -> %row {
         $page_name = %row«page_name»;
         my $status = %row«status»;
-        next unless $page_name.starts-with($page-name);
+        next unless $page_name.lc.starts-with($page-name);
         $section      = %row«section»;
-        next unless $section.starts-with($prefix);
-        return False if $status eq Status::invalid;
+        next unless $section.lc.starts-with($prefix);
         next if $status eq Status::unassigned && in-a-page($section);
         next if $status eq Status::assigned   && !in-a-page($section);
         if $page_name ne $last_page_name {
-            "\n«|$page_name|»".say;
-            "    [$section]".say;
+            unless $start { # don't print a blank line at the start,  but always between pages  #
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset;
+                $cnt++;
+            }
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("|%-*s", $w, $page_name ~ '|') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("    [%-*s", $w - 4, $section ~ ']') ~ t.text-reset;
+            $cnt++;
+            $start = False;
         }elsif $section ne $last_section {
-            "\n    [$section]".say;
+            unless $start { # don't print a blank line at the start,  but always between pages  #
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset;
+                $cnt++;
+            }
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("    [%-*s", $w - 4, $section ~ ']') ~ t.text-reset;
+            $cnt++;
+            $start = False;
         }
         my $name    = %row«name»;
         my $link    = %row«link»;
-        printf("    %-10s = %s\n", $name, $link);
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("        %-*s = %-*s", $w0, $name, $w1, $link) ~ t.text-reset;
+        $cnt++;
         $last_section   = $section;
         $last_page_name = $page_name;
     }
+    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf(" %-*s", $w, '') ~ t.text-reset; # add a blank line at the end #
+    $cnt++;
     return True;
-} # sub list-pages(Str $page-name, Str $prefix --> Bool) is export #
+} # sub list-pages(Str $page-name is copy, Str $prefix is copy --> Bool) is export #
 
 sub add-page(Str $page, Str $name, @links --> Bool) is  export {
     my Bool:D $loggedin                  = so %session«loggedin»;
@@ -899,7 +1004,7 @@ sub lead-dots(Str:D $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
 } # sub lead-dots(Str $text, Int:D $width --> Str) #
 
 sub trailing-dots(Str:D $text, Int:D $width is copy, Str:D $fill = '.' --> Str) {
-    my Str $result = " $text";
+    my Str $result = $text;
     $width -= wcswidth($result);
     $width = $width div wcswidth($fill);
     $result ~= $fill x $width;
@@ -907,7 +1012,7 @@ sub trailing-dots(Str:D $text, Int:D $width is copy, Str:D $fill = '.' --> Str) 
 } # sub trailing-dots(Str $text, Int:D $width --> Str) #
 
 sub dots(Str:D $ind, Int:D $width is copy, Str:D $fill = '.' --> Str) {
-    my Str $result = "$ind). ";
+    my Str $result = $ind;
     $width -= wcswidth($result);
     $width = $width div wcswidth($fill);
     $result ~= $fill x $width;
@@ -1039,9 +1144,9 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str:
         $width = 80 if $width === Int;
         my Int:D $m = 0;
         loop (my Int $i = 0; $i < $length; $i++) {
-            $m = max($m, &setup-option-str($i, @array).chars);
+            $m = max($m, wcswidth(&setup-option-str($i, @array)));
         } # loop (my Int $i = 0; $i < $length; $i++) #
-        $m = max($m, 'use up and down arrows or page up and down : and enter to select'.chars);
+        $m = max($m, wcswidth('use up and down arrows or page up and down : and enter to select'));
         my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
         loop {
             put t.clear-screen;
@@ -1060,7 +1165,7 @@ sub dropdown(Int:D $id, Int:D $window-height, Str:D $id-name, &setup-option-str:
             } # loop (my Int $cnt = $top; $cnt <= $top + $window-height; $cnt++) #
             $cnt = $top + $window-height;
             my Int:D $wdth = $w div 2;
-            put t.bg-green ~ t.bold ~ t.bright-blue ~ sprintf("%-*s: %-*s", $wdth, trailing-dots('use up and down arrows or page up and down', 40), $w - $wdth, 'and enter to select') ~ t.text-reset;
+            put t.bg-green ~ t.bold ~ t.bright-blue ~ sprintf("%-*s: %-*s", $wdth, trailing-dots('use up and down arrows or page up and down', 42), $w - $wdth, 'and enter to select') ~ t.text-reset;
             $cnt++;
             $key = $*IN.read(10).decode;
             given $key {
@@ -1179,7 +1284,7 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
         signal(SIGINT, SIGHUP, SIGQUIT, SIGTERM, SIGQUIT).tap( { &stack(); put t.restore-screen; say "$_ Caught"; exit 0 } );
         my Str $choice         = '';
         my Bool $display-auto  = True;
-        my $valid = Email::Valid.new(:simple(True), :allow-ip);
+        my $valid              = Email::Valid.new(:simple(True), :allow-ip);
         my $gzzreadline        = Gzz_readline.new;
         my Int $cr-id          = 0;
         my Str $region         = '';
@@ -1240,70 +1345,71 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                                 $postal-unit, $postal-street, $postal-city_suberb,
                                 $postal-postcode, $postal-region, $postal-country,
                                 $email, $cc_id, $country_region_id, $mobile, $landline,
-                                $escape, "$flag $name: $cc ($prefix)", $punct, $admin, "$region ($distinguishing)", ).map: { .chars });
+                                $escape, "$flag $name: $cc ($prefix)", $punct, $admin, "$region ($distinguishing)", 
+                                sprintf(" %-20s", 'quit'), ).map: { wcswidth($_) });
             my Int:D $w = min($width - 10 - 24 - 2 - 42, $m + 2);
             put t.clear-screen;
             my Int $cnt = 0;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('username', 24), $w,                $username) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('username', 24), $w,                $username) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('group', 24), $w,                   $group) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('group', 24), $w,                   $group) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Groups', 24), $w,                  $Groups) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('Groups', 24), $w,                  $Groups) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('given names', 24), $w,             $given-names) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('given names', 24), $w,             $given-names) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('surname', 24), $w,                 $surname) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('surname', 24), $w,                 $surname) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('display-name', 24), $w,            $display-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('display-name', 24), $w,            $display-name) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('email', 24), $w,                   $email) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('email', 24), $w,                   $email) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('country and coutry code', 24), $w, "$flag $name: $cc ($prefix)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('country and coutry code', 24), $w, "$flag $name: $cc ($prefix)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('region', 24), $w,                  "$region ($distinguishing)") ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('region', 24), $w,                  "$region ($distinguishing)") ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('mobile', 24), $w,                  $mobile) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('mobile', 24), $w,                  $mobile) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('landline', 24), $w,                $landline) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('landline', 24), $w,                $landline) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential unit', 24), $w,        $residential-unit) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential unit', 24), $w,        $residential-unit) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential street', 24), $w,      $residential-street) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential street', 24), $w,      $residential-street) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential city_suberb', 24), $w, $residential-city_suberb) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential city_suberb', 24), $w, $residential-city_suberb) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential postcode', 24), $w,    $residential-postcode) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential postcode', 24), $w,    $residential-postcode) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential region', 24), $w,       $residential-region) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential region', 24), $w,       $residential-region) ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('residential country', 24), $w,     $residential-country) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('residential country', 24), $w,     $residential-country) ~ t.text-reset;
             $cnt++;
             if $_admin {
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             } else {
                 # Greyed out as it is disabled for a non admin user. This is a strong visual hint of the fact. #
-                put t.bg-color(127,127,127) ~ t.bold ~ t.color(200,200,200) ~                                  sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
+                put t.bg-color(127,127,127) ~ t.bold ~ t.color(200,200,200) ~                                  sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('Admin', 24), $w,                   $admin) ~ t.text-reset;
             }
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('same-as-residential', 24), $w,     $same-as-residential) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('same-as-residential', 24), $w,     $same-as-residential) ~ t.text-reset;
             $cnt++;
             if !$same-as-residential {
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-unit', 24), $w,         $postal-unit) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-unit', 24), $w,         $postal-unit) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-street', 24), $w,       $postal-street) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-street', 24), $w,       $postal-street) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-city_suberb', 24), $w,  $postal-city_suberb) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-city_suberb', 24), $w,  $postal-city_suberb) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-postcode', 24), $w,     $postal-postcode) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-postcode', 24), $w,     $postal-postcode) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-region', 24), $w,       $postal-region) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-region', 24), $w,       $postal-region) ~ t.text-reset;
                 $cnt++;
-                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('postal-country', 24), $w,      $postal-country) ~ t.text-reset;
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('postal-country', 24), $w,      $postal-country) ~ t.text-reset;
                 $cnt++;
             } # if !$same-as-residential #
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt", 10), lead-dots('continue', 24), $w, 'enter') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt). ", 10), lead-dots('continue', 24), $w, 'enter') ~ t.text-reset;
             $cnt++;
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt..∞", 10), lead-dots('cancel', 24), $w, 'quit') ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%24s: %-*s", dots("$cnt..∞). ", 10), lead-dots('cancel', 24), $w, 'quit') ~ t.text-reset;
             $choice = prompt 'choice > ';
             given $choice {
                 when '' {   # have to explicitly match here otherwise it will match with 0 #
@@ -2192,7 +2298,7 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
     }
     my Int $width = terminal-width;
     $width = $width // 80;
-    my Str:D $sql-select = qq{SELECT p.id, p._perms, p.name, p.full_name FROM pages p};
+    my Str:D $sql-select = qq{SELECT p.id, p._perms, p.name, p.full_name FROM pages p ORDER BY LOWER(p.name), p, name, LOWER(p.full_name), p.full_name};
     my $select           = $dbh.prepare($sql-select);
     my $res   = $select.execute();
     my @pages = $res.allrows(:array-of-hash);
@@ -2217,6 +2323,13 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
     my Str:D $line = '';
     my Int $cnt = 0;
     @pages                  = |@pages.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«full_name».lc.trim cmp %v«full_name».lc.trim) !! $res ) };
+    if $show-id && $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w, 'name', $w1, 'full-name') ~ t.text-reset;
+        $cnt++;
+    } elsif $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s", trailing-dots('perms', 18, ' '), $w, 'name', $w1, 'full-name') ~ t.text-reset;
+        $cnt++;
+    }
     for @pages -> %values {
         my IdType $id       = %values«id»;
         my Str:D $name      = %values«name»;
@@ -2226,10 +2339,10 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
         my %perms = GPerms.parse($_perms, actions => Perms.new).made;
         my Str:D $perms = perms-to-str(%perms);
         if $show-id && $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%14s    %-*s%-*s", $id, centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s", $id, centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-14s%-*s%-*s", centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s", trailing-dots($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
             $cnt++;
         } elsif $cols >= $num {
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
@@ -2237,7 +2350,7 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
             $line = '';
             $cols = 0;
         } else {
-            $line ~= sprintf "%*s", $w, $name;
+            $line ~= sprintf "%-*s", $w, $name;
             $cols++;
         }
     }
