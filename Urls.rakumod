@@ -2155,7 +2155,7 @@ class Perms {
     method read  ($/) { make $/<true_or_false>.made }
     method write ($/) { make $/<true_or_false>.made }
     method del   ($/) { make $/<true_or_false>.made }
-    method true_or_false ($/) { (make(($/ eq 't') || ($/ eq 'true' )) ?? True !! False).made }
+    method true_or_false ($/) { (make(($/ eq 't') || ($/ eq 'true' )) ?? True !! False) }
 }
 
 sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool:D) is export {
@@ -2267,6 +2267,8 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
         my Bool:D $r = so $update.execute($new-perms, $id);
         if $verbose {
             dd $new-perms, $_old-perms;
+            my $_vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
+            dd $%_vals-perms;
             my %vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
             my Str:D $perms-str = perms-to-str(%vals-perms);
             my Str:D $ok = ($r ?? 'OK' !! 'Failed');
