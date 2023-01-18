@@ -2143,7 +2143,7 @@ grammar GPerms {
     token read          { <true_or_false> }
     token write         { <true_or_false> }
     token del           { <true_or_false> }
-    token true_or_false { [ 't' | 'f' ] }
+    token true_or_false { [ 't' || 'true' || 'f' || 'false' ] }
 }
 
 class Perms {
@@ -2155,10 +2155,10 @@ class Perms {
     method read  ($/) { make $/<true_or_false>.made }
     method write ($/) { make $/<true_or_false>.made }
     method del   ($/) { make $/<true_or_false>.made }
-    method true_or_false ($/) { (make($/ eq 't' ) ?? True !! False) }
+    method true_or_false ($/) { (make($/ ~~ rx:i/ ^ [ 't' || 'true' ] $ / ) ?? True !! False) }
 }
 
-sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
+sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool:D) is export {
     my Bool:D $result = True;
     my Bool:D $loggedin                  = so %session«loggedin»;
     my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
@@ -2194,6 +2194,14 @@ sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
     my Str:D $group = '';
     my Str:D $other = '';
     if %perms«perms»:exists {
+        # proccess the numerical perms  #
+        # Note: you can only supply     #
+        # either numeric or symbolic    #
+        # specs,  sybolic is far more   #
+        # powerful and selective        #
+        # numeric are converted to      #
+        # symbolic the '=' start forces #
+        # the perm to exact values      #
         my Int:D $p = %perms«perms»;
         $user  ~= '=';
         $group ~= '=';
@@ -2230,11 +2238,22 @@ sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
         $group = %perms«group» if %perms«group»:exists;
         $other = %perms«other» if %perms«other»:exists;
     }
-    dd $user, $group, $other;
     my Str:D $sql-select = qq{SELECT p.id, p._perms FROM pages p WHERE p.name = ?};
     my $select           = $dbh.prepare($sql-select);
     my Str:D $sql        = qq{UPDATE pages SET _perms = ? WHERE id = ?};
     my $update           = $dbh.prepare($sql);
+    my Int $width = terminal-width;
+    $width = $width // 80;
+    my Int:D $w  = 0;
+    for @page-names -> $name {
+        $w  = max($w,  wcswidth($name));
+    }
+    $w   = min($w,  $width);
+    my Int:D $cnt = 0;
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, 'name', centre('perms', 18, ' '), 'status') ~ t.text-reset;
+        $cnt++;
+    }
     for @page-names -> $name {
         my $res    = $select.execute($name);
         my %values = $res.row(:hash);
@@ -2245,7 +2264,20 @@ sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export {
         my Str:D $group_ = set-perms($group, %old-perms«group»);
         my Str:D $other_ = set-perms($other, %old-perms«other»);
         my Str:D $new-perms = qq{("$user_","$group_","$other_")};
-        $result &&= so $update.execute($new-perms, $id);
+        my Bool:D $r = so $update.execute($new-perms, $id);
+        if $verbose {
+            dd $new-perms, $_old-perms;
+            my %vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
+            my Str:D $perms-str = perms-to-str(%vals-perms);
+            my Str:D $ok = ($r ?? 'OK' !! 'Failed');
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, $name, centre($perms-str, 18, ' '), $ok) ~ t.text-reset;
+            $cnt++;
+        }
+        $result &&= $r;
+    }
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, '', '', '') ~ t.text-reset;
+        $cnt++;
     }
     return $result;
 } # sub chmod-pages(Bool:D $recursive, %perms, @page-names --> Bool:D) is export #

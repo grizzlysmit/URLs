@@ -193,18 +193,19 @@ multi sub MAIN('change', 'passwd', Str:D :u(:$username) where { $username ~~ rx/
     } 
 } # multi sub MAIN('change', 'passwd' )  returns Int #
 
-multi sub MAIN('chmod', 'pages', Bool:D :r(:$recursive) = False, Str :u(:$user) = Str, Str :g(:$group) = Str, Str :o(:$other) = Str,
+multi sub MAIN('chmod', 'pages', Bool:D :r(:$recursive) = False, Str :u(:$user) = Str, Bool:D :v(:$verbose) = False,
+                                Str :g(:$group) = Str, Str :o(:$other) = Str,
                                         Int :p(:$perms) where { perms-good($perms, $user, $group, $other) } = Int,
                                                         *@page-names where { $_ ~~ rx/ ^ \w+ [ '-' \w+ ]* $/ }) returns Int {
     my %the-perms;
-    exit 1 unless perms-good($perms, $user, $group, $other);
+    #exit 1 unless perms-good($perms, $user, $group, $other); # redundant #
     with $perms { %the-perms«perms» = $perms; }
     orwith $user // $group // $other {
         with $user  { %the-perms«user»  = $user;  }
         with $group { %the-perms«group» = $group; }
         with $other { %the-perms«other» = $other; }
     }
-    if chmod-pages($recursive, %the-perms, @page-names) {
+    if chmod-pages($recursive, $verbose, %the-perms, @page-names) {
         exit 0;
     } else {
         exit 1;
