@@ -2143,7 +2143,7 @@ grammar GPerms {
     token read          { <true_or_false> }
     token write         { <true_or_false> }
     token del           { <true_or_false> }
-    token true_or_false { [ 't' || 'true' || 'f' || 'false' ] }
+    token true_or_false { [ 't' | 'true' | 'f' | 'false' ] }
 }
 
 class Perms {
@@ -2155,7 +2155,7 @@ class Perms {
     method read  ($/) { make $/<true_or_false>.made }
     method write ($/) { make $/<true_or_false>.made }
     method del   ($/) { make $/<true_or_false>.made }
-    method true_or_false ($/) { (make(($/ eq 't') || ($/ eq 'true' )) ?? True !! False) }
+    method true_or_false ($/) { make(($/ eq 't') || ($/ eq 'true' )) }
 }
 
 sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool:D) is export {
@@ -2251,7 +2251,7 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
     $w   = min($w,  $width);
     my Int:D $cnt = 0;
     if $verbose {
-        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, 'name', centre('perms', 18, ' '), 'status') ~ t.text-reset;
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, 'name', centre('perms    ', 18, ' '), 'status') ~ t.text-reset;
         $cnt++;
     }
     for @page-names -> $name {
@@ -2266,9 +2266,6 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
         my Str:D $new-perms = qq{("$user_","$group_","$other_")};
         my Bool:D $r = so $update.execute($new-perms, $id);
         if $verbose {
-            dd $new-perms, $_old-perms;
-            my $_vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
-            dd $%_vals-perms;
             my %vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
             my Str:D $perms-str = perms-to-str(%vals-perms);
             my Str:D $ok = ($r ?? 'OK' !! 'Failed');
