@@ -2155,7 +2155,7 @@ class Perms {
     method read  ($/) { make $/<true_or_false>.made }
     method write ($/) { make $/<true_or_false>.made }
     method del   ($/) { make $/<true_or_false>.made }
-    method true_or_false ($/) { (make($/ ~~ rx:i/ ^ [ 't' || 'true' ] $ / ) ?? True !! False) }
+    method true_or_false ($/) { (make($/ eq 't' || $/ eq 'true' ) ?? True !! False) }
 }
 
 sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool:D) is export {
