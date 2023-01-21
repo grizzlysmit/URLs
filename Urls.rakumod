@@ -2180,6 +2180,11 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
     my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
     my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
     my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    #######################################################
+    #                                                     #
+    #           Only loggedin users may do this           #
+    #                                                     #
+    #######################################################
     unless $loggedin {
         say "You must be loggedin to use this function: {&*ROUTINE.name}";
         return False;
@@ -2200,6 +2205,9 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
     if %perms«perms»:exists {
         #####################################################
         #                                                   #
+        #                                                   #
+        #                                                   #
+        #                                                   #
         #           proccess the numerical perms            #
         #           Note: you can only supply               #
         #           either numeric or symbolic              #
@@ -2208,6 +2216,9 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
         #           numeric are converted to                #
         #           symbolic the '=' start forces           #
         #           the perm to exact values                #
+        #                                                   #
+        #                                                   #
+        #                                                   #
         #                                                   #
         #####################################################
         my Int:D $p = %perms«perms»;
@@ -2364,6 +2375,11 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
         my Str:D $_old-perms = %values«_perms»;
         my Str:D  $full-name = %values«full_name»;
         my        %old-perms = GPerms.parse($_old-perms, actions => Perms.new).made;
+        ####################################################################
+        #                                                                  #
+        #           insure you have the rights to do this at all           #
+        #                                                                  #
+        ####################################################################
         unless $_admin || $userid == $loggedin_id {
             my $msg = "you lack the permissions to modify page: $name";
             my Str:D $perms-str = perms-to-str(%old-perms);
@@ -2399,6 +2415,11 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
                 my Str:D  $sect-perms   = %page_section«_perms»;
                 my IdType $ls-id        = %page_section«links_section_id»;
                 my        %_sect-perms  = GPerms.parse($sect-perms, actions => Perms.new).made;
+                ####################################################################
+                #                                                                  #
+                #              insure you have the rights to do this               #
+                #                                                                  #
+                ####################################################################
                 unless $_admin || $sect-userid == $loggedin_id {
                     my Str:D $msg       = "you lack the permissions to modify the page_section: $sect-id";
                     my Str:D $perms-str = perms-to-str(%_sect-perms);
@@ -2430,6 +2451,11 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
                     my Str:D  $lns-perms     = %links_section«_perms»;
                     my Str:D  $lns-section   = %links_section«section»;
                     my        %_lns-perms    = GPerms.parse($sect-perms, actions => Perms.new).made;
+                    ####################################################################
+                    #                                                                  #
+                    #              insure you have the rights to do this               #
+                    #                                                                  #
+                    ####################################################################
                     unless $_admin || $lns-userid == $loggedin_id {
                         my Str:D $msg       = "you lack the permissions to modify the section: $lns-section";
                         my Str:D $perms-str = perms-to-str(%_lns-perms);
@@ -2461,6 +2487,11 @@ sub chmod-pages(Bool:D $recursive, Bool:D $verbose, %perms, @page-names --> Bool
                     my Str:D  $link-name      = %link«name»;
                     my Str:D  $link-perms     = %link«_perms»;
                     my        %_link-perms    = GPerms.parse($link-perms, actions => Perms.new).made;
+                    ####################################################################
+                    #                                                                  #
+                    #              insure you have the rights to do this               #
+                    #                                                                  #
+                    ####################################################################
                     unless $_admin || $link-userid == $loggedin_id {
                         my Str:D $msg       = "you lack the permissions to modify the link: $link-name";
                         my Str:D $perms-str = perms-to-str(%_link-perms);
@@ -2606,6 +2637,378 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
     }
     return $result;
 } # sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export #
+
+sub get-user-group-and-ids(Str $user, IdType $userid, Str $group, IdType $groupid, IdType:D $old-userid, IdType:D $old-groupid  --> List) {
+    my Str    $user-to;
+    my IdType $userid-to;
+    my Str    $group-to;
+    my IdType $groupid-to;
+    #############################################################
+    #                                                           #
+    #           get the user and group names and id'd           #
+    #                                                           #
+    #############################################################
+    my Str:D $sel-userid  = qq!SELECT pw.id FROM passwd pw WHERE pw.username = ?!;
+    my $select-userid     = $dbh.prepare($sel-userid);
+    my Str:D $sel-user    = qq!SELECT pw.username FROM passwd pw WHERE pw.id = ?!;
+    my $select-user       = $dbh.prepare($sel-user);
+    my Str:D $sel-groupid = qq!SELECT g.id FROM _group g WHERE g._name = ?!;
+    my $select-groupid    = $dbh.prepare($sel-groupid);
+    my Str:D $sel-group   = qq!SELECT g._name FROM _group g WHERE g.id = ?!;
+    my $select-group      = $dbh.prepare($sel-group);
+    with $user {
+        $user-to    = $user;
+        my $res     = $select-userid.execute($user-to):
+        my %val     = $res.row(:hash);
+        $userid-to  = %val«id»;
+    } orwith $userid {
+        $userid-to  = $userid;
+        my $res     = $select-user.execute($userid-to):
+        my %val     = $res.row(:hash);
+        $user-to    = %val«username»;
+    } else {
+        $userid-to  = $old-userid;
+        my $res     = $select-user.execute($userid-to):
+        my %val     = $res.row(:hash);
+        $user-to    = %val«username»;
+    }
+    with $group {
+        $group-to   = $group;
+        my $res     = $select-groupid.execute($group-to):
+        my %val     = $res.row(:hash);
+        $groupid-to = %val«id»;
+    } orwith $groupid {
+        $groupid-to = $groupid;
+        my $res     = $select-group.execute($groupid-to):
+        my %val     = $res.row(:hash);
+        $group-to   = %val«_name»;
+    } else {
+        $groupid-to = $old-groupid;
+        my $res     = $select-group.execute($groupid-to):
+        my %val     = $res.row(:hash);
+        $group-to   = %val«_name»;
+    }
+    return $user-to, $userid-to, $group-to, $groupid-to;
+} # sub get-user-group-and-ids(Str $user, IdType $userid, Str $group, IdType $groupid, IdType:D $old-userid, IdType:D $old-groupid  --> List) #
+
+sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, Str $group, IdType $groupid, @page-names --> Bool:D) is export {
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    #######################################################
+    #                                                     #
+    #           Only loggedin users may do this           #
+    #                                                     #
+    #######################################################
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    ######################################################################
+    #                                                                    #
+    #           You must be an admin user to use this function           #
+    #                                                                    #
+    ######################################################################
+    unless $_admin {
+        say "You must be an admin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my Str:D $sql-select  = qq!SELECT p.id, pd.username, p.userid, g._name, p.groupid, p.full_name FROM pages p JOIN passwd pd ON p.userid = pd.id JOIN _group g ON p.groupid = g.id WHERE p.name = ?!;
+    my $select            = $dbh.prepare($sql-select);
+    my Str:D $sql         = qq!UPDATE pages SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update            = $dbh.prepare($sql);
+    my Str:D $sel-sect    = qq!SELECT ps.id, pd.username, ps.userid, g._name, ps.groupid, ps.links_section_id FROM page_section ps JOIN passwd pd ON ps.userid = pd.id JOIN _group g ON ps.groupid = g.id WHERE ps.pages_id = ? AND (? = true OR ps.userid = ?)!;
+    my $select-sect       = $dbh.prepare($sel-sect);
+    my Str:D $sql-sect    = qq!UPDATE page_section SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-sect       = $dbh.prepare($sql-sect);
+    my Str:D $sel-ls      = qq!SELECT ls.id, pd.username, ls.userid, g._name, ls.groupid, ls.section FROM links_sections ls JOIN passwd pd ON ls.userid = pd.id JOIN _group g ON ls.groupid = g.id WHERE ls.id = ? AND (? = true OR ls.userid = ?)!;
+    my $select-ls         = $dbh.prepare($sel-ls);
+    my Str:D $sql-ls      = qq!UPDATE links_sections SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-ls         = $dbh.prepare($sql-ls);
+    my Str:D $sel-links   = qq!SELECT l.id, pd.username, l.userid, g._name, l.groupid, l.name, l.link FROM links l JOIN passwd pd ON l.userid = pd.id JOIN _group g ON l.groupid = g.id WHERE l.section_id = ? AND (? = true OR l.userid = ?)!;
+    my $select-links      = $dbh.prepare($sel-links);
+    my Str:D $sql-links   = qq!UPDATE links SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-links      = $dbh.prepare($sql-links);
+    my Int $width         = terminal-width;
+    $width = $width // 80;
+    my Int:D $w  = 0;
+    if $verbose {
+        ################################################################
+        #                                                              #
+        #           Only do these Calculations if we NEED TO           #
+        #                                                              #
+        ################################################################
+        my Str:D    $user-to    = 0;
+        my IdType:D $userid-to  = '';
+        my Str:D    $group-to   = 0;
+        my IdType:D $groupid-to = '';
+        for @page-names -> $name {
+            my $res                  = $select.execute($name);
+            my %values               = $res.row(:hash);
+            my IdType:D $id          = %values«id»;
+            my Str:D    $old-user    = %values«username»;
+            my IdType:D $old-userid  = %values«userid»;
+            my Str:D    $old-group   = %values«_name»;
+            my IdType:D $old-groupid = %values«groupid»;
+            my Str:D    $full-name   = %values«full_name»;
+            ($user-to,  $userid-to, $group-to, $group-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $old-userid, $old-groupid);
+            my Str:D    $msg0         = qq[changed user of $name ($full-name) from $old-user to $user-to];
+            my Str:D    $msg1         = qq[changed group of $name ($full-name) from $old-group to $group-to];
+            my Str:D    $msg2         = qq[changed user and group of $name ($full-name) from $old-user:$old-group to $user-to:$group-to];
+            my Str:D    $msg3         = qq[retained user and group of $name ($full-name) as $old-user:$old-group];
+            my Str:D    $msg4         = qq[Error: could not change user and group of $name ($full-name) to $old-user:$old-group];
+            $w                        = max($w,  wcswidth($msg0), wcswidth($msg1), wcswidth($msg2), wcswidth($msg3), wcswidth($msg4));
+            if $recursive {
+                #############################################################
+                #                                                           #
+                #                   Recurse through it all                  #
+                #                                                           #
+                #############################################################
+                my $res_               = $select-sect.execute($id, $_admin, $loggedin_id);
+                my @page_sections      = $res_.allrows(:array-of-hash);
+                for @page_sections -> %page_section {
+                    my IdType:D $sect-id      = %page_section«id»;
+                    my IdType:D $sect-userid  = %page_section«userid»;
+                    my IdType:D $sect-groupid = %page_section«groupid»;
+                    my IdType:D $ls-id        = %page_section«links_section_id»;
+                    ($user-to,  $userid-to, $group-to, $group-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $sect-userid, $sect-groupid);
+                    my Str:D    $msg0         = qq[changed user of page_section from $sect-user to $user-to];
+                    my Str:D    $msg1         = qq[changed group of page_section from $sect-group to $group-to];
+                    my Str:D    $msg2         = qq[changed user and group of page_section from $sect-user:$sect-group to $user-to:$group-to];
+                    my Str:D    $msg3         = qq[retained user and group of page_section as $sect-user:$sect-group];
+                    my Str:D    $msg4         = qq[Error: could not change user and group of page_section to $old-user:$old-group];
+                    $w                        = max($w,  wcswidth($msg0), wcswidth($msg1), wcswidth($msg2), wcswidth($msg3), wcswidth($msg4));
+                    my $_res           = $select-ls.execute($ls-id, $_admin, $loggedin_id);
+                    my @links_sections = $_res.allrows(:array-of-hash);
+                    for @links_sections -> %links_section {
+                        my IdType:D $lns-id       = %links_section«id»;
+                        my IdType:D $lns-userid   = %links_section«userid»;
+                        my IdType:D $lns-groupid  = %links_section«groupid»;
+                        my Str:D    $lns-section  = %links_section«section»;
+                        ($user-to,  $userid-to, $group-to, $group-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $lns-userid, $lns-groupid);
+                        my Str:D    $msg0         = qq[changed user of $lns-section from $lns-user to $user-to];
+                        my Str:D    $msg1         = qq[changed group of $lns-section from $lns-group to $group-to];
+                        my Str:D    $msg2         = qq[changed user and group of $lns-section from $lns-user:$lns-group to $user-to:$group-to];
+                        my Str:D    $msg3         = qq[retained user and group of $lns-section as $lns-user:$lns-group];
+                        my Str:D    $msg4         = qq[Error: could not change user and group of $lns-section to $old-user:$old-group];
+                        $w                        = max($w,  wcswidth($msg0), wcswidth($msg1), wcswidth($msg2), wcswidth($msg3), wcswidth($msg4));
+                    }
+                    my $_res_          = $select-links.execute($ls-id, $_admin, $loggedin_id);
+                    my @links          = $_res_.allrows(:array-of-hash);
+                    for @links -> %link {
+                        my IdType:D $link-id      = %link«id»;
+                        my IdType:D $link-userid  = %link«userid»;
+                        my IdType:D $link-groupid = %link«groupid»;
+                        my Str:D    $link-name    = %link«name»;
+                        ($user-to,  $userid-to, $group-to, $group-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $link-userid, $link-groupid);
+                        my Str:D    $msg0         = qq[changed user of $link-name from $link-user to $user-to];
+                        my Str:D    $msg1         = qq[changed group of $link-name from $link-group to $group-to];
+                        my Str:D    $msg2         = qq[changed user and group of $link-name from $link-user:$link-group to $user-to:$group-to];
+                        my Str:D    $msg3         = qq[retained user and group of $link-name as $link-user:$link-group];
+                        my Str:D    $msg4         = qq[Error: could not change user and group of $link-name to $old-user:$old-group];
+                        $w                        = max($w,  wcswidth($msg0), wcswidth($msg1), wcswidth($msg2), wcswidth($msg3), wcswidth($msg4));
+                    } # for @links -> %link #
+                } # for @page_sections -> %page_section #
+            } # if $recursive #
+        } # for @page-names -> $name #
+        $w  += 2;
+        $w   = min($w,  $width);
+    } # if $verbose #
+    my Int:D $cnt = 0;
+    ######################################################################
+    #                                                                    #
+    #                               Heading                              #
+    #                                                                    #
+    ######################################################################
+    if $verbose {
+        if $recursive {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, 'page_name', $w1, 'full_name', $w2, 'section', $w3, 'link_name', centre('perms    ', 18, ' '), 'status') ~ t.text-reset;
+            $cnt++;
+            # put a horazontal line in #
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w0 + $w1 + $w2 + $w3 + 18 + 10)) ~ t.text-reset;
+        } else {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%18s%14s", $w0, 'page_name', $w1, 'full_name', centre('   perms', 18, ' '), 'status') ~ t.text-reset;
+            $cnt++;
+            # put a horazontal line in #
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w0 + $w1 + 18 + 14)) ~ t.text-reset;
+        }
+        $cnt++;
+    }
+    #####################################################################
+    #                                                                   #
+    #         Do the  actaul work ouputing progress if $verbose         #
+    #                                                                   #
+    #####################################################################
+    for @page-names -> $name {
+        my $res                    = $select.execute($name);
+        my %values                 = $res.row(:hash);
+        my IdType:D $id            = %values«id»;
+        my IdType:D $old-userid    = %values«userid»;
+        my Str:D    $old-user      = %values«username»;
+        my IdType:D $old-groupid   = %values«groupid»;
+        my Str:D    $old-group     = %values«_name»;
+        my Str:D    $full-name     = %values«full_name»;
+        ($user-to,  $userid-to, $group-to, $group-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $old-userid, $old-groupid);
+        my Bool:D $r               = so $update.execute($userid-to, $groupid-to, $id);
+        if $verbose {
+            my Str:D $msg = '';
+            if $r {
+                if $old-user eq $user-to && $old-group ne $group-to {
+                    $msg        = qq[changed group of $name ($full-name) from $old-group to $group-to];
+                } elsif $old-user ne $user-to && $old-group eq $group-to {
+                    $msg        = qq[changed user of $name ($full-name) from $old-user to $user-to];
+                } elsif $old-user ne $user-to && $old-group ne $group-to {
+                    $msg        = qq[changed user and group of $name ($full-name) from $old-user:$old-group to $user-to:$group-to];
+                } else {
+                    $msg        = qq[retained user and group of $name ($full-name) as $old-user:$old-group];
+                }
+            } else  {
+                $msg            = qq[Error: could not change user and group of $name ($full-name) to $old-user:$old-group];
+            }
+            my       %vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
+            my Str:D $perms-str  = perms-to-str(%vals-perms);
+            my Str:D $ok = ($r ?? 'OK' !! 'Failed');
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, "|$name|", $w1, $full-name, $w2, '', $w3, '', centre($perms-str, 18, ' '), $ok) ~ t.text-reset;
+            $cnt++;
+        }
+        if $recursive {
+            #############################################################
+            #                                                           #
+            #                   Recurse through it all                  #
+            #                                                           #
+            #############################################################
+            my $res_           = $select-sect.execute($id, $_admin, $loggedin_id);
+            my @page_sections  = $res_.allrows(:array-of-hash);
+            for @page_sections -> %page_section {
+                my IdType $sect-id      = %page_section«id»;
+                my IdType $sect-userid  = %page_section«userid»;
+                my IdType $sect-groupid = %page_section«groupid»;
+                my Str:D  $sect-perms   = %page_section«_perms»;
+                my IdType $ls-id        = %page_section«links_section_id»;
+                my        %_sect-perms  = GPerms.parse($sect-perms, actions => Perms.new).made;
+                ####################################################################
+                #                                                                  #
+                #              insure you have the rights to do this               #
+                #                                                                  #
+                ####################################################################
+                unless $_admin || $sect-userid == $loggedin_id {
+                    my Str:D $msg       = "you lack the permissions to modify the page_section: $sect-id";
+                    my Str:D $perms-str = perms-to-str(%_sect-perms);
+                    my Str:D $ok        = 'Failed';
+                    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, $msg, $w1, '', $w2, '', $w3, '', centre('', 18, ' '), $ok) ~ t.text-reset;
+                    $cnt++;
+                    next;
+                }
+                my Str:D  $sect-user      = set-perms($user,  %_sect-perms«user»);
+                my Str:D  $sect-group     = set-perms($group, %_sect-perms«group»);
+                my Str:D  $sect-other     = set-perms($other, %_sect-perms«other»);
+                my Str:D  $sect-new-perms = qq[("$sect-user","$sect-group","$sect-other")];
+                my Bool:D $ss             = so $update-sect.execute($sect-new-perms, $sect-id);
+                if $verbose {
+                    my       %vals-perms  = GPerms.parse($sect-new-perms, actions => Perms.new).made;
+                    my Str:D $perms-str   = perms-to-str(%vals-perms);
+                    my Str:D $ok          = ($ss ?? 'OK' !! 'Failed');
+                    my Str:D $msg         = qq[page_section: $sect-id perms changed];
+                    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, $msg, $w1, '', $w2, '', $w3, '', centre($perms-str, 18, ' '), $ok) ~ t.text-reset;
+                    $cnt++;
+                }
+                $result &&= $ss;
+                my $_res           = $select-ls.execute($ls-id, $_admin, $loggedin_id);
+                my @links_sections = $_res.allrows(:array-of-hash);
+                for @links_sections -> %links_section {
+                    my IdType $lns-id        = %links_section«id»;
+                    my IdType $lns-userid    = %links_section«userid»;
+                    my IdType $lns-groupid   = %links_section«groupid»;
+                    my Str:D  $lns-perms     = %links_section«_perms»;
+                    my Str:D  $lns-section   = %links_section«section»;
+                    my        %_lns-perms    = GPerms.parse($sect-perms, actions => Perms.new).made;
+                    ####################################################################
+                    #                                                                  #
+                    #              insure you have the rights to do this               #
+                    #                                                                  #
+                    ####################################################################
+                    unless $_admin || $lns-userid == $loggedin_id {
+                        my Str:D $msg       = "you lack the permissions to modify the section: $lns-section";
+                        my Str:D $perms-str = perms-to-str(%_lns-perms);
+                        my Str:D $ok        = 'Failed';
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, $msg, $w1, '', $w2, '', $w3, '', centre('', 18, ' '), $ok) ~ t.text-reset;
+                        $cnt++;
+                        next;
+                    }
+                    my Str:D  $lns-user_     = set-perms($user,  %_lns-perms«user»);
+                    my Str:D  $lns-group_    = set-perms($group, %_lns-perms«group»);
+                    my Str:D  $lns-other_    = set-perms($other, %_lns-perms«other»);
+                    my Str:D  $lns-new-perms = qq[("$lns-user_","$lns-group_","$lns-other_")];
+                    my Bool:D $ls            = so $update-ls.execute($lns-new-perms, $lns-id);
+                    if $verbose {
+                        my %vals-perms       = GPerms.parse($new-perms, actions => Perms.new).made;
+                        my Str:D $perms-str  = perms-to-str(%vals-perms);
+                        my Str:D $ok         = ($ls ?? 'OK' !! 'Failed');
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, '', $w1, '', $w2, "[$lns-section]", $w3, '', centre($perms-str, 18, ' '), $ok) ~ t.text-reset;
+                        $cnt++;
+                    }
+                    $result &&= $ls;
+                } # for @links_sections -> %links_section #
+                my $_res_          = $select-links.execute($ls-id, $_admin, $loggedin_id);
+                my @links          = $_res_.allrows(:array-of-hash);
+                for @links -> %link {
+                    my IdType $link-id        = %link«id»;
+                    my IdType $link-userid    = %link«userid»;
+                    my IdType $link-groupid   = %link«groupid»;
+                    my Str:D  $link-name      = %link«name»;
+                    my Str:D  $link-perms     = %link«_perms»;
+                    my        %_link-perms    = GPerms.parse($link-perms, actions => Perms.new).made;
+                    ####################################################################
+                    #                                                                  #
+                    #              insure you have the rights to do this               #
+                    #                                                                  #
+                    ####################################################################
+                    unless $_admin || $link-userid == $loggedin_id {
+                        my Str:D $msg       = "you lack the permissions to modify the link: $link-name";
+                        my Str:D $perms-str = perms-to-str(%_link-perms);
+                        my Str:D $ok        = 'Failed';
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, $msg, $w1, '', $w2, '', $w3, '', centre('', 18, ' '), $ok) ~ t.text-reset;
+                        $cnt++;
+                        next;
+                    }
+                    my Str:D  $link-user_     = set-perms($user,  %_link-perms«user»);
+                    my Str:D  $link-group_    = set-perms($group, %_link-perms«group»);
+                    my Str:D  $link-other_    = set-perms($other, %_link-perms«other»);
+                    my Str:D  $link-new-perms = qq[("$link-user_","$link-group_","$link-other_")];
+                    my Bool:D $l              = so $update-links.execute($new-perms, $link-id);
+                    if $verbose {
+                        my %vals-perms        = GPerms.parse($new-perms, actions => Perms.new).made;
+                        my Str:D $perms-str   = perms-to-str(%vals-perms);
+                        my Str:D $ok = ($l ?? 'OK' !! 'Failed');
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, '', $w1, '', $w2, '', $w3, $link-name, centre($perms-str, 18, ' '), $ok) ~ t.text-reset;
+                        $cnt++;
+                    }
+                    $result &&= $l;
+                } # for @links -> %link #
+            } # for @vals -> %val #
+        } # if $recursive #
+        $result &&= $r;
+    } # for @page-names -> $name #
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%18s%10s", $w, '', '', '') ~ t.text-reset;
+        $cnt++;
+    }
+    return $result;
+} # sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, Str $group, IdType $groupid, @page-names --> Bool:D) is export #
 
 END {
     %session.save;
