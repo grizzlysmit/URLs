@@ -211,6 +211,28 @@ multi sub MAIN('chmod', 'pages', Bool:D :r(:$recursive) = False, Str :u(:$user) 
     }
 }
 
+multi sub MAIN('chown', 'pages', Bool:D :r(:$recursive) = False, Bool:D :v(:$verbose) = False,
+                        Str :U(:$user) = Str, IdType :u(:$userid) = IdType, Str :G(:$group) = Str, IdType :g(:$groupid) = IdType,
+                                                        *@page-names where { $_ ~~ rx/ ^ \w+ [ '-' \w+ ]* $/ }) returns Int {
+    without $user // $userid // $group // $groupid {
+        "Error: You didn't supply any of --user,  --userid,  --group,  --groupid".say;
+        exit 2;
+    }
+    if $user !=== Str && $userid !=== IdType {
+        "Error: you supplied both --user and --userid supply only one or the other!".say;
+        exit 3;
+    }
+    if $group !=== Str && $groupid !=== IdType {
+        "Error: you supplied both --group and --groupid supply only one or the other!".say;
+        exit 4;
+    }
+    if chown-page($recursive, $verbose, $user, $userid, $group, $groupid, @page-names) {
+        exit 0;
+    } else {
+        exit 1;
+    }
+}
+
 multi sub MAIN('page', 'perms', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str:D :p(:$pattern) = '^ .* $') returns Int {
     my Regex:D $_pattern = rx:i/ <$pattern> /;
     if list-page-perms($show-id, $full, $_pattern) {

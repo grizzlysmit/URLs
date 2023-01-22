@@ -984,7 +984,7 @@ sub whoami( --> Bool) is export {
     return True;
 } # sub whoami( --> Bool) is export #
 
-subset IdType of Int where 0 <= * <= 9_223_372_036_854_775_807;
+subset IdType is export of Int where 0 <= * <= 9_223_372_036_854_775_807;
 
 sub centre(Str:D $text, Int:D $width is copy, Str:D $fill = ' ' --> Str) {
     my Str $result = $text;
@@ -2658,33 +2658,33 @@ sub get-user-group-and-ids(Str $user, IdType $userid, Str $group, IdType $groupi
     my $select-group      = $dbh.prepare($sel-group);
     with $user {
         $user-to    = $user;
-        my $res     = $select-userid.execute($user-to):
+        my $res     = $select-userid.execute($user-to);
         my %val     = $res.row(:hash);
         $userid-to  = %val«id»;
     } orwith $userid {
         $userid-to  = $userid;
-        my $res     = $select-user.execute($userid-to):
+        my $res     = $select-user.execute($userid-to);
         my %val     = $res.row(:hash);
         $user-to    = %val«username»;
     } else {
         $userid-to  = $old-userid;
-        my $res     = $select-user.execute($userid-to):
+        my $res     = $select-user.execute($userid-to);
         my %val     = $res.row(:hash);
         $user-to    = %val«username»;
     }
     with $group {
         $group-to   = $group;
-        my $res     = $select-groupid.execute($group-to):
+        my $res     = $select-groupid.execute($group-to);
         my %val     = $res.row(:hash);
         $groupid-to = %val«id»;
     } orwith $groupid {
         $groupid-to = $groupid;
-        my $res     = $select-group.execute($groupid-to):
+        my $res     = $select-group.execute($groupid-to);
         my %val     = $res.row(:hash);
         $group-to   = %val«_name»;
     } else {
         $groupid-to = $old-groupid;
-        my $res     = $select-group.execute($groupid-to):
+        my $res     = $select-group.execute($groupid-to);
         my %val     = $res.row(:hash);
         $group-to   = %val«_name»;
     }
@@ -2745,18 +2745,17 @@ sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, St
     my $update-links      = $dbh.prepare($sql-links);
     my Int $width         = terminal-width;
     $width = $width // 80;
-    my Int:D $w0 = 0;
-    my Int:D $w1 = 0;
+    my Int:D $w  = 0;
     if $verbose {
         ################################################################
         #                                                              #
         #           Only do these Calculations if we NEED TO           #
         #                                                              #
         ################################################################
-        my Str:D    $user-to    = 0;
-        my IdType:D $userid-to  = '';
-        my Str:D    $group-to   = 0;
-        my IdType:D $groupid-to = '';
+        my Str:D    $user-to    = '';
+        my IdType:D $userid-to  = 0;
+        my Str:D    $group-to   = '';
+        my IdType:D $groupid-to = 0;
         for @page-names -> $name {
             my $res                  = $select.execute($name);
             my %values               = $res.row(:hash);
@@ -2842,6 +2841,10 @@ sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, St
     #                                                                   #
     #####################################################################
     for @page-names -> $name {
+        my Str:D    $user-to    = '';
+        my IdType:D $userid-to  = 0;
+        my Str:D    $group-to   = '';
+        my IdType:D $groupid-to = 0;
         my $res                    = $select.execute($name);
         my %values                 = $res.row(:hash);
         my IdType:D $id            = %values«id»;
@@ -2951,7 +2954,7 @@ sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, St
                     my Bool:D $l              = so $update-links.execute($userid-to, $groupid-to, $link-id);
                     if $verbose {
                         my Str:D $msg = '';
-                        if $ls {
+                        if $l {
                             if $link-user eq $user-to && $link-group ne $group-to { 
                                 $msg          = qq[changed user of $link-name from $link-user to $user-to];
                             } elsif $link-user ne $user-to && $link-group eq $group-to { 
