@@ -876,7 +876,6 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
     }
     my Str:D $hashed-passwd = generate-hash($passwd);
     my $len = $hashed-passwd.chars;
-    dd $hashed-passwd, $len;
     if validate($hashed-passwd, $passwd) {
         CATCH {
             when X::DBDish::DBError {
@@ -1634,11 +1633,9 @@ sub ask-for-all-user-values(Str:D $username is rw, Str:D $group is rw, Str:D $Gr
                 when 9  {
                             my $tmp                = gzzreadline_call("mobile: [$mobile_placeholder] > ", $mobile, $gzzreadline);
                             $tmp .=trim;
-                            dd $mobile_pattern, $tmp;
                             while $tmp !~~ $mobile_pattern {
                                 $tmp               = gzzreadline_call("mobile: [$mobile_placeholder] > ", $tmp, $gzzreadline);
                                 $tmp .=trim;
-                                dd $mobile_pattern, $tmp;
                             }
                             $mobile                = $tmp if $tmp ~~ $mobile_pattern;
                         }
@@ -2549,7 +2546,15 @@ sub perms-to-str(%perms) {
     return perms-str(%perms«user») ~ perms-str(%perms«group») ~ perms-str(%perms«other»);
 } # sub perms-to-str(%perms) #
 
-sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export {
+sub elipse(Str:D $s, Int:D $width --> Str:D) {
+    my Int:D $w0 = wcswidth($s);
+    my Int:D $w1 = $width div 3;
+    return $s if wcswidth($s) < $width;
+    my Str:D $result = $s.substr(0, $w1 * 2 - 4) ~ '... ' ~ $s.substr($w0 - $w1 + 1) ~ '  ';
+    return $result;
+}
+
+sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Regex:D $pattern --> Bool:D) is export {
     my Bool:D $result = True;
     my Bool:D $loggedin                  = so %session«loggedin»;
     my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
@@ -2573,60 +2578,216 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
     }
     my Int $width = terminal-width;
     $width = $width // 80;
-    my Str:D $sql-select = qq{SELECT p.id, p._perms, p.name, p.full_name FROM pages p ORDER BY LOWER(p.name), p, name, LOWER(p.full_name), p.full_name};
-    my $select           = $dbh.prepare($sql-select);
-    my $res   = $select.execute();
-    my @pages = $res.allrows(:array-of-hash);
+    my Str:D $sql-select   = qq[SELECT p.id, p._perms, pd.username, g._name, p.name, p.full_name FROM pages p JOIN passwd pd ON pd.id = p.userid JOIN _group g ON g.id = p.groupid ORDER BY LOWER(p.name), p, name, LOWER(p.full_name), p.full_name];
+    my $select             = $dbh.prepare($sql-select);
+    my Str:D $sql-pg-sect  = qq[SELECT ps.id, ps.userid, ps.groupid, ps._perms, pd.username, g._name, ps.links_section_id FROM page_section ps JOIN passwd pd ON pd.id = ps.userid JOIN _group g ON g.id = ps.groupid WHERE ps.pages_id = ?];
+    my $select-pg-sect     = $dbh.prepare($sql-pg-sect);
+    my Str:D $sql-lnk-sect = qq[SELECT ls.id, ls.userid, ls.groupid, ls._perms, pd.username, g._name, ls.section FROM links_sections ls JOIN passwd pd ON pd.id = ls.userid JOIN _group g ON g.id = ls.groupid WHERE ls.id = ?];
+    my $select-lnk-sect    = $dbh.prepare($sql-lnk-sect);
+    my Str:D $sql-links    = qq[SELECT l.id, l.userid, l.groupid, l._perms, pd.username, g._name, l.name, l.link FROM links l JOIN passwd pd ON pd.id = l.userid JOIN _group g ON g.id = l.groupid WHERE l.section_id = ?];
+    my $select-links       = $dbh.prepare($sql-links);
+    my $res                = $select.execute();
+    my @pages              = $res.allrows(:array-of-hash);
     my Int:D $w  = 0;
-    my Int:D $w1 = 0;
+    my Int:D $w0 = wcswidth('username');
+    my Int:D $w1 = wcswidth('group_name');
+    my Int:D $w2 = wcswidth('page_name');
+    my Int:D $w3 = wcswidth('full-name');
+    my Int:D $w4 = 0;
+    my Int:D $w5 = 0;
+    my Int:D $w6 = 0;
     for @pages -> %values {
-        my IdType $id       = %values«id»;
-        my Str:D $name      = %values«name»;
-        my Str:D $full-name = %values«full_name»;
+        my IdType $id        = %values«id»;
+        my Str:D $name       = %values«name»;
+        my Str:D $full-name  = %values«full_name»;
         next unless $name ~~ $pattern || $full-name ~~ $pattern;
-        my Str:D $_perms    = %values«_perms»;
-        my %perms = GPerms.parse($_perms, actions => Perms.new).made;
-        my Str:D $perms = perms-to-str(%perms);
-        $w  = max($w,  wcswidth($name));
-        $w1 = max($w1, wcswidth($full-name));
+        my Str:D $username   = %values«username»;
+        my Str:D $group_name = %values«_name»;
+        $w0 = max($w0, wcswidth($username));
+        $w1 = max($w1, wcswidth($group_name));
+        $w2 = max($w2, wcswidth($name));
+        $w3 = max($w3, wcswidth($full-name));
+        if $recursive {
+            $w4               = max($w4, wcswidth('section'));
+            $w5               = max($w5, wcswidth('name'));
+            $w6               = max($w6, wcswidth('link'));
+            my $_res          = $select-pg-sect.execute($id);
+            my @page-sections = $_res.allrows(:array-of-hash);
+            for @page-sections -> %page-section {
+                my IdType:D $sect-id         = %page-section«id»;
+                my IdType:D $sect-section-id = %page-section«links_section_id»;
+                my Str:D    $sect-username   = %page-section«username»;
+                my Str:D    $sect-group_name = %page-section«_name»;
+                $w0 = max($w0, wcswidth($sect-username));
+                $w1 = max($w1, wcswidth($sect-group_name));
+                my $res_                     = $select-lnk-sect.execute($sect-section-id);
+                my @link-sections            = $res_.allrows(:array-of-hash);
+                for @link-sections -> %link-section {
+                    my IdType:D $lns-id         = %link-section«id»;
+                    my Str:D    $lns-username   = %link-section«username»;
+                    my Str:D    $lns-group_name = %link-section«_name»;
+                    my Str:D    $lns-section    = %link-section«section»;
+                    $w0 = max($w0, wcswidth($lns-username));
+                    $w1 = max($w1, wcswidth($lns-group_name));
+                    $w4 = max($w4, wcswidth($lns-section));
+                    my $_res_                   = $select-links.execute($lns-id);
+                    my @links                   = $_res_.allrows(:array-of-hash);
+                    for @links -> %link {
+                        my IdType:D $lks-id         = %link«id»;
+                        my Str:D    $lks-username   = %link«username»;
+                        my Str:D    $lks-group_name = %link«_name»;
+                        my Str:D    $lks-name       = %link«name»;
+                        my Str:D    $lks-link       = %link«link»;
+                        $w0 = max($w0, wcswidth($lks-username));
+                        $w1 = max($w1, wcswidth($lks-group_name));
+                        $w5 = max($w5, wcswidth($lks-name));
+                        $w6 = max($w6, wcswidth($lks-link));
+                    } # for @links -> %link #
+                } # for @link-sections -> %link-section #
+            } # for @page-sections -> %page-section #
+        } # if $recursive #
     }
-    $w  += 2;
+    $w0 += 2;
     $w1 += 2;
+    $w2 += 2;
+    $w3 += 2;
+    if $recursive {
+        $w4 += 2;
+        $w5 += 2;
+        $w6 += 2;
+    }
+    if $w0 + $w1 + $w2 + $w3 +$w4 + $w5 + $w6 + 32 >= $width {
+        $w6 -= abs($width - ($w0 + $w1 + $w2 + $w3 +$w4 + $w5 + $w6 + 32));
+        if $w6 < 10 {
+            $w6 .=abs;
+            $w3  = 10;
+            $w4  = 10;
+            $w6  = 10 if $w6 < 10;
+        }
+    } 
+    $w   = min($w0 + $w1 + $w2 + $w3 +$w4 + $w5 + $w6 + 32, $width);
     my Int:D $num = $width div $w;
     $num = 1 if $num < 1;
     my Int:D $cols = 0;
     my Str:D $line = '';
     my Int $cnt = 0;
-    @pages                  = |@pages.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«full_name».lc.trim cmp %v«full_name».lc.trim) !! $res ) };
-    if $show-id && $full {
-        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w, 'name', $w1, 'full-name') ~ t.text-reset;
-        $cnt++;
-    } elsif $full {
-        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s", trailing-dots('perms', 18, ' '), $w, 'name', $w1, 'full-name') ~ t.text-reset;
-        $cnt++;
+    #@pages                  = |@pages.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«full_name».lc.trim cmp %v«full_name».lc.trim) !! $res ) };
+    if $recursive {
+        $full = True;
+        if $show-id && $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s%-*s%-*s%-*s%-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'page-name', $w3, 'full-name', $w4, 'section', $w5, 'lks-name', $w6, 'lks-link') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x $w) ~ t.text-reset;
+            $cnt++;
+        } elsif $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots('perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'page-name', $w3, 'full-name', $w4, 'section', $w5, 'link-name', $w6, 'link') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w - 14)) ~ t.text-reset;
+            $cnt++;
+        }
+    } else {
+        if $show-id && $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s%-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'name', $w3, 'full-name') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x $w) ~ t.text-reset;
+            $cnt++;
+        } elsif $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s", trailing-dots('perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'name', $w3, 'full-name') ~ t.text-reset;
+            $cnt++;
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w - 14)) ~ t.text-reset;
+            $cnt++;
+        }
     }
     for @pages -> %values {
         my IdType $id       = %values«id»;
         my Str:D $name      = %values«name»;
         my Str:D $full-name = %values«full_name»;
         next unless $name ~~ $pattern || $full-name ~~ $pattern;
+        my Str:D $username   = %values«username»;
+        my Str:D $group_name = %values«_name»;
         my Str:D $_perms    = %values«_perms»;
         my %perms = GPerms.parse($_perms, actions => Perms.new).made;
         my Str:D $perms = perms-to-str(%perms);
-        if $show-id && $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s", $id, centre($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
-            $cnt++;
-        } elsif $full {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s", trailing-dots($perms, 18, ' '), $w, $name, $w1, $full-name) ~ t.text-reset;
-            $cnt++;
-        } elsif $cols >= $num {
-            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
-            $cnt++;
-            $line = '';
-            $cols = 0;
+        if $recursive {
+            $full = $recursive;
+            if $show-id && $full {
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s%-*s%-*s%-*s", $id, centre($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, elipse($full-name, $w3), $w4, '', $w5, '', $w6, '') ~ t.text-reset;
+                $cnt++;
+            } elsif $full {
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, elipse($full-name, $w3), $w4, '', $w5, '', $w6, '') ~ t.text-reset;
+                $cnt++;
+            }
+            my $_res          = $select-pg-sect.execute($id);
+            my @page-sections = $_res.allrows(:array-of-hash);
+            for @page-sections -> %page-section {
+                my IdType:D $sect-id         = %page-section«id»;
+                my IdType:D $sect-section-id = %page-section«links_section_id»;
+                my Str:D    $sect-username   = %page-section«username»;
+                my Str:D    $sect-group_name = %page-section«_name»;
+                my Str:D    $sect-_perms     = %page-section«_perms»;
+                my          %sect-perms      = GPerms.parse($sect-_perms, actions => Perms.new).made;
+                my Str:D    $sect-perms      = perms-to-str(%sect-perms);
+                if $show-id && $full {
+                    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s%-*s%-*s%-*s", $id, centre($sect-perms, 18, ' '), $w0, $sect-username, $w1, $sect-group_name, $w2, '', $w3, '', $w4, '', $w5, '', $w6, '') ~ t.text-reset;
+                    $cnt++;
+                } elsif $full {
+                    put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots($sect-perms, 18, ' '), $w0, $sect-username, $w1, $sect-group_name, $w2, '', $w3, '', $w4, '', $w5, '', $w6, '') ~ t.text-reset;
+                    $cnt++;
+                }
+                my $res_                     = $select-lnk-sect.execute($sect-section-id);
+                my @link-sections            = $res_.allrows(:array-of-hash);
+                for @link-sections -> %link-section {
+                    my IdType:D $lns-id         = %link-section«id»;
+                    my Str:D    $lns-username   = %link-section«username»;
+                    my Str:D    $lns-group_name = %link-section«_name»;
+                    my Str:D    $lns-section    = %link-section«section»;
+                    my Str:D    $lns-_perms     = %link-section«_perms»;
+                    my          %lns-perms      = GPerms.parse($lns-_perms, actions => Perms.new).made;
+                    my Str:D    $lns-perms      = perms-to-str(%lns-perms);
+                    if $show-id && $full {
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s%-*s%-*s%-*s", $id, centre($lns-perms, 18, ' '), $w0, $lns-username, $w1, $lns-group_name, $w2, '', $w3, '', $w4, elipse($lns-section, $w4), $w5, '', $w6, '') ~ t.text-reset;
+                        $cnt++;
+                    } elsif $full {
+                        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots($lns-perms, 18, ' '), $w0, $lns-username, $w1, $lns-group_name, $w2, '', $w3, '', $w4, elipse($lns-section, $w4), $w5, '', $w6, '') ~ t.text-reset;
+                        $cnt++;
+                    }
+                    my $_res_                   = $select-links.execute($lns-id);
+                    my @links                   = $_res_.allrows(:array-of-hash);
+                    for @links -> %link {
+                        my IdType:D $lks-id         = %link«id»;
+                        my Str:D    $lks-username   = %link«username»;
+                        my Str:D    $lks-group_name = %link«_name»;
+                        my Str:D    $lks-name       = %link«name»;
+                        my Str:D    $lks-link       = %link«link»;
+                        my Str:D    $lks-_perms     = %link«_perms»;
+                        my          %lks-perms      = GPerms.parse($lks-_perms, actions => Perms.new).made;
+                        my Str:D    $lks-perms      = perms-to-str(%lks-perms);
+                        if $show-id && $full {
+                            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s%-*s%-*s%-*s", $id, centre($lks-perms, 18, ' '), $w0, $lks-username, $w1, $lns-group_name, $w2, '', $w3, '', $w4, '', $w5, $lks-name, $w6, elipse($lks-link, $w6 - 1)) ~ t.text-reset;
+                            $cnt++;
+                        } elsif $full {
+                            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots($lks-perms, 18, ' '), $w0, $lks-username, $w1, $lns-group_name, $w2, '', $w3, '', $w4, '', $w5, $lks-name, $w6, elipse($lks-link, $w6 - 1)) ~ t.text-reset;
+                            $cnt++;
+                        }
+                    } # for @links -> %link #
+                } # for @link-sections -> %link-section #
+            } # for @page-sections -> %page-section #
         } else {
-            $line ~= sprintf "%-*s", $w, $name;
-            $cols++;
+            if $show-id && $full {
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s", $id, centre($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, $full-name) ~ t.text-reset;
+                $cnt++;
+            } elsif $full {
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s", trailing-dots($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, $full-name) ~ t.text-reset;
+                $cnt++;
+            } elsif $cols >= $num {
+                put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
+                $cnt++;
+                $line = '';
+                $cols = 0;
+            } else {
+                $line ~= sprintf "%-*s", $w0, $name;
+                $cols++;
+            }
         }
     }
     if $line ne '' {
@@ -2635,8 +2796,15 @@ sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) 
         $line = '';
         $cols = 0;
     }
+    if $show-id && $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ (' ' x $w) ~ t.text-reset;
+        $cnt++;
+    } elsif $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ (' ' x ($w - 14)) ~ t.text-reset;
+        $cnt++;
+    }
     return $result;
-} # sub list-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export #
+} # sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export #
 
 sub get-user-group-and-ids(Str $user, IdType $userid, Str $group, IdType $groupid, IdType:D $old-userid, IdType:D $old-groupid  --> List) {
     my Str    $user-to;
@@ -2982,6 +3150,468 @@ sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, St
     }
     return $result;
 } # sub chown-page(Bool:D $recursive, Bool:D $verbose, Str $user, IdType $userid, Str $group, IdType $groupid, @page-names --> Bool:D) is export #
+
+sub chmod-pseudo-page(Bool:D $verbose, %perms, @page-names --> Bool:D) is export {
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    #######################################################
+    #                                                     #
+    #           Only loggedin users may do this           #
+    #                                                     #
+    #######################################################
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    constant $URead  = 0o400;
+    constant $UWrite = 0o200;
+    constant $UDel   = 0o100;
+    constant $GRead  = 0o040;
+    constant $GWrite = 0o020;
+    constant $GDel   = 0o010;
+    constant $ORead  = 0o004;
+    constant $OWrite = 0o002;
+    constant $ODel   = 0o001;
+    my Str:D $theperms = '';
+    my Str:D $user  = '';
+    my Str:D $group = '';
+    my Str:D $other = '';
+    if %perms«perms»:exists {
+        #####################################################
+        #                                                   #
+        #                                                   #
+        #                                                   #
+        #                                                   #
+        #           proccess the numerical perms            #
+        #           Note: you can only supply               #
+        #           either numeric or symbolic              #
+        #           specs,  sybolic is far more             #
+        #           powerful and selective                  #
+        #           numeric are converted to                #
+        #           symbolic the '=' start forces           #
+        #           the perm to exact values                #
+        #                                                   #
+        #                                                   #
+        #                                                   #
+        #                                                   #
+        #####################################################
+        my Int:D $p = %perms«perms»;
+        $user  ~= '=';
+        $group ~= '=';
+        $other ~= '=';
+        if $p +& $URead {
+            $user ~= 'r';
+        }
+        if $p +& $UWrite {
+            $user ~= 'w';
+        }
+        if $p +& $UDel {
+            $user ~= 'd';
+        }
+        if $p +& $GRead {
+            $group ~= 'r';
+        }
+        if $p +& $GWrite {
+            $group ~= 'w';
+        }
+        if $p +& $GDel {
+            $group ~= 'd';
+        }
+        if $p +& $ORead {
+            $other ~= 'r';
+        }
+        if $p +& $OWrite {
+            $other ~= 'w';
+        }
+        if $p +& $ODel {
+            $other ~= 'd';
+        }
+    } else {
+        $user  = %perms«user»  if %perms«user»:exists;
+        $group = %perms«group» if %perms«group»:exists;
+        $other = %perms«other» if %perms«other»:exists;
+    }
+    my Str:D $sql-select = qq!SELECT pp.id, pp._perms, pd.username, g._name, pp.userid, pp.groupid, pp.full_name, pp.pattern, pp.status FROM pseudo_pages pp JOIN passwd pd ON pd.id = pp.userid JOIN _group g ON g.id = pp.groupid WHERE pp.name = ?!;
+    my $select           = $dbh.prepare($sql-select);
+    my Str:D $sql        = qq!UPDATE pseudo_pages SET _perms = ? WHERE id = ?!;
+    my $update           = $dbh.prepare($sql);
+    my Int $width = terminal-width;
+    $width = $width // 80;
+    my Int:D $w0 = 0;
+    my Int:D $w1 = 0;
+    my Int:D $w2 = wcswidth('username');
+    my Int:D $w3 = wcswidth('group_name');
+    my Int:D $w4 = wcswidth('pattern');
+    my Int:D $w5 = wcswidth('status');
+    my Int:D $w  = 0;
+    if $verbose {
+        ################################################################
+        #                                                              #
+        #           Only do these Calculations if we NEED TO           #
+        #                                                              #
+        ################################################################
+        for @page-names -> $name {
+            my $msg = "you lack the permissions to modify page: $name";
+            $w0                   = max($w0,  wcswidth($msg));
+            my $res               = $select.execute($name);
+            my %values            = $res.row(:hash);
+            my IdType $id         = %values«id»;
+            my IdType $userid     = %values«userid»;
+            my IdType $groupid    = %values«groupid»;
+            my Str:D  $full-name  = %values«full_name»;
+            my Str:D  $pattern    = %values«pattern»;
+            my Str:D  $status     = %values«status»;
+            my Str:D  $username   = %values«username»;
+            my Str:D  $group_name = %values«_name»;
+            $w0                   = max($w0,  wcswidth("|$name|"), wcswidth($msg));
+            $w1                   = max($w1,  wcswidth($full-name));
+            $w2                   = max($w2,  wcswidth($username));
+            $w3                   = max($w3,  wcswidth($group_name));
+            $w4                   = max($w4,  wcswidth($pattern));
+            $w5                   = max($w5,  wcswidth($status));
+        } # for @page-names -> $name #
+        $w0 += 2; # padding #
+        $w1 += 2;
+        $w2 += 2;
+        $w3 += 2;
+        $w4 += 2;
+        $w5 += 2;
+        $w   = min($w0 + $w1 + $w2 + $w3 + $w4 + $w5 + 32,  $width);
+    } # if $verbose #
+    my Int:D $cnt = 0;
+    ######################################################################
+    #                                                                    #
+    #                               Heading                              #
+    #                                                                    #
+    ######################################################################
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%-*s%-*s%18s%14s", $w0, 'page_name', $w1, 'full_name', $w2, 'username', $w3, 'group_name', $w4, 'pattern', $w5, 'status', trailing-dots('    perms', 18, ' '), 'status') ~ t.text-reset;
+        $cnt++;
+        # put a horazontal line in #
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x $w) ~ t.text-reset;
+        $cnt++;
+    }
+    #####################################################################
+    #                                                                   #
+    #         Do the  actaul work ouputing progress if $verbose         #
+    #                                                                   #
+    #####################################################################
+    for @page-names -> $name {
+        my $res               = $select.execute($name);
+        my %values            = $res.row(:hash);
+        my IdType $id         = %values«id»;
+        my IdType $userid     = %values«userid»;
+        my IdType $groupid    = %values«groupid»;
+        my Str:D  $_old-perms = %values«_perms»;
+        my Str:D  $full-name  = %values«full_name»;
+        my Str:D  $username   = %values«username»;
+        my Str:D  $group_name = %values«_name»;
+        my Str:D  $pattern    = %values«pattern»;
+        my Str:D  $status     = %values«status»;
+        my        %old-perms  = GPerms.parse($_old-perms, actions => Perms.new).made;
+        ####################################################################
+        #                                                                  #
+        #           insure you have the rights to do this at all           #
+        #                                                                  #
+        ####################################################################
+        unless $_admin || $userid == $loggedin_id {
+            my $msg = "you lack the permissions to modify pseudo page: $name";
+            my Str:D $perms-str = perms-to-str(%old-perms);
+            my Str:D $ok = 'Failed';
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%18s%10s", $w0, $msg, $w1, $full-name, $w2, $username, $w3, $group_name, $w4, $pattern, $w5,  $status, centre($perms-str, 18, ' '), lead-dots($ok, 14, ' ')) ~ t.text-reset;
+            $cnt++;
+            next;
+        }
+        my Str:D  $user_     = set-perms($user,  %old-perms«user»);
+        my Str:D  $group_    = set-perms($group, %old-perms«group»);
+        my Str:D  $other_    = set-perms($other, %old-perms«other»);
+        my Str:D  $new-perms = qq[("$user_","$group_","$other_")];
+        my Bool:D $r         = so $update.execute($new-perms, $id);
+        if $verbose {
+            my       %vals-perms = GPerms.parse($new-perms, actions => Perms.new).made;
+            my Str:D $perms-str  = perms-to-str(%vals-perms);
+            my Str:D $ok = ($r ?? 'OK' !! 'Failed');
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s%-*s%-*s%-*s%-*s%-*s%18s%10s", $w0, $name, $w1, $full-name, $w2, $username, $w3, $group_name, $w4, $pattern, $w5,  $status, centre($perms-str, 18, ' '), lead-dots($ok, 14, ' ')) ~ t.text-reset;
+            $cnt++;
+        }
+        $result &&= $r;
+    } # for @page-names -> $name #
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ (' ' x $w) ~ t.text-reset;
+        $cnt++;
+    }
+    return $result;
+} # sub chmod-pseudo-page(Bool:D $verbose, %perms, @page-names --> Bool:D) is export #
+
+sub list-pseudo-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export {
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my Int $width = terminal-width;
+    $width = $width // 80;
+    my Str:D $sql-select = qq{SELECT pp.id, pp._perms, pd.username, g._name, pp.name, pp.full_name, pp.pattern, pp.status FROM pseudo_pages pp JOIN passwd pd ON pd.id = pp.userid JOIN _group g ON g.id = pp.groupid ORDER BY LOWER(pp.name), pp, name, LOWER(pp.full_name), pp.full_name};
+    my $select           = $dbh.prepare($sql-select);
+    my $res   = $select.execute();
+    my @pages = $res.allrows(:array-of-hash);
+    my Int:D $w  = 0;
+    my Int:D $w0 = wcswidth('username');
+    my Int:D $w1 = wcswidth('group_name');
+    my Int:D $w2 = 0;
+    my Int:D $w3 = 0;
+    my Int:D $w4 = wcswidth('pattern');
+    my Int:D $w5 = wcswidth('status');
+    for @pages -> %values {
+        my IdType $id         = %values«id»;
+        my Str:D  $name       = %values«name»;
+        my Str:D  $full-name  = %values«full_name»;
+        my Str:D  $username   = %values«username»;
+        my Str:D  $group_name = %values«_name»;
+        my Str:D  $pp_pattern = %values«pattern»;
+        my Str:D  $status     = %values«status»;
+        next unless $name ~~ $pattern || $full-name ~~ $pattern;
+        my Str:D  $_perms     = %values«_perms»;
+        my %perms = GPerms.parse($_perms, actions => Perms.new).made;
+        my Str:D $perms = perms-to-str(%perms);
+        $w0 = max($w0,  wcswidth($username));
+        $w1 = max($w1,  wcswidth($group_name));
+        $w2 = max($w2,  wcswidth($name));
+        $w3 = max($w3, wcswidth($full-name));
+        $w4 = max($w4, wcswidth($pp_pattern), );
+        $w5 = max($w5, wcswidth($status), );
+    }
+    $w0 += 2;
+    $w1 += 2;
+    $w2 += 2;
+    $w3 += 2;
+    $w4 += 2;
+    $w5 += 2;
+    $w   = min($w0 + $w1 + $w2 + $w3 + $w4 + $w5 + 28, $width);
+    my Int:D $num = $width div $w0;
+    $num = 1 if $num < 1;
+    my Int:D $cols = 0;
+    my Str:D $line = '';
+    my Int $cnt = 0;
+    @pages                  = |@pages.sort: { my %u = %($^a); my %v = %($^b);  my $res = %u«name».lc.trim cmp %v«name».lc.trim; (($res == Same) ?? (%u«full_name».lc.trim cmp %v«full_name».lc.trim) !! $res ) };
+    if $show-id && $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s%-*s%-*s%-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'name', $w3, 'full-name', $w4, 'pattern', $w5, 'status') ~ t.text-reset;
+        $cnt++;
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w + 4)) ~ t.text-reset;
+        $cnt++;
+    } elsif $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots('perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'name', $w3, 'full-name', $w4, 'pattern', $w5, 'status') ~ t.text-reset;
+        $cnt++;
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w - 10)) ~ t.text-reset;
+        $cnt++;
+    }
+    for @pages -> %values {
+        my IdType $id       = %values«id»;
+        my Str:D  $name      = %values«name»;
+        my Str:D  $full-name = %values«full_name»;
+        my Str:D  $username   = %values«username»;
+        my Str:D  $group_name = %values«_name»;
+        next unless $name ~~ $pattern || $full-name ~~ $pattern;
+        my Str:D  $pp_pattern = %values«pattern»;
+        my Str:D  $status     = %values«status»;
+        my Str:D  $_perms    = %values«_perms»;
+        my %perms = GPerms.parse($_perms, actions => Perms.new).made;
+        my Str:D  $perms = perms-to-str(%perms);
+        if $show-id && $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s%-*s%-*s", $id, centre($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, $full-name, $w4, $pp_pattern, $w5, $status) ~ t.text-reset;
+            $cnt++;
+        } elsif $full {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-18s%-*s%-*s%-*s%-*s%-*s%-*s", trailing-dots($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, $full-name, $w4, $pp_pattern, $w5, $status) ~ t.text-reset;
+            $cnt++;
+        } elsif $cols >= $num {
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
+            $cnt++;
+            $line = '';
+            $cols = 0;
+        } else {
+            $line ~= sprintf "%-*s", $w0, $name;
+            $cols++;
+        }
+    }
+    if $line ne '' {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
+        $cnt++;
+        $line = '';
+        $cols = 0;
+    }
+    if $show-id && $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ' ' x ($w + 4) ~ t.text-reset;
+    } elsif $full {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ' ' x ($w - 10) ~ t.text-reset;
+    }
+    $cnt++;
+    return $result;
+} # sub list-pseudo-page-perms(Bool:D $show-id, Bool:D $full, Regex:D $pattern --> Bool:D) is export #
+
+sub chown-pseudo-page($verbose, $user, $userid, $group, $groupid, @page-names) is export {
+    my Bool:D $result = True;
+    my Bool:D $loggedin                  = so %session«loggedin»;
+    my Int    $loggedin_id               =    ((%session«loggedin_id»               === Any) ?? Int   !! %session«loggedin_id» );
+    my Str    $loggedin_username         =    ((%session«loggedin_username»         === Any) ?? Str   !! %session«loggedin_username» );
+    my Bool:D $_admin                    = so %session«loggedin_admin»;
+    my Str    $display_name              =    ((%session«loggedin_display_name»     === Any) ?? Str   !! %session«loggedin_display_name» );
+    my Str    $given                     =    ((%session«loggedin_given»            === Any) ?? Str   !! %session«loggedin_given» );
+    my Str    $family                    =    ((%session«loggedin_family»           === Any) ?? Str   !! %session«loggedin_family» );
+    my Str    $loggedin_email            =    ((%session«loggedin_email»            === Any) ?? Str   !! %session«loggedin_email» );
+    my Str    $phone_number              =    ((%session«loggedin_phone_number»     === Any) ?? Str   !! %session«loggedin_phone_number» );
+    my Str    $groupname                 =    ((%session«loggedin_groupname»        === Any) ?? Str   !! %session«loggedin_groupname» );
+    my Int    $primary_group_id          =    ((%session«loggedin_groupnname_id»    === Any) ?? Int   !! %session«loggedin_groupnname_id» );
+    my Str    $loggedin_prefix           =    ((%session«loggedin_prefix»           === Any) ?? Str   !! %session«loggedin_prefix» );
+    my Str    $loggedin_escape           =    ((%session«loggedin_escape»           === Any) ?? Str   !! %session«loggedin_escape» );
+    my Str    $loggedin_punct            =    ((%session«loggedin_punct»            === Any) ?? Str   !! %session«loggedin_punct» );
+    my Regex  $loggedin_landline_pattern =    ((%session«loggedin_landline_pattern» === Any) ?? Regex !! %session«loggedin_landline_pattern» );
+    my Regex  $loggedin_mobile_pattern   =    ((%session«loggedin_mobile_pattern»   === Any) ?? Regex !! %session«loggedin_mobile_pattern» );
+    #######################################################
+    #                                                     #
+    #           Only loggedin users may do this           #
+    #                                                     #
+    #######################################################
+    unless $loggedin {
+        say "You must be loggedin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    ######################################################################
+    #                                                                    #
+    #           You must be an admin user to use this function           #
+    #                                                                    #
+    ######################################################################
+    unless $_admin {
+        say "You must be an admin to use this function: {&*ROUTINE.name}";
+        return False;
+    }
+    my Str:D $sql-select  = qq!SELECT pp.id, pd.username, pp.userid, g._name, pp.groupid, pp.full_name FROM pseudo_pages pp JOIN passwd pd ON pp.userid = pd.id JOIN _group g ON pp.groupid = g.id WHERE pp.name = ?!;
+    my $select            = $dbh.prepare($sql-select);
+    my Str:D $sql         = qq!UPDATE pseudo_pages SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update            = $dbh.prepare($sql);
+    my Str:D $sel-sect    = qq!SELECT ps.id, pd.username, ps.userid, g._name, ps.groupid, ps.links_section_id FROM page_section ps JOIN passwd pd ON ps.userid = pd.id JOIN _group g ON ps.groupid = g.id WHERE ps.pages_id = ? AND (? = true OR ps.userid = ?)!;
+    my $select-sect       = $dbh.prepare($sel-sect);
+    my Str:D $sql-sect    = qq!UPDATE page_section SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-sect       = $dbh.prepare($sql-sect);
+    my Str:D $sel-ls      = qq!SELECT ls.id, pd.username, ls.userid, g._name, ls.groupid, ls.section FROM links_sections ls JOIN passwd pd ON ls.userid = pd.id JOIN _group g ON ls.groupid = g.id WHERE ls.id = ? AND (? = true OR ls.userid = ?)!;
+    my $select-ls         = $dbh.prepare($sel-ls);
+    my Str:D $sql-ls      = qq!UPDATE links_sections SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-ls         = $dbh.prepare($sql-ls);
+    my Str:D $sel-links   = qq!SELECT l.id, pd.username, l.userid, g._name, l.groupid, l.name, l.link FROM links l JOIN passwd pd ON l.userid = pd.id JOIN _group g ON l.groupid = g.id WHERE l.section_id = ? AND (? = true OR l.userid = ?)!;
+    my $select-links      = $dbh.prepare($sel-links);
+    my Str:D $sql-links   = qq!UPDATE links SET userid = ?, groupid = ? WHERE id = ?!;
+    my $update-links      = $dbh.prepare($sql-links);
+    my Int $width         = terminal-width;
+    $width = $width // 80;
+    my Int:D $w  = 0;
+    if $verbose {
+        ################################################################
+        #                                                              #
+        #           Only do these Calculations if we NEED TO           #
+        #                                                              #
+        ################################################################
+        my Str:D    $user-to    = '';
+        my IdType:D $userid-to  = 0;
+        my Str:D    $group-to   = '';
+        my IdType:D $groupid-to = 0;
+        for @page-names -> $name {
+            my $res                  = $select.execute($name);
+            my %values               = $res.row(:hash);
+            my IdType:D $id          = %values«id»;
+            my Str:D    $old-user    = %values«username»;
+            my IdType:D $old-userid  = %values«userid»;
+            my Str:D    $old-group   = %values«_name»;
+            my IdType:D $old-groupid = %values«groupid»;
+            my Str:D    $full-name   = %values«full_name»;
+            ($user-to,  $userid-to, $group-to, $groupid-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $old-userid, $old-groupid);
+            my Str:D    $msg0         = qq[changed user of $name ($full-name) from $old-user to $user-to];
+            my Str:D    $msg1         = qq[changed group of $name ($full-name) from $old-group to $group-to];
+            my Str:D    $msg2         = qq[changed user and group of $name ($full-name) from $old-user:$old-group to $user-to:$group-to];
+            my Str:D    $msg3         = qq[retained user and group of $name ($full-name) as $old-user:$old-group];
+            my Str:D    $msg4         = qq[Error: could not change user and group of $name ($full-name) to $old-user:$old-group];
+            $w                        = max($w,  wcswidth($msg0), wcswidth($msg1), wcswidth($msg2), wcswidth($msg3), wcswidth($msg4));
+        } # for @page-names -> $name #
+        $w  += 2;
+        $w   = min($w,  $width);
+    } # if $verbose #
+    my Int:D $cnt = 0;
+    #####################################################################
+    #                                                                   #
+    #         Do the  actaul work ouputing progress if $verbose         #
+    #                                                                   #
+    #####################################################################
+    for @page-names -> $name {
+        my Str:D    $user-to    = '';
+        my IdType:D $userid-to  = 0;
+        my Str:D    $group-to   = '';
+        my IdType:D $groupid-to = 0;
+        my $res                    = $select.execute($name);
+        my %values                 = $res.row(:hash);
+        my IdType:D $id            = %values«id»;
+        my IdType:D $old-userid    = %values«userid»;
+        my Str:D    $old-user      = %values«username»;
+        my IdType:D $old-groupid   = %values«groupid»;
+        my Str:D    $old-group     = %values«_name»;
+        my Str:D    $full-name     = %values«full_name»;
+        ($user-to,  $userid-to, $group-to, $groupid-to) = get-user-group-and-ids($user, $userid, $group, $groupid, $old-userid, $old-groupid);
+        my Bool:D $r               = so $update.execute($userid-to, $groupid-to, $id);
+        if $verbose {
+            my Str:D $msg = '';
+            if $r {
+                if $old-user eq $user-to && $old-group ne $group-to {
+                    $msg        = qq[changed group of $name ($full-name) from $old-group to $group-to];
+                } elsif $old-user ne $user-to && $old-group eq $group-to {
+                    $msg        = qq[changed user of $name ($full-name) from $old-user to $user-to];
+                } elsif $old-user ne $user-to && $old-group ne $group-to {
+                    $msg        = qq[changed user and group of $name ($full-name) from $old-user:$old-group to $user-to:$group-to];
+                } else {
+                    $msg        = qq[retained user and group of $name ($full-name) as $old-user:$old-group];
+                }
+            } else  {
+                $msg            = qq[Error: could not change user and group of $name ($full-name) to $old-user:$old-group];
+            }
+            my Str:D $ok = ($r ?? 'OK' !! 'Failed');
+            put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s", $w, $msg) ~ t.text-reset;
+            $cnt++;
+        }
+        $result &&= $r;
+    } # for @page-names -> $name #
+    if $verbose {
+        put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-*s", $w, '') ~ t.text-reset;
+        $cnt++;
+    }
+    return $result;
+} # sub chown-pseudo-page($verbose, $user, $userid, $group, $groupid, @page-names) is export #
 
 END {
     %session.save;
