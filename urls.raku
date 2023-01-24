@@ -237,7 +237,7 @@ multi sub MAIN('chown', 'pages', Bool:D :r(:$recursive) = False, Bool:D :v(:$ver
 multi sub MAIN('chmod', 'pseudo', 'pages', Bool:D :v(:$verbose) = False, Str :u(:$user) = Str,
                                 Str :g(:$group) = Str, Str :o(:$other) = Str,
                                         Int :p(:$perms) where { perms-good($perms, $user, $group, $other) } = Int,
-                                                        *@page-names where { $_ ~~ rx/ ^ \w+ [ '-' \w+ ]* $/ }) returns Int {
+                                                        *@page-names where { $_ ~~ rx/ ^ \w+ [ [ '-' || '.' || '@' || '#' || '%' || '+' || '=' ] \w+ ]* $/ }) returns Int {
     my %the-perms;
     with $perms { %the-perms«perms» = $perms; }
     orwith $user // $group // $other {
