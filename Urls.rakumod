@@ -834,8 +834,8 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
     my Str:D $username           = $loggedin_username;
     if $user ne $loggedin_username && $_admin {
         $username = $user;
-    } else {
-        "only an admin can changee some one elses password".say;
+    } elsif $user ne $loggedin_username {
+        "only an admin can change some one elses password".say;
         return False;
     }
     my $sql                      = "SELECT p.id, p.username, p._password\n";
@@ -849,7 +849,7 @@ sub change-passwd(Str:D $old-passwd is copy, Str:D $passwd is copy, Str:D $repea
         "username not found in the db".say;
         return False;
     }
-    if $id != $loggedin_id && !$_admin {
+    unless $id == $loggedin_id || $_admin {
         say "something is wrong with your login id's dont match, logout and in again";
         return False;
     }
