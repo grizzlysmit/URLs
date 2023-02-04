@@ -6289,7 +6289,7 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"target\">Display Name: </label>";
         say "                    </td>";
-        say "                    <td>";
+        say "                    <td colspan=\"2\">";
         say "                        $loggedin_display_name";
         say "                    </td>";
         say "                </tr>";
