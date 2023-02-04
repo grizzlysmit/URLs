@@ -277,12 +277,12 @@ multi sub MAIN('chown', 'pseudo', 'pages', Bool:D :v(:$verbose) = False,
     }
 }
 
-multi sub MAIN('page', 'perms', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int {
+multi sub MAIN('page', 'perms', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int {
     my Regex $_pattern;
     with $pattern {
         $_pattern = rx:i/ <$pattern> /;
-    } orwith $emca-pattern {
-        $_pattern = ECMA262Regex.compile("^$emca-pattern\$");
+    } orwith $ecma-pattern {
+        $_pattern = ECMA262Regex.compile("^$ecma-pattern\$");
     } else {
         $_pattern = rx:i/^ .* $/;
     }
@@ -291,14 +291,14 @@ multi sub MAIN('page', 'perms', Bool:D :r(:$recursive) = False, Bool:D :i(:$show
     } else {
         exit 1;
     }
-} # multi sub MAIN('page', 'perms', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int #
+} # multi sub MAIN('page', 'perms', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int #
 
-multi sub MAIN('ls', 'pages', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int {
+multi sub MAIN('ls', 'pages', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int {
     my Regex $_pattern;
     with $pattern {
         $_pattern = rx:i/ <$pattern> /;
-    } orwith $emca-pattern {
-        $_pattern = ECMA262Regex.compile("^$emca-pattern\$");
+    } orwith $ecma-pattern {
+        $_pattern = ECMA262Regex.compile("^$ecma-pattern\$");
     } else {
         $_pattern = rx:i/^ .* $/;
     }
@@ -307,14 +307,14 @@ multi sub MAIN('ls', 'pages', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-i
     } else {
         exit 1;
     }
-} # multi sub MAIN('ls', 'pages', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int #
+} # multi sub MAIN('ls', 'pages', Bool:D :r(:$recursive) = False, Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int #
 
-multi sub MAIN('pseudo', 'page', 'perms', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int {
+multi sub MAIN('pseudo', 'page', 'perms', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int {
     my Regex $_pattern;
     with $pattern {
         $_pattern = rx:i/ <$pattern> /;
-    } orwith $emca-pattern {
-        $_pattern = ECMA262Regex.compile("^$emca-pattern\$");
+    } orwith $ecma-pattern {
+        $_pattern = ECMA262Regex.compile("^$ecma-pattern\$");
     } else {
         $_pattern = rx:i/^ .* $/;
     }
@@ -325,12 +325,12 @@ multi sub MAIN('pseudo', 'page', 'perms', Bool:D :i(:$show-id) = False, Bool:D :
     }
 }
 
-multi sub MAIN('ls', 'pseudo', 'pages', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$emca-pattern) = Str) returns Int {
+multi sub MAIN('ls', 'pseudo', 'pages', Bool:D :i(:$show-id) = False, Bool:D :f(:$full) = False, Str :p(:$pattern) = Str, Str :e(:$ecma-pattern) = Str) returns Int {
     my Regex $_pattern;
     with $pattern {
         $_pattern = rx:i/ <$pattern> /;
-    } orwith $emca-pattern {
-        $_pattern = ECMA262Regex.compile("^$emca-pattern\$");
+    } orwith $ecma-pattern {
+        $_pattern = ECMA262Regex.compile("^$ecma-pattern\$");
     } else {
         $_pattern = rx:i/^ .* $/;
     }

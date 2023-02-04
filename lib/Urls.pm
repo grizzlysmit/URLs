@@ -6254,6 +6254,18 @@ use HTML::Entities;
             $self->debug_init($debug, $log);
         }
 
+        my $loggedin                  = $session{loggedin};
+        my $loggedin_id               = $session{loggedin_id};
+        my $loggedin_username         = $session{loggedin_username};
+        my $loggedin_admin            = $session{loggedin_admin};
+        my $loggedin_display_name     = $session{loggedin_display_name};
+        my $loggedin_given            = $session{loggedin_given};
+        my $loggedin_family           = $session{loggedin_family};
+        my $loggedin_email            = $session{loggedin_email};
+        my $loggedin_phone_number     = $session{loggedin_phone_number};
+        my $loggedin_groupname        = $session{loggedin_groupname};
+        my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
+
         $self->links('profile', \%session);
 
         my $delete  = $req->param('delete');
@@ -6263,41 +6275,26 @@ use HTML::Entities;
         $db->disconnect;
 
         say "        <form action=\"profile.pl\" method=\"post\">";
-        say "            <h1>Add Alias</h1>";
+        say "            <h1>Profile $loggedin_username</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"alias\">Alias: </label>";
+        say "                        <label for=\"alias\">loggedin_id</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"alias\" id=\"alias\" placeholder=\"alias\" pattern=\"[a-zA-Z0-9\\x28\\x2E_-]+\" title=\"only a-z, A-Z, 0-9, -, _ and . allowed\"/>";
+        say "                        $loggedin_id";
         say "                    </td>";
         say "                </tr>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"target\">Target: </label>";
+        say "                        <label for=\"target\">Display Name: </label>";
+        say "                    </td>";
+        say "                    <td>";
+        say "                        $loggedin_display_name";
         say "                    </td>";
         say "                </tr>";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
-        #say "                <tr>";
-        #say "                    <td>";
-        #if($debug){
-        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-        #    say "                    </td>";
-        #    say "                    <td>";
-        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        #}else{
-        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-        #    say "                    </td>";
-        #    say "                    <td>";
-        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        #}
-        #say "                    </td>";
-        #say "                    <td>";
-        #say "                        <input name=\"submit\" type=\"submit\" value=\"Add\">";
-        #say "                    </td>";
-        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
