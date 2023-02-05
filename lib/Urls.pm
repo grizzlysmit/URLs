@@ -6266,14 +6266,98 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
+
         $self->links('profile', \%session);
 
-        my $delete  = $req->param('delete');
+        my $change  = $req->param('change');
 
+        my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $landline_pattern, $mobile_pattern);
+        my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
+        $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
+        $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+        $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
+        $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions  cr ON cr.id = pd.country_region_id\n";
+        $sql    .= "WHERE p.id = ?\n";
+        my $query  = $db->prepare($sql);
+        my $result;
+        my @msgs;
+        my $return = 1;
+        eval {
+            $result = $query->execute($loggedin_id);
+        };
+        if($@){
+            push @msgs, "SELECT FROM passwd failed: $@";
+            $return = 0;
+        }
+        if($result){
+            my $r      = $query->fetchrow_hashref();
+            if($r){
+                $country_id       = $r->{country_id};
+                $cr_id            = $r->{country_region_id};
+                $given            = $r->{given};
+                $family           = $r->{_family};
+                $display_name     = $r->{display_name};
+                $email            = $r->{_email};
+                $landline_pattern = $r->{landline_pattern};
+                $mobile_pattern   = $r->{mobile_pattern};
+                my $tmp           = $r->{secondary_phone};
+                if($tmp =~ m/^$landline_pattern$/){
+                    $phone = $tmp;
+                }elsif($tmp =~ m/^$mobile_pattern$/){
+                    $mobile = $tmp;
+                }
+                $tmp              = $r->{phone_number};
+                if($tmp =~ m/^$landline_pattern$/){
+                    $phone        = $tmp;
+                }elsif($tmp =~ m/^$mobile_pattern$/){
+                    $mobile       = $tmp;
+                }
+                $cc               = $r->{cc};
+                $prefix           = $r->{prefix};
+            }
+        }else{
+            push @msgs, "SELECT FROM passwd failed";
+            $return = 0;
+        }
+        unless($return){
+            $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
+            return $return;
+        }
+
+        my %countries;
+        my @_country;
+
+        $sql  = "SELECT\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, c._flag, c._escape\n";
+        $sql .= "FROM country c\n";
+        $sql .= "ORDER BY c._name, c.cc\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM country failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM country failed: \$sql == $sql";
+            return $return;
+        }
+        $r      = $query->fetchrow_hashref();
+        while($r){
+            push @_country, $r;
+            my $cc_id = $r->{id};
+            $r->{country_regions} = [];
+            $countries{$cc_id} = $r;
+            $r      = $query->fetchrow_hashref();
+        }
+        $query->finish();
 
         untie %session;
         $db->disconnect;
 
+        my ($title, $pattern);
         say "        <form action=\"profile.pl\" method=\"post\">";
         say "            <h1>Profile $loggedin_username</h1>";
         say "            <table>";
@@ -6293,6 +6377,365 @@ use HTML::Entities;
         say "                        $loggedin_display_name";
         say "                    </td>";
         say "                </tr>";
+        $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
+        $pattern = '[a-z0-9.+%_-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+';
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"email\">email</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # given,  family annd dispaly name
+        say "                <script>";
+        say "                    function updatenames(){";
+        say "                        var gvn = document.getElementById(\"given\");";
+        say "                        var fam = document.getElementById(\"family\");";
+        say "                        var disp = document.getElementById(\"display_name\");";
+        say "                        disp.value = gvn.value + \" \" + fam.value;";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"given\">given name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"given\" id=\"given\" placeholder=\"given name\" value=\"$given\" oninput=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"family\">family name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"family\" id=\"family\" placeholder=\"family name\" value=\"$family\" oninput=\"updatenames()\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"display_name\">display_name</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+
+        #my $country_id;
+
+        my $spec0  = [
+            { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
+            { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
+            { type => 'normal', id => 'country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+            { type => 'normal', id => 'postal_country', tag => 'input', inputval => '_name', fields => [ 'value', ], },
+                     ];
+        my $spec1  = [
+            { type => 'normal', id => 'mobile', tag => 'input', inputval => [ 'mobile_pattern', 'mobile_title', 'mobile_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'normal', id => 'phone', tag => 'input', inputval => [ 'landline_pattern', 'landline_title', 'landline_placeholder', ], fields => [ 'pattern', 'title', 'placeholder', ], },
+            { type => 'calculate', cal => { op => 'split', pattern => '/\s*=>\s*/', outparts => [ 'first', 'city', ], }, inputval => 'region', },
+            { type => 'calculated', id => 'region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_region', tag => 'input', inputval => 'first', fields => [ 'value', ], },
+            { type => 'calculated', id => 'city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+            { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
+                     ];
+        my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$line, $country_id, $cr_id, $mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder],
+                [qw(line country_id cr_id mobile_title mobile_pattern mobile_placeholder landline_title landline_pattern landline_placeholder)]));
+
+        # phones 
+        $title          = $mobile_title;
+        $pattern        = $mobile_pattern;
+        my $placeholder = $mobile_placeholder;
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"mobile\">mobile</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title       = $landline_title;
+        $pattern     = $landline_pattern;
+        $placeholder = $landline_placeholder;
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"phone\">land line</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"tel\" name=\"phone\" id=\"phone\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$phone\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <th colspan=\"3\">";
+        say "                        Residential Address";
+        say "                    </th>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"unit\">unit</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"unit\" id=\"unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$unit\" />";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"street\">street</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"street\" id=\"street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$street\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"city_suberb\">City/Suberb</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"city_suberb\" id=\"city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$city_suberb\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[A-Z0-9 -]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"postcode\">postcode</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postcode\" id=\"postcode\" placeholder=\"postcode\" pattern=\"$pattern\" title=\"$title\" value=\"$postcode\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"region\">Region/State/Province</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"region\" id=\"region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$region\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"country\">Country</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"country\" id=\"country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" value=\"$country\" required/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <script>";
+        say "                    function togglePostal(){";
+        say "                        var chbx = document.getElementById(\"togglep\");";
+        say "                        var hiddenstuff = document.getElementsByClassName(\"postal\");";
+        say "                        for(let h of hiddenstuff){";
+        say "                            h.hidden = chbx.checked";
+        say "                        }";
+        say "                        var requiredstuff = document.getElementsByClassName(\"require\");";
+        say "                        for(let r of requiredstuff){";
+        say "                            r.required = !chbx.checked";
+        say "                        }";
+        say "                        var psame = document.getElementById(\"postal_same\");";
+        say "                        psame.value = chbx.checked?1:0;";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <th colspan=\"3\">";
+        say "                        Postal Address";
+        say "                    </th>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td colspan=\"2\">";
+        say "                        <label for=\"togglep\" id=\"lbl\">Same as Residential address</label>";
+        say "                    </td>";
+        say "                    <td>";
+        my $hidden;
+        my $required;
+        if($postal_same){
+            $hidden = 'hidden';
+            $required = '';
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"1\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\" checked/>";
+        }else{
+            $hidden = '';
+            $required = 'required';
+            say "                        <input type=\"hidden\" id=\"postal_same\" name=\"postal_same\" value=\"0\"/>";
+            say "                        <input type=\"checkbox\" id=\"togglep\" onclick=\"togglePostal()\"/>";
+        }
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_unit\" >unit</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_unit\" id=\"postal_unit\" placeholder=\"unit number\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_unit\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_street\">street</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_street\" id=\"postal_street\" placeholder=\"street\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_street\" class=\"require\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_city_suburb\">City/Suberb</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_city_suburb\" id=\"postal_city_suburb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_city_suburb\" class=\"require\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[A-Z0-9 -]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_postcode\">postcode</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_postcode\" id=\"postal_postcode\" placeholder=\"postcode\" pattern=\"$pattern\" value=\"$postal_postcode\" title=\"$title\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_region\">Region/State/Province</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_region\" id=\"postal_region\" placeholder=\"region/state/province\" pattern=\"$pattern\" title=\"$title\" value=\"$postal_region\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
+        $pattern = "[^;'\\x22]+";
+        say "                <tr $hidden class=\"postal\">";
+        say "                    <td>";
+        say "                        <label for=\"postal_country\">Country</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"2\">";
+        say "                        <input type=\"text\" name=\"postal_country\" id=\"postal_country\" placeholder=\"country\" pattern=\"$pattern\" title=\"$title\" class=\"require\" value=\"$postal_country\" $required/>";
+        say "                    </td>";
+        say "                </tr>";
+        # admin option
+        if($loggedin && $isadmin){
+            say "                <tr class=\"admin\">";
+            say "                    <td colspan=\"2\">";
+            say "                        <label for=\"admin\">admin</label>";
+            say "                    </td>";
+            say "                    <td>";
+            if($admin){
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked/>";
+            }else{
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\"/>";
+            }
+            say "                    </td>";
+            say "                </tr>";
+            say "                <tr class=\"admin\">";
+            say "                    <td colspan=\"3\">";
+            say "                        <script>";
+            say "                            function groupOnclick(n){";
+            say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
+            say "                                var cross = document.getElementById(\"cross[\" + n + ']');";
+            say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
+            say "                                var td    = document.getElementById(\"td[\" + n + ']');";
+            say "                                var val   = hdd.value;";
+            say "                                var name  = btn.value;";
+            say "                                alert(\"val == \" + val + \"\\nname == \" + name);";
+            say "                                td.remove();";
+            say "                                var groupSelect = document.getElementById(\"groupSelect\");";
+            say "                                var opt = document.createElement(\"OPTION\");";
+            say "                                opt.setAttribute(\"value\", \"\" + val);";
+            say "                                opt.setAttribute(\"id\", \"row_id[\" + val + \"]\");";
+            say "                                opt.innerHTML = name;";
+            say "                                groupSelect.appendChild(opt);";
+            say "                            }";
+            say "                            let cnt = 0;";
+            say "                            function group_selected() {";
+            say "                                var groupSelect = document.getElementById(\"groupSelect\");";
+            say "                                var val = groupSelect.value;";
+            say "                                if(val == 0) return";
+            say "                                var opt = document.getElementById(\"row_id[\" + val + \"]\");";
+            say "                                var name = opt.innerHTML;";
+            say "                                opt.remove();";
+            say "                                var btn = document.createElement(\"INPUT\");";
+            say "                                btn.setAttribute(\"type\", \"button\");";
+            say "                                btn.setAttribute(\"value\", name);";
+            say "                                btn.name = \"btn[\" + cnt + ']';";
+            say "                                btn.id   = \"btn[\" + cnt + ']';";
+            say "                                var cross = document.createElement(\"button\");";
+            say "                                cross.setAttribute(\"type\", \"button\");";
+            say "                                cross.setAttribute(\"value\", \"\" + cnt);";
+            say "                                cross.setAttribute(\"class\", \"inner\");";
+            #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
+            say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
+            say "                                cross.innerHTML = \"&otimes;\";";
+            say "                                cross.name = \"chk[\" + cnt + ']';";
+            say "                                cross.id   = \"cross[\" + cnt + ']';";
+            say "                                var hdn = document.createElement(\"INPUT\");";
+            say "                                hdn.setAttribute(\"type\", \"hidden\");";
+            say "                                hdn.setAttribute(\"value\", \"\" + val);";
+            say "                                hdn.name = \"group_id_add[\" + val + ']';";
+            say "                                hdn.id   = \"hdd[\" + cnt + ']';";
+            say "                                var row = document.getElementById(\"row\");";
+            say "                                var elt = document.createElement(\"TD\");";
+            say "                                elt.setAttribute(\"id\", \"td[\" + cnt + ']');";
+            say "                                elt.setAttribute(\"class\", \"elts\");";
+            say "                                elt.appendChild(btn);";
+            say "                                elt.appendChild(cross);";
+            say "                                elt.appendChild(hdn);";
+            say "                                row.appendChild(elt);";
+            say "                                cnt++;";
+            say "                            }";
+            say "                        </script>";
+            say "                        <table class=\"outter\">";
+            say "                           <tr class=\"outter\">";
+            say "                              <td class=\"outter\">";
+            say "                                  <table id=\"tbl\" class=\"elts inner\">";
+            say "                                      <tr id=\"row\" class=\"elts\">";
+            say "                                          <td class=\"elts inner\">";
+            say "                                               Groups:";
+            say "                                          </td>";
+            say "                                      </tr>";
+            say "                                  </table>";
+            say "                              </td>";
+            say "                           </tr>";
+            say "                        </table>";
+            say "                    </td>";
+            say "                </tr>";
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <select id=\"groupSelect\" onchange=\"group_selected()\">";
+            say "                            <option id=\"row_id[0]\" value=\"0\" selected>-- nothinng selected --</option>";
+            for my $row (@groups){
+                my $available_group_id = $row->{id};
+                my $_name = $row->{_name};
+                say "                            <option id=\"row_id[$available_group_id]\" value=\"$available_group_id\">$_name</option>";
+            }
+            say "                        </select>";
+            say "                    </td>";
+            say "                </tr>";
+        }else{
+            say "                <tr hidden class=\"admin\">";
+            say "                    <td colspan=\"3\">";
+            say "                        <input type=\"hidden\" name=\"admin\" id=\"admin\" value=\"0\"/>";
+            say "                    </td>";
+            say "                </tr>";
+        }
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Change', }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         say "            </table>";
@@ -6412,7 +6855,7 @@ use HTML::Entities;
         say "                <td>";
         say "                    <form action=\"admin.pl\" method=\"post\">";
         say "                        <table class=\"ex\">";
-        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Apply', }, );
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Refresh', }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 28, @buttons);
         #say "                            <td>";
         #if($debug){
