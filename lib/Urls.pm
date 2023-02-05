@@ -6271,7 +6271,7 @@ use HTML::Entities;
 
         my $change  = $req->param('change');
 
-        my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $landline_pattern, $mobile_pattern);
+        my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
         $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
@@ -6299,18 +6299,18 @@ use HTML::Entities;
                 $family           = $r->{_family};
                 $display_name     = $r->{display_name};
                 $email            = $r->{_email};
-                $landline_pattern = $r->{landline_pattern};
-                $mobile_pattern   = $r->{mobile_pattern};
+                $_landline_pattern = $r->{landline_pattern};
+                $_mobile_pattern   = $r->{mobile_pattern};
                 my $tmp           = $r->{secondary_phone};
-                if($tmp =~ m/^$landline_pattern$/){
+                if($tmp =~ m/^$_landline_pattern$/){
                     $phone = $tmp;
-                }elsif($tmp =~ m/^$mobile_pattern$/){
+                }elsif($tmp =~ m/^$_mobile_pattern$/){
                     $mobile = $tmp;
                 }
                 $tmp              = $r->{phone_number};
-                if($tmp =~ m/^$landline_pattern$/){
+                if($tmp =~ m/^$_landline_pattern$/){
                     $phone        = $tmp;
-                }elsif($tmp =~ m/^$mobile_pattern$/){
+                }elsif($tmp =~ m/^$_mobile_pattern$/){
                     $mobile       = $tmp;
                 }
                 $cc               = $r->{cc};
