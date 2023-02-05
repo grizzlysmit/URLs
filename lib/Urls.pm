@@ -6344,7 +6344,7 @@ use HTML::Entities;
             push @msgs, "SELECT FROM country failed: \$sql == $sql";
             return $return;
         }
-        $r      = $query->fetchrow_hashref();
+        my $r      = $query->fetchrow_hashref();
         while($r){
             push @_country, $r;
             my $cc_id = $r->{id};
