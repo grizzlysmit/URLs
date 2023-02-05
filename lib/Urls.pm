@@ -6293,7 +6293,7 @@ use HTML::Entities;
         say "                        $loggedin_display_name";
         say "                    </td>";
         say "                </tr>";
-        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Add', }, );
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Changee', }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
         say "            </table>";
         say "        </form>";
