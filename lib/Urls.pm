@@ -6353,7 +6353,7 @@ use HTML::Entities;
             $cc                     = $req->param('cc');
             $prefix                 = $req->param('prefix');
             $country_id             = $req->param('country_id');
-            $cr_id                  = $req->param('cr_id');
+            $cr_id                  = $req->param('country_region_id');
             $group_id               = $req->param('group_id');
             $email_id               = $req->param('email_id');
             $residential_address_id = $req->param('residential_address_id');
@@ -6629,7 +6629,7 @@ use HTML::Entities;
                         $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
                         if($result){
                             my ($r,  $primary_group_id);
-                            unless($group_id == 1){
+                            if($group_id != 1){
                                 push @msgs, "Succeded in  UPDATING _group";
                                 $r      = $query->fetchrow_hashref();
                                 $primary_group_id = $r->{id};
