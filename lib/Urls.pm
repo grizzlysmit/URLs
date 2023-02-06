@@ -7532,22 +7532,6 @@ use HTML::Entities;
         say "                        <table class=\"ex\">";
         my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Refresh', }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 28, @buttons);
-        #say "                            <td>";
-        #if($debug){
-        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
-        #    say "                    </td>";
-        #    say "                    <td>";
-        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
-        #}else{
-        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
-        #    say "                    </td>";
-        #    say "                    <td>";
-        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
-        #}
-        #say "                            </td>";
-        #say "                            <td>";
-        #say "                                <input name=\"submit\" type=\"submit\" value=\"Apply\">";
-        #say "                            </td>";
         say "                        </table>";
         say "                    </form>";
         say "                </td>";
