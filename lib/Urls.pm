@@ -6341,6 +6341,17 @@ use HTML::Entities;
             $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
             return $return;
         }
+        my $group_ids_joinned = "$group_id";
+        my $sep               = ', ';
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
+        for my $row (@additional_groups){
+            my $_group_id = $row->{_group_id};
+            $group_ids_joinned .= $sep . $_group_id;
+            $sep = ', ';
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
 
         $sql  = "SELECT g.id, g._name FROM _group g;\n";
         $query       = $db->prepare($sql);
