@@ -6272,8 +6272,10 @@ use HTML::Entities;
         my $change  = $req->param('change');
 
         my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
-        my ($unit, $street, $city_suberb, $country, $postcode);
-        my ($postal_unit, $postal_street, $postal_city_suberb, $postal_country, $postal_postcode);
+        my ($unit, $street, $city_suberb, $country, $postcode, $region, $postal_same);
+        my ($postal_unit, $postal_street, $postal_city_suberb, $postal_country, $postal_postcode, $postal_region);
+        my ($admin, $isadmin);
+        my @groups;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
         $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
