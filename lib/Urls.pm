@@ -7235,7 +7235,7 @@ use HTML::Entities;
             say "                    <td>";
             my $readonly = '';
             if($loggedin_id == 1){
-                $readonly = 'readonly';
+                $readonly = 'onclick="return false;"';
             }
             if($admin){
                 say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked $readonly/>";
