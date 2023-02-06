@@ -6281,7 +6281,7 @@ use HTML::Entities;
         my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same);
         my ($postal_unit, $postal_street, $postal_city_suburb, $postal_country, $postal_postcode, $postal_region);
         my ($admin, $isadmin);
-        my @groups;
+        my @additional_groups;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
         $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
         $sql    .= "a1.unit, a1.street, a1.city_suburb, a1.postcode, a1.region, a1.country,\n";
@@ -6340,7 +6340,7 @@ use HTML::Entities;
                 $postal_postcode    = $r->{postal_postcode};
                 $postal_region      = $r->{postal_region};
                 $postal_country     = $r->{postal_country};
-                @groups             = $r->{additional_groups};
+                @additional_groups  = $r->{additional_groups};
             }
         }else{
             push @msgs, "SELECT FROM passwd failed";
@@ -6350,6 +6350,26 @@ use HTML::Entities;
             $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
             return $return;
         }
+
+        $sql  = "SELECT g.id, g._name FROM _group g;\n";
+        $query       = $db->prepare($sql);
+        $result;
+        eval {
+            $result     = $query->execute();
+        };
+        if($@){
+            $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, "Error: $@", "Cannnot Read _group");
+            $query->finish();
+            return 0;
+        }
+        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
+        my @groups;
+        my $r           = $query->fetchrow_hashref();
+        while($r){
+            push @groups, $r;
+            $r          = $query->fetchrow_hashref();
+        }
+        $query->finish();
 
         my %countries;
         my @_country;
