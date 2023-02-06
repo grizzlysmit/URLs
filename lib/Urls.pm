@@ -6781,7 +6781,7 @@ use HTML::Entities;
                         $return = 0;
                         push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
                     }
-                    $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'back to users' : undef), !$return, @msgs);
+                    $self->message($cfg, $debug, \%session, $db, 'profile', ($return ? 'back to profile' : undef), !$return, @msgs);
                     return $return if $return;
                 }
             }else{
