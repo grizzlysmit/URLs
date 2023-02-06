@@ -6284,7 +6284,7 @@ use HTML::Entities;
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
         $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions  cr ON cr.id = pd.country_region_id\n";
-        $sql    .= "                 JOIN address a1 ON pd.residential_address_id = a1.id JOIN address a2  ON a2.id = pd.postal_address_id\n";
+        $sql    .= "                           JOIN address a1 ON pd.residential_address_id = a1.id JOIN address a2  ON a2.id = pd.postal_address_id\n";
         $sql    .= "WHERE p.id = ?\n";
         my $query  = $db->prepare($sql);
         my $result;
