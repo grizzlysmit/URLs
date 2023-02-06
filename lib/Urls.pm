@@ -6307,7 +6307,7 @@ use HTML::Entities;
                 $display_name       = $r->{display_name};
                 $email              = $r->{_email};
                 $admin              = $r->{_admin};
-                $isadmin _          = $admin;
+                $isadmin            = $admin;
                 $_landline_pattern  = $r->{landline_pattern};
                 $_mobile_pattern    = $r->{mobile_pattern};
                 my $tmp             = $r->{secondary_phone};
