@@ -4331,6 +4331,8 @@ use HTML::Entities;
         my ($self, $indent, $_countries, $country_id, $cr_id, $cc, $prefix, $_country_, $spec0, $spec1) = @_;
         my %countries = %{$_countries};
         my @_country  = @{$_country_};
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$line, $country_id, $cr_id], [qw(line country_id cr_id)]));
         $indent = 0 if $indent < 0;
         my $indent_str = ' ' x $indent;
         my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder);
@@ -4395,8 +4397,7 @@ use HTML::Entities;
                 my $mob_placeholder  = $region_r->{mobile_placeholder};
                 if($country_id == $cc_id && $cr_id == $_cr_id){
                     my $line = __LINE__;
-                    $self->log(Data::Dumper->Dump([$line, $country_id, $cc_id, $cr_id, $_cr_id],
-                            [qw(line country_id cc_id cr_id _cr_id)]));
+                    $self->log(Data::Dumper->Dump([$line, $country_id, $cc_id, $cr_id, $_cr_id], [qw(line country_id cc_id cr_id _cr_id)]));
                     $mobile_title         = $mob_title;
                     $mobile_pattern       = $mob_pattern;
                     $mobile_placeholder   = $mob_placeholder;
@@ -6390,7 +6391,7 @@ use HTML::Entities;
             $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
             $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
             $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id, pd.country_id,\n";
-            $sql               .= "c.cc, c.prefix, cr.id cr_id,\n";
+            $sql               .= "c.cc, c.prefix, pd.country_region_id cr_id,\n";
             $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
             $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
             $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
