@@ -6278,10 +6278,13 @@ use HTML::Entities;
         my @groups;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
         $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql    .= "a1.unit, a1.street, a1.city_suburb, a1.postcode, a1.region, a1.country,\n";
+        $sql    .= "a2.unit postal_unit, a2.street postal_street, a2.city_suburb postal_city_suburb, a2.postcode postal_postcode, a2.region postal_region, a2.country postal_country,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
         $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
         $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions  cr ON cr.id = pd.country_region_id\n";
+        $sql    .= "                 JOIN address a1 ON pd.residential_address_id = a1.id JOIN address a2  ON a2.id = pd.postal_address_id\n";
         $sql    .= "WHERE p.id = ?\n";
         my $query  = $db->prepare($sql);
         my $result;
@@ -6295,30 +6298,44 @@ use HTML::Entities;
             $return = 0;
         }
         if($result){
-            my $r      = $query->fetchrow_hashref();
+            my $r                   = $query->fetchrow_hashref();
             if($r){
-                $country_id       = $r->{country_id};
-                $cr_id            = $r->{country_region_id};
-                $given            = $r->{given};
-                $family           = $r->{_family};
-                $display_name     = $r->{display_name};
-                $email            = $r->{_email};
-                $_landline_pattern = $r->{landline_pattern};
-                $_mobile_pattern   = $r->{mobile_pattern};
-                my $tmp           = $r->{secondary_phone};
+                $country_id         = $r->{country_id};
+                $cr_id              = $r->{country_region_id};
+                $given              = $r->{given};
+                $family             = $r->{_family};
+                $display_name       = $r->{display_name};
+                $email              = $r->{_email};
+                $admin              = $r->{_admin};
+                $is_admin           = $admin;
+                $_landline_pattern  = $r->{landline_pattern};
+                $_mobile_pattern    = $r->{mobile_pattern};
+                my $tmp             = $r->{secondary_phone};
                 if($tmp =~ m/^$_landline_pattern$/){
                     $phone = $tmp;
                 }elsif($tmp =~ m/^$_mobile_pattern$/){
                     $mobile = $tmp;
                 }
-                $tmp              = $r->{phone_number};
+                $tmp                = $r->{phone_number};
                 if($tmp =~ m/^$_landline_pattern$/){
-                    $phone        = $tmp;
+                    $phone          = $tmp;
                 }elsif($tmp =~ m/^$_mobile_pattern$/){
-                    $mobile       = $tmp;
+                    $mobile         = $tmp;
                 }
-                $cc               = $r->{cc};
-                $prefix           = $r->{prefix};
+                $cc                 = $r->{cc};
+                $unit               = $r->{unit};
+                $prefix             = $r->{prefix};
+                $city_suburb        = $r->{city_suburb};
+                $postcode           = $r->{postcode};
+                $region             = $r->{region};
+                $country            = $r->{country};
+                $postal_unit        = $r->{postal_unit};
+                $postal_prefix      = $r->{postal_prefix};
+                $postal_city_suburb = $r->{postal_city_suburb};
+                $postal_postcode    = $r->{postal_postcode};
+                $postal_region      = $r->{postal_region};
+                $postal_country     = $r->{postal_country};
+                @groups             = $r->{additional_groups};
             }
         }else{
             push @msgs, "SELECT FROM passwd failed";
