@@ -6603,7 +6603,7 @@ use HTML::Entities;
                     if($password && $repeat && $password eq $repeat){
                         $hashed_password = $self->generate_hash($password);
                     }else{
-                        push @msgs, "password and repeat password did nnot match ignoring";
+                        push @msgs, "password and repeat password did not match ignoring";
                     }
                     my $line = __LINE__;
                     $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
