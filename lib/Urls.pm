@@ -6371,7 +6371,7 @@ use HTML::Entities;
         }else{
             my @msgs;
             my $return = 1;
-            my $passwd_id       = $req->param('passwd_id');
+            my $passwd_id       = $loggedin_id;
             if(!defined $passwd_id || $passwd_id <= 0){
                 my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id <= 0!!!");
                 $self->message($cfg, $debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
