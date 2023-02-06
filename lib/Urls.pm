@@ -6504,12 +6504,6 @@ use HTML::Entities;
         $admin = 0 unless $isadmin; # admins can only be made by admins. #
 
 
-        if($loggedin && !$isadmin){
-            untie %session;
-            $db->disconnect;
-            return 0; # Only admins and nnew users should be usinng this page. #
-        }
-
         $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
                     $unit, $street, $city_suburb, $postcode, $region, $country, $postal_unit,
                     $postal_street, $postal_city_suburb, $postal_postcode, $postal_region,
