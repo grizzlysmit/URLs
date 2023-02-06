@@ -3539,7 +3539,26 @@ use HTML::Entities;
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
                 $given = '' unless defined $given;
                 $family = '' unless defined $family;
-                $display_name = "$given $familif($group_id == 1){
+                $display_name = "$given $family" unless $display_name;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
+                my @msgs;
+                my $return = 1;
+                if($submit eq 'Save Changes'){
+                    my $hashed_password;
+                    if($password && $repeat && $password eq $repeat){
+                        $hashed_password = $self->generate_hash($password);
+                    }else{
+                        push @msgs, "password and repeat password did nnot match ignoring";
+                    }
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                    if(!$hashed_password || $self->validate($hashed_password, $password)){
+                        my $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ? RETURNING id;\n";
+                        my $query  = $db->prepare($sql);
+                        my $result;
+                        if($group_id == 1){
                             $result = 1; # dont't change the group (group_id == 1) i.e. Admin #
                             $username = 'admin';
                         }else{
@@ -6259,7 +6278,7 @@ use HTML::Entities;
         my $change  = $req->param('change');
 
         my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
-        my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same, $group_id, $groupname);
+        my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same);
         my ($postal_unit, $postal_street, $postal_city_suburb, $postal_country, $postal_postcode, $postal_region);
         my ($admin, $isadmin);
         my @additional_groups;
@@ -6321,8 +6340,6 @@ use HTML::Entities;
                 $postal_postcode    = $r->{postal_postcode};
                 $postal_region      = $r->{postal_region};
                 $postal_country     = $r->{postal_country};
-                $group_id           = $r->{group_id};
-                $groupname          = $r->{groupname};
                 my @_groups         = @{$r->{additional_groups}};
                 for my $group_name (@_groups){
                     my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
