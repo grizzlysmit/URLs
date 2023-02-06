@@ -6260,6 +6260,8 @@ use HTML::Entities;
             $self->debug_init($debug, $log);
         }
 
+        $self->links('profile', \%session);
+
         my $loggedin                  = $session{loggedin};
         my $loggedin_id               = $session{loggedin_id};
         my $loggedin_username         = $session{loggedin_username};
@@ -6272,110 +6274,576 @@ use HTML::Entities;
         my $loggedin_groupname        = $session{loggedin_groupname};
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
-
-        $self->links('profile', \%session);
-
-        my $change  = $req->param('change');
-
-        my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
-        my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same);
-        my ($postal_unit, $postal_street, $postal_city_suburb, $postal_country, $postal_postcode, $postal_region);
-        my ($admin, $isadmin);
+        my $submit             = $req->param('submit');
+        my $user_id;
+        my $username;
+        my $email;
+        my $password;
+        my $repeat;
+        my $mobile;
+        my $phone;
+        my $unit;
+        my $street;
+        my $city_suburb;
+        my $postcode;
+        my $region;
+        my $country;
+        my $postal_same;
+        my $postal_unit;
+        my $postal_street;
+        my $postal_city_suburb;
+        my $postal_postcode;
+        my $postal_region;
+        my $postal_country;
+        my $given;
+        my $family;
+        my $display_name;
+        my $admin;
+        my $isadmin;
+        my $cc;
+        my $prefix;
+        my $country_id;
+        my $cr_id;
+        my $group_id;
+        my $email_id;
+        my $residential_address_id;
+        my $postal_address_id;
+        my $primary_group_id;
+        my $primary_phone_id;
+        my $secondary_phone_id;
+        my $passwd_details_id;
         my @additional_groups;
-        my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
-        $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
-        $sql    .= "a1.unit, a1.street, a1.city_suburb, a1.postcode, a1.region, a1.country, g._name groupname, g.id group_id,\n";
-        $sql    .= "a2.unit postal_unit, a2.street postal_street, a2.city_suburb postal_city_suburb, a2.postcode postal_postcode, a2.region postal_region, a2.country postal_country,\n";
-        $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
-        $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id JOIN _group g ON p.primary_group_id = g.id\n";
-        $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
-        $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions  cr ON cr.id = pd.country_region_id\n";
-        $sql    .= "                           JOIN address a1 ON pd.residential_address_id = a1.id JOIN address a2  ON a2.id = pd.postal_address_id\n";
-        $sql    .= "WHERE p.id = ?\n";
-        my $query  = $db->prepare($sql);
-        my $result;
-        my @msgs;
-        my $return = 1;
-        eval {
-            $result = $query->execute($loggedin_id);
-        };
-        if($@){
-            push @msgs, "SELECT FROM passwd failed: $@";
-            $return = 0;
-        }
-        if($result){
-            my $r                   = $query->fetchrow_hashref();
-            if($r){
-                $country_id         = $r->{country_id};
-                $cr_id              = $r->{country_region_id};
-                $given              = $r->{given};
-                $family             = $r->{_family};
-                $display_name       = $r->{display_name};
-                $email              = $r->{_email};
-                $admin              = $r->{_admin};
-                $isadmin            = $admin;
-                $_landline_pattern  = $r->{landline_pattern};
-                $_mobile_pattern    = $r->{mobile_pattern};
-                my $tmp             = $r->{secondary_phone};
-                if($tmp =~ m/^$_landline_pattern$/){
-                    $phone = $tmp;
-                }elsif($tmp =~ m/^$_mobile_pattern$/){
-                    $mobile = $tmp;
-                }
-                $tmp                = $r->{phone_number};
-                if($tmp =~ m/^$_landline_pattern$/){
-                    $phone          = $tmp;
-                }elsif($tmp =~ m/^$_mobile_pattern$/){
-                    $mobile         = $tmp;
-                }
-                $cc                 = $r->{cc};
-                $unit               = $r->{unit};
-                $prefix             = $r->{prefix};
-                $city_suburb        = $r->{city_suburb};
-                $postcode           = $r->{postcode};
-                $region             = $r->{region};
-                $country            = $r->{country};
-                $postal_unit        = $r->{postal_unit};
-                $postal_city_suburb = $r->{postal_city_suburb};
-                $postal_postcode    = $r->{postal_postcode};
-                $postal_region      = $r->{postal_region};
-                $postal_country     = $r->{postal_country};
-                my @_groups         = @{$r->{additional_groups}};
-                for my $group_name (@_groups){
-                    my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
+        my @group_id_add;
+        my @group_id_delete;
+        
+        if($submit eq 'Save Changes'){
+            $user_id                = $req->param('user_id');
+            $username               = $req->param('username');
+            $email                  = $req->param('email');
+            $password               = $req->param('password');
+            $repeat                 = $req->param('repeat');
+            $mobile                 = $req->param('mobile');
+            $phone                  = $req->param('phone');
+            $unit                   = $req->param('unit');
+            $street                 = $req->param('street');
+            $city_suburb            = $req->param('city_suburb');
+            $postcode               = $req->param('postcode');
+            $region                 = $req->param('region');
+            $country                = $req->param('country');
+            $postal_same            = $req->param('postal_same');
+            $postal_unit            = $req->param('postal_unit');
+            $postal_street          = $req->param('postal_street');
+            $postal_city_suburb     = $req->param('postal_city_suburb');
+            $postal_postcode        = $req->param('postal_postcode');
+            $postal_region          = $req->param('postal_region');
+            $postal_country         = $req->param('postal_country');
+            $given                  = $req->param('given');
+            $family                 = $req->param('family');
+            $display_name           = $req->param('display_name');
+            $admin                  = $req->param('admin');
+            $cc                     = $req->param('cc');
+            $prefix                 = $req->param('prefix');
+            $country_id             = $req->param('country_id');
+            $cr_id                  = $req->param('cr_id');
+            $group_id               = $req->param('group_id');
+            $email_id               = $req->param('email_id');
+            $residential_address_id = $req->param('residential_address_id');
+            $postal_address_id      = $req->param('postal_address_id');
+            $primary_group_id       = $req->param('primary_group_id');
+            $primary_phone_id       = $req->param('primary_phone_id');
+            $secondary_phone_id     = $req->param('secondary_phone_id');
+            $passwd_details_id      = $req->param('passwd_details_id');
+            my @params              = $req->param;
+            for (@params){
+                if(m/^group_id_add\[(\d+)\]$/){
+                    my $_group_id = $req->param($_);
+                    my ($group_name, $return_group, @msgs_group) = $self->getgroup_name($_group_id, $db);
                     unless($return_group){
                         $self->message($cfg, $debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
-                        next;
                     }
                     push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
+                    push @group_id_add, $_group_id;
+                }elsif(m/^group_id_delete\[(\d+)\]$/){
+                    my $_group_id = $req->param($_);
+                    push @group_id_delete, $_group_id;
                 }
             }
         }else{
-            push @msgs, "SELECT FROM passwd failed";
-            $return = 0;
-        }
-        unless($return){
-            $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs) if @msgs;
-            return $return;
+            my @msgs;
+            my $return = 1;
+            my $passwd_id       = $req->param('passwd_id');
+            if(!defined $passwd_id || $passwd_id <= 0){
+                my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id <= 0!!!");
+                $self->message($cfg, $debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                return 0;
+            }
+            my $sql             = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family,\n";
+            $sql               .= "ra.unit, ra.street, ra.city_suburb, ra.postcode, ra.region, ra.country, pa.unit postal_unit, pa.street postal_street, \n";
+            $sql               .= "pa.city_suburb postal_city_suburb, pa.postcode postal_postcode, pa.region postal_region, pa.country postal_country,\n";
+            $sql               .= "e._email, m._number mobile, ph._number phone, g._name groupname, g.id group_id, p.email_id,\n";
+            $sql               .= "p.passwd_details_id, pd.residential_address_id, pd.postal_address_id, pd.primary_phone_id, pd.secondary_phone_id, pd.country_id,\n";
+            $sql               .= "c.cc, c.prefix, cr.id cr_id,\n";
+            $sql               .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
+            $sql               .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+            $sql               .= "         LEFT JOIN phone  ph ON ph.id = pd.secondary_phone_id JOIN _group g ON p.primary_group_id = g.id\n";
+            $sql               .= "         LEFT JOIN phone  m ON m.id = pd.primary_phone_id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions cr ON cr.country_id = c.id\n";
+            $sql               .= "         JOIN address ra ON ra.id = pd.residential_address_id JOIN address pa ON pa.id = pd.postal_address_id\n";
+            $sql               .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($passwd_id);
+            };
+            if($@){
+                push @msgs, "SELECT passwd etc al failed: $@";
+                $return = 0;
+            }
+            $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            my $r;
+            if($return){
+                $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if(!$r){
+                    my @msgs = ("Error: user_id does not exist.", "passwd_id: $passwd_id not found in Database!!!");
+                    $self->message($cfg, $debug, \%session, $db, 'user', 'go back to users', undef, @msgs);
+                    return 0;
+                }
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "SELECT passwd etc al failed";
+            }
+            unless($return){
+                $self->message($cfg, $debug, \%session, $db, 'user', undef, undef, @msgs);
+                return 0;
+            }
+            $user_id                = $r->{id};
+            $username               = $r->{username};
+            $email                  = $r->{_email};
+            $password               = '';
+            $repeat                 = '';
+            $mobile                 = $r->{mobile};
+            $phone                  = $r->{phone};
+            $unit                   = $r->{unit};
+            $street                 = $r->{street};
+            $city_suburb            = $r->{city_suburb};
+            $postcode               = $r->{postcode};
+            $region                 = $r->{region};
+            $country                = $r->{country};
+            $postal_same            = ($r->{residential_address_id} == $r->{postal_address_id});
+            $postal_unit            = $r->{postal_unit};
+            $postal_street          = $r->{postal_street};
+            $postal_city_suburb     = $r->{postal_city_suburb};
+            $postal_postcode        = $r->{postal_postcode};
+            $postal_region          = $r->{postal_region};
+            $postal_country         = $r->{postal_country};
+            $given                  = $r->{given};
+            $family                 = $r->{_family};
+            $display_name           = $r->{display_name};
+            $cc                     = $r->{cc};
+            $prefix                 = $r->{prefix};
+            $country_id             = $r->{country_id};
+            $cr_id                  = $r->{cr_id};
+            $admin                  = $r->{_admin};
+            $group_id               = $r->{group_id};
+            $email_id               = $r->{email_id};
+            $residential_address_id = $r->{residential_address_id};
+            $postal_address_id      = $r->{postal_address_id};
+            $primary_group_id       = $r->{primary_group_id};
+            $primary_phone_id       = $r->{primary_phone_id};
+            $secondary_phone_id     = $r->{secondary_phone_id};
+            $passwd_details_id      = $r->{passwd_details_id};
+            my @_groups             = @{$r->{additional_groups}};
+            for my $group_name (@_groups){
+                my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
+                unless($return_group){
+                    $self->message($cfg, $debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                    next;
+                }
+                push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
+            }
         }
 
-        $sql  = "SELECT g.id, g._name FROM _group g;\n";
-        $query       = $db->prepare($sql);
-        $result;
+        if($loggedin && $loggedin_id && $loggedin_username){
+            my @msgs;
+            my $return = 1;
+            my $sql  = "SELECT p._admin, p.username FROM passwd p\n";
+            $sql    .= "WHERE p.id = ?\n";
+            my $query  = $db->prepare($sql);
+            my $result;
+            eval {
+                $result = $query->execute($loggedin_id);
+            };
+            if($@){
+                push @msgs, "SELECT passwd failed: $@";
+                $return = 0;
+            }
+            $self->log(Data::Dumper->Dump([$debug, \%session, $loggedin_username, $loggedin_id, $sql], [qw(debug %session loggedin_username loggedin_id sql)]));
+            if($return){
+                my $r      = $query->fetchrow_hashref();
+                $self->log(Data::Dumper->Dump([$debug, \%session, $r, $loggedin_username, $loggedin_id, $sql], [qw(debug %session r loggedin_username loggedin_id sql)]));
+                if($r->{username} eq $loggedin_username){
+                    $isadmin = $r->{_admin};
+                }
+            }else{
+                $return = 0;
+                push @msgs, "could not find your record somethinnng is wrong with your login";
+            }
+            $query->finish();
+            $self->message($cfg, $debug, \%session, $db, ($return?'main':'register'), ($return ? 'register' : undef), !$return && @msgs, @msgs) if @msgs;
+
+            unless($return){
+                untie %session;
+                $db->disconnect;
+                return 0;
+            }
+        }
+
+        $admin = 0 unless $isadmin; # admins can only be made by admins. #
+
+
+        if($loggedin && !$isadmin){
+            untie %session;
+            $db->disconnect;
+            return 0; # Only admins and nnew users should be usinng this page. #
+        }
+
+        $self->log(Data::Dumper->Dump([$username, $email, $password, $repeat, $given, $family, $display_name, $mobile, $phone,
+                    $unit, $street, $city_suburb, $postcode, $region, $country, $postal_unit,
+                    $postal_street, $postal_city_suburb, $postal_postcode, $postal_region,
+                    $postal_country, $postal_same, $loggedin, $loggedin_id, $loggedin_username, $isadmin, $admin],
+                    [qw(username email password repeat given family display_name
+                    mobile phone unit street city_suburb postcode region country postal_unit postal_street
+                    postal_city_suburb postal_postcode postal_region postal_country postal_same loggedin
+                    loggedin_id loggedin_username isadmin admin)]));
+
+        $unit                = encode_entities($unit)               if defined $unit;
+        $street              = encode_entities($street)             if defined $street;
+        $city_suburb         = encode_entities($city_suburb)        if defined $city_suburb;
+        $country             = encode_entities($country)            if defined $country;
+        $given               = encode_entities($given)              if defined $given;
+        $family              = encode_entities($family)             if defined $family;
+        $display_name        = encode_entities($display_name)       if defined $display_name;
+        $postal_unit         = encode_entities($postal_unit)        if defined $postal_unit;
+        $postal_street       = encode_entities($postal_street)      if defined $postal_street;
+        $postal_city_suburb  = encode_entities($postal_city_suburb) if defined $postal_city_suburb;
+        $postal_country      = encode_entities($postal_country)     if defined $postal_country;
+
+        if($submit eq 'Save Changes'){
+            my $cond = defined $postal_street && defined $postal_country
+                        && (!$postal_city_suburb || $postal_city_suburb =~ m/^[^\'\"]+$/)
+                        && (!$postal_unit || $postal_unit =~ m/^[^\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
+                        && $postal_city_suburb =~ m/^[^\'\"]+$/ && (!$postal_postcode || $postal_postcode =~ m/^[A-Z0-9 -]+$/)
+                        && (!$postal_region || $postal_region =~ m/^[^\'\"]+$/) && $postal_country =~ m/^[^\'\"]+$/;
+
+            my $line = __LINE__;
+            $self->log(Data::Dumper->Dump([$cond, $postal_same, $line], [qw(cond postal_same line)]));
+            my $_mobile_pattern = '(?:\+61|0)?\d{3}[ -]?\d{3}[ -]?\d{3}';
+            my $_landline_pattern = '(?:(?:\+61[ -]?\d|0\d|\(0\d\)|0\d)[ -]?)?\d{4}[ -]?\d{4}';
+            if(defined $country_id){
+                my @msgs;
+                my $return = 1;
+                my $_sql  = "SELECT landline_pattern, mobile_pattern FROM country_regions c\n";
+                $_sql    .= "WHERE c.id = ?\n";
+                my $_query  = $db->prepare($_sql);
+                my $_result;
+                eval {
+                    $_result = $_query->execute($cr_id);
+                };
+                if($@){
+                    push @msgs, "SELECT FROM country_regions failed: $@";
+                    $return = 0;
+                }
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$return, $_sql, $_query, $_result, $line], [qw(return sql query result line)]));
+                if($_result){
+                    my $_r      = $_query->fetchrow_hashref();
+                    $_mobile_pattern = $_r->{mobile_pattern};
+                    $_landline_pattern = $_r->{landline_pattern};
+                }else{
+                    push @msgs, "SELECT FROM country_regions failed: $_sql";
+                    $return = 0;
+                }
+                $_query->finish();
+                $self->message($cfg, $debug, \%session, $db, undef, undef, 1, @msgs) if @msgs;
+            }
+
+            if($password && $repeat
+                && ($password !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100}$/
+                        || $repeat !~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)){
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
+                my @msgs = ('password and/or repeat password did not match requirements 10 to 100 chars a at least 1 lowercase and at least 1 uppercase character, a digit 0-9 and a puctuation character!');
+                $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, 1, @msgs);
+            }elsif(defined $username && defined $email && defined $street && defined $country
+                && $username =~ m/^\w+$/ && $email =~ m/^(?:\w|-|\.|\+|\%)+\@[a-z0-9-]+(?:\.[a-z0-9-]+)+$/
+                && (!$city_suburb || $city_suburb =~ m/^[^\'\"]+$/) 
+                && (!$mobile || $mobile =~ m/^$_mobile_pattern$/) 
+                && (!$phone || $phone =~ m/^$_landline_pattern$/)
+                && (!$unit || $unit =~ m/^[^\'\"]+$/) && $street =~ m/^[^\'\"]+$/
+                && (!$postcode || $postcode =~ m/^[A-Z0-9 -]+$/)
+                && (!$region || $region =~ m/^[^\;\'\"]+$/) && $country =~ m/^[^\;\'\"]+$/
+                && (!$password || $password =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/)
+                && (!$repeat || $repeat =~ m/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[[:punct:]]).{10,100}$/ )
+                && ($postal_same?1:$cond)){
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
+                $given = '' unless defined $given;
+                $family = '' unless defined $family;
+                $display_name = "$given $family" unless $display_name;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
+                my @msgs;
+                my $return = 1;
+                if($submit eq 'Save Changes'){
+                    my $hashed_password;
+                    if($password && $repeat && $password eq $repeat){
+                        $hashed_password = $self->generate_hash($password);
+                    }else{
+                        push @msgs, "password and repeat password did nnot match ignoring";
+                    }
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                    if(!$hashed_password || $self->validate($hashed_password, $password)){
+                        my $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ? RETURNING id;\n";
+                        my $query  = $db->prepare($sql);
+                        my $result;
+                        if($group_id == 1){
+                            $result = 1; # dont't change the group (group_id == 1) i.e. Admin #
+                            $username = 'admin';
+                        }else{
+                            eval {
+                                $result = $query->execute($username, $group_id);
+                            };
+                            if($@){
+                                push @msgs, "UPDATE _group failed: $@";
+                                $return = 0;
+                            }
+                        }
+                        $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $username, $line], [qw(return sql query result username line)]));
+                        if($result){
+                            my ($r,  $primary_group_id);
+                            unless($group_id == 1){
+                                push @msgs, "Succeded in  UPDATING _group";
+                                $r      = $query->fetchrow_hashref();
+                                $primary_group_id = $r->{id};
+                            }else{
+                                $primary_group_id = 1;
+                            }
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$return, $sql, $query, $result, $primary_group_id, $line], [qw(return sql query result primary_group_id line)]));
+                            $query->finish();
+                            my ($new_residential_address_id, $return_res, @msgs_res_address) = $self->update_address($unit, $street, $city_suburb, $postcode, $region, $country, undef, $residential_address_id, $db);
+                            $return = $return_res unless $return_res;
+                            push @msgs, @msgs_res_address;
+                            my $new_postal_address_id;
+                            if($postal_same){
+                                if($residential_address_id != $postal_address_id){
+                                    my ($return_post_address, @msgs_post_address) = $self->delete_address($postal_address_id, \%session, $db);
+                                    $return = 0 unless $return_post_address;
+                                    push @msgs, @msgs_post_address;
+                                    $postal_address_id = $residential_address_id;
+                                }
+                            }else{
+                                if($residential_address_id != $postal_address_id){
+                                    ($new_postal_address_id, $return_res, @msgs_res_address) = $self->update_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $new_residential_address_id, $postal_address_id, $db);
+                                    $return = $return_res unless $return_res;
+                                    push @msgs, @msgs_res_address;
+                                }else{
+                                    ($postal_address_id, $return_res, @msgs_res_address) = $self->create_address($postal_unit, $postal_street, $postal_city_suburb, $postal_postcode, $postal_region, $postal_country, $residential_address_id, $db);
+                                    $return = $return_res unless $return_res;
+                                    push @msgs, @msgs_res_address;
+                                }
+                            }
+                            $line = __LINE__;
+                            $self->log(Data::Dumper->Dump([$mobile, $phone, $line], [qw(mobile phone line)]));
+                            my ($return_phone, @msgs_phone);
+                            my ($_escape, $mobile_pattern, $landline_pattern, $return_phonedetails, @msgs_phonedetails) = $self->getphonedetails($cr_id, $cc, $prefix, $db);
+                            $return = 0 unless $return_phonedetails;
+                            push @msgs, @msgs_phonedetails;
+                            if($mobile){
+                                eval {
+                                    $mobile = $self->normalise_mobile($mobile, $cc, $prefix, $_escape, $mobile_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
+                                if($primary_phone_id){
+                                    ($return_phone, @msgs_phone) = $self->update_phone($primary_phone_id, $mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }else{
+                                    ($primary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($mobile, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
+                            }
+                            if($phone){
+                                eval {
+                                    $phone = $self->normalise_landline($phone, $cc, $prefix, $_escape, $landline_pattern, \%session, $db);
+                                };
+                                if($@){
+                                    $return = 0;
+                                    push @msgs, $@;
+                                }
+                                if($secondary_phone_id){
+                                    ($return_phone, @msgs_phone) = $self->update_phone($secondary_phone_id, $phone, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }else{
+                                    ($secondary_phone_id, $return_phone, @msgs_phone) = $self->create_phone($phone, $db);
+                                    $return = $return_phone unless $return_phone;
+                                    push @msgs, @msgs_phone;
+                                }
+                            }
+                            my ($return_email, @msgs_email);
+                            ($return_email, @msgs_email) = $self->update_email($email_id, $email, $db);
+                            $return = $return_email unless $return_email;
+                            push @msgs, @msgs_email;
+                            if($return){
+                                my ($return_details, @_msgs) = $self->update_passwd_details($display_name, $given, $family, $residential_address_id, $postal_address_id, $primary_phone_id, $secondary_phone_id, $country_id, $cr_id, $passwd_details_id, $db);
+                                $return = $return_details unless $return_details;
+                                push @msgs, @_msgs;
+                                if($return){
+                                    my ($passwd_id, $return_passwd, @msgs_passwd);
+                                    $passwd_id = $user_id;
+                                    eval {
+                                        ($return_passwd, @msgs_passwd)  = $self->update_passwd($username, $hashed_password, $email_id, $passwd_details_id, $primary_group_id, $admin, $passwd_id, $db);
+                                        $return = $return_passwd unless $return_passwd;
+                                        push @msgs, @msgs_passwd;
+                                        for my $group_id (@group_id_add){
+                                            $sql  = "INSERT INTO groups(group_id, passwd_id)\n";
+                                            $sql .= "VALUES(?, ?)\n";
+                                            $sql .= "ON CONFLICT DO NOTHING\n";
+                                            $sql .= "RETURNING id;\n";
+                                            $query  = $db->prepare($sql);
+                                            eval {
+                                                $result = $query->execute($group_id, $passwd_id);
+                                            };
+                                            if($@){
+                                                push @msgs, "INSERT INTO groups failed: $@";
+                                                $return = 0;
+                                            }
+                                            if($result){
+                                                $r      = $query->fetchrow_hashref();
+                                                my $groups_id = $r->{id};
+                                            }else{
+                                                push @msgs, "INSERT INTO groups failed: $sql";
+                                                $return = 0;
+                                            }
+                                            $query->finish();
+                                        }
+                                        for my $group_id (@group_id_delete){
+                                            $sql  = "DELETE FROM groups\n";
+                                            $sql .= "WHERE group_id = ? AND passwd_id = ?\n";
+                                            $sql .= "RETURNING id;\n";
+                                            $query  = $db->prepare($sql);
+                                            eval {
+                                                $result = $query->execute($group_id, $passwd_id);
+                                            };
+                                            if($@){
+                                                push @msgs, "DELETE FROM groups failed: $@";
+                                                $return = 0;
+                                            }
+                                            if($result){
+                                                $r      = $query->fetchrow_hashref();
+                                                my $groups_id = $r->{id};
+                                            }else{
+                                                push @msgs, "DELETE FROM groups failed: $sql";
+                                                $return = 0;
+                                            }
+                                            $query->finish();
+                                        }
+                                    };
+                                    if($@){
+                                        $return = 0;
+                                        push @msgs, "Error: falied to DELETE user: $@";
+                                    }
+                                }
+                            }else{
+                                push @msgs, "one of the dependencies failed.", "see above.";
+                            }
+                        }else{
+                            $query->finish();
+                            $return = 0;
+                            push @msgs, "Failed to insert primary _group.";
+                        }
+                    }else{
+                        my $line = __LINE__;
+                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
+                        $return = 0;
+                        push @msgs, "Error: could not validate hashed password.", "hashed_password == \`$hashed_password'";
+                    }
+                    $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'back to users' : undef), !$return, @msgs);
+                    return $return if $return;
+                }
+            }else{
+                my $line = __LINE__;
+                $self->log(Data::Dumper->Dump([$given, $family, $display_name, $line], [qw(given family display_name line)]));
+            }
+        }
+
+        $username           = '' unless defined $username;
+        $email              = '' unless defined $email;
+        $password           = '' unless defined $password;
+        $repeat             = '' unless defined $repeat;
+        $mobile             = '' unless defined $mobile;
+        $phone              = '' unless defined $phone;
+        $unit               = '' unless defined $unit;
+        $street             = '' unless defined $street;
+        $city_suburb        = '' unless defined $city_suburb;
+        $postcode           = '' unless defined $postcode;
+        $region             = '' unless defined $region;
+        $country            = '' unless defined $country;
+        $postal_same        = 1  unless defined $postal_same;
+        $postal_unit        = '' unless defined $postal_unit;
+        $postal_street      = '' unless defined $postal_street;
+        $postal_city_suburb = '' unless defined $postal_city_suburb;
+        $postal_postcode    = '' unless defined $postal_postcode;
+        $postal_region      = '' unless defined $postal_region;
+        $postal_country     = '' unless defined $postal_country;
+        $given              = '' unless defined $given;
+        $family             = '' unless defined $family;
+        $display_name       = '' unless defined $display_name;
+        my $group_ids_joinned = "$group_id";
+        my $sep               = ', ';
+        my $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
+        for my $row (@additional_groups){
+            my $_group_id = $row->{_group_id};
+            $group_ids_joinned .= $sep . $_group_id;
+            $sep = ', ';
+        }
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $line], [qw(group_ids_joinned sep line)]));
+        my @groups;
+        my ($return, @msgs);
+        $return = 1;
+        my $sql  = "SELECT g.id, g._name FROM _group g\n";
+        $sql    .= "WHERE g.id NOT IN ($group_ids_joinned);\n" if $group_ids_joinned;
+        $line = __LINE__;
+        $self->log(Data::Dumper->Dump([$group_ids_joinned, $sep, $sql, $line], [qw(group_ids_joinned sep sql line)]));
+        my $query  = $db->prepare($sql);
+        my $result;
         eval {
-            $result     = $query->execute();
+            $result = $query->execute();
         };
         if($@){
-            $self->message($cfg, $debug, \%session, $db, 'register', undef, undef, "Error: $@", "Cannnot Read _group");
-            $query->finish();
-            return 0;
+            push @msgs, "SELECT FROM _group failed: $@", "\$sql == $sql";
+            $return = 0;
         }
-        $self->log(Data::Dumper->Dump([$query, $result, $sql], [qw(query result sql)]));
-        my @groups;
-        my $r           = $query->fetchrow_hashref();
+        unless($result){
+            push @msgs, "SELECT FROM _group failed: \$sql == $sql";
+            return $return;
+        }
+        my $r      = $query->fetchrow_hashref();
         while($r){
             push @groups, $r;
-            $r          = $query->fetchrow_hashref();
+            $r      = $query->fetchrow_hashref();
         }
         $query->finish();
 
@@ -6383,7 +6851,7 @@ use HTML::Entities;
         my @_country;
 
         $sql  = "SELECT\n";
-        $sql .= "c.id, c.cc, c.prefix, c._name, c._flag, c._escape\n";
+        $sql .= "c.id, c.cc, c.prefix, c._name, _flag, c._escape\n";
         $sql .= "FROM country c\n";
         $sql .= "ORDER BY c._name, c.cc\n";
         $query  = $db->prepare($sql);
@@ -6398,37 +6866,69 @@ use HTML::Entities;
             push @msgs, "SELECT FROM country failed: \$sql == $sql";
             return $return;
         }
-        my $r      = $query->fetchrow_hashref();
+        $r      = $query->fetchrow_hashref();
         while($r){
             push @_country, $r;
-            my $cc_id = $r->{id};
+            my $_cc_id = $r->{id};
             $r->{country_regions} = [];
-            $countries{$cc_id} = $r;
+            $countries{$_cc_id} = $r;
             $r      = $query->fetchrow_hashref();
         }
         $query->finish();
+        $sql  = "SELECT\n";
+        $sql .= "    cr.id cr_id, cr.region, cr.distinguishing, cr.country_id, cr.landline_pattern, cr.mobile_pattern,\n";
+        $sql .= "    cr.landline_title, cr.mobile_title, cr.landline_placeholder, cr.mobile_placeholder\n";
+        $sql .= "FROM country_regions cr\n";
+        $query  = $db->prepare($sql);
+        eval {
+            $result = $query->execute();
+        };
+        if($@){
+            push @msgs, "SELECT FROM country_regions failed: $@", "\$sql == $sql";
+            $return = 0;
+        }
+        unless($result){
+            push @msgs, "SELECT FROM country_regions failed: \$sql == $sql";
+            return $return;
+        }
+        $r      = $query->fetchrow_hashref();
+        while($r){
+            my $_country_id = $r->{country_id};
+            push @{$countries{$_country_id}->{country_regions}}, $r;
+            $r      = $query->fetchrow_hashref();
+        }
+        unless($return){
+            $self->message($cfg, $debug, \%session, $db, ($return?'user':'user_details'), ($return ? 'dummy' : undef), !$return, @msgs);
+        }
 
         untie %session;
         $db->disconnect;
 
-        my ($title, $pattern);
-        say "        <form action=\"profile.pl\" method=\"post\">";
-        say "            <h1>Profile $loggedin_username</h1>";
+        my $title   = "only a-z, A-Z, 0-9 and _  allowed";
+        my $pattern = '[a-zA-Z0-9_]+';
+        say "        <form action=\"user-details.pl\" method=\"post\">";
+        say "            <h1>Edit Account: $username</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"alias\">loggedin_id</label>";
+        say "                        <label for=\"username\">Username</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        $loggedin_id";
-        say "                    </td>";
-        say "                </tr>";
-        say "                <tr>";
-        say "                    <td>";
-        say "                        <label for=\"target\">Display Name: </label>";
-        say "                    </td>";
-        say "                    <td colspan=\"2\">";
-        say "                        $loggedin_display_name";
+        say "                        <input type=\"hidden\" name=\"old_username\" value=\"$username\"/>";
+        say "                        <input type=\"hidden\" name=\"user_id\" value=\"$user_id\"/>";
+        say "                        <input type=\"hidden\" name=\"group_id\" value=\"$group_id\"/>";
+        say "                        <input type=\"hidden\" name=\"email_id\" value=\"$email_id\"/>";
+        say "                        <input type=\"hidden\" name=\"residential_address_id\" value=\"$residential_address_id\"/>";
+        say "                        <input type=\"hidden\" name=\"postal_address_id\" value=\"$postal_address_id\"/>";
+        say "                        <input type=\"hidden\" name=\"primary_group_id\" value=\"$primary_group_id\"/>";
+        say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>" if $primary_phone_id;
+        say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>"; 
+        say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>" if $secondary_phone_id;
+        if($user_id == 1){
+            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
+        }else{
+            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
+        }
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
@@ -6437,8 +6937,51 @@ use HTML::Entities;
         say "                    <td>";
         say "                        <label for=\"email\">email</label>";
         say "                    </td>";
+        say "                    <td colspan=\"3\">";
+        if($user_id == 1){
+            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
+        }else{
+            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        }
+        say "                    </td>";
+        say "                </tr>";
+        $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
+        $pattern = '(?:(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{10,100})?';
+        say "                <script>";
+        say "                    function togglepasswd(){";
+        say "                        var pws = document.getElementsByClassName(\"passwd\");";
+        say "                        var chk = document.getElementById(\"chkpasswd\");";
+        say "                        for(let pw of pws){";
+        say "                            if(chk.checked){;";
+        say "                                pw.type = \"text\";";
+        say "                            }else{";
+        say "                                pw.type = \"password\";";
+        say "                            }";
+        say "                        }";
+        say "                    }";
+        say "                </script>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"password\">password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"3\">";
+        say "                        <input type=\"password\" name=\"password\" id=\"password\" class=\"passwd\" placeholder=\"password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$password\" />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"repeat\">Repeat Password</label>";
+        say "                    </td>";
+        say "                    <td colspan=\"3\">";
+        say "                        <input type=\"password\" name=\"repeat\" id=\"repeat\" class=\"passwd\" placeholder=\"repeat password\" minlength=\"10\" pattern=\"$pattern\" title=\"$title\" value=\"$repeat\"  />";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <label for=\"chkpasswd\">Show Password</label>";
+        say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        say "                        <input type=\"checkbox\" id=\"chkpasswd\" onclick=\"togglepasswd()\"  />";
         say "                    </td>";
         say "                </tr>";
         # given,  family annd dispaly name
@@ -6474,9 +7017,6 @@ use HTML::Entities;
         say "                        <input type=\"text\" name=\"display_name\" id=\"display_name\" placeholder=\"display_name\" value=\"$display_name\" required/>";
         say "                    </td>";
         say "                </tr>";
-
-        #my $country_id;
-
         my $spec0  = [
             { type => 'normal', id => 'cc', tag => 'input', inputval => 'cc', fields => [ 'value', ], },
             { type => 'normal', id => 'prefix', tag => 'input', inputval => 'prefix', fields => [ 'value', ], },
@@ -6493,13 +7033,12 @@ use HTML::Entities;
             { type => 'calculated', id => 'postal_city_suburb', tag => 'input', if => 'city.length > 0', inputval => 'city', fields => [ 'value', ], },
                      ];
         my ($mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder) = $self->add_country_region_dropdowns(16, \%countries, $country_id, $cr_id, $cc, $prefix, \@_country, $spec0, $spec1);
-        my $line = __LINE__;
+        $line = __LINE__;
         $self->log(Data::Dumper->Dump([$line, $country_id, $cr_id, $mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder],
                 [qw(line country_id cr_id mobile_title mobile_pattern mobile_placeholder landline_title landline_pattern landline_placeholder)]));
-
         # phones 
-        $title          = $mobile_title;
-        $pattern        = $mobile_pattern;
+        $title   = $mobile_title;
+        $pattern = $mobile_pattern;
         my $placeholder = $mobile_placeholder;
         say "                <tr>";
         say "                    <td>";
@@ -6509,8 +7048,8 @@ use HTML::Entities;
         say "                        <input type=\"tel\" name=\"mobile\" id=\"mobile\" placeholder=\"$placeholder\" pattern=\"$pattern\" title=\"$title\" value=\"$mobile\"/>";
         say "                    </td>";
         say "                </tr>";
-        $title       = $landline_title;
-        $pattern     = $landline_pattern;
+        $title   = $landline_title;
+        $pattern = $landline_pattern;
         $placeholder = $landline_placeholder;
         say "                <tr>";
         say "                    <td>";
@@ -6549,10 +7088,10 @@ use HTML::Entities;
         $pattern = "[^;'\\x22]+";
         say "                <tr>";
         say "                    <td>";
-        say "                        <label for=\"city_suberb\">City/Suberb</label>";
+        say "                        <label for=\"city_suburb\">City/Suberb</label>";
         say "                    </td>";
         say "                    <td colspan=\"2\">";
-        say "                        <input type=\"text\" name=\"city_suberb\" id=\"city_suberb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$city_suburb\" required/>";
+        say "                        <input type=\"text\" name=\"city_suburb\" id=\"city_suburb\" placeholder=\"city/suberb\" pattern=\"$pattern\" title=\"$title\" value=\"$city_suburb\" required/>";
         say "                    </td>";
         say "                </tr>";
         $title   = "\`;\`, \`'\` and \`&quot;\` not allowed";
@@ -6699,90 +7238,6 @@ use HTML::Entities;
             }
             say "                    </td>";
             say "                </tr>";
-            say "                <tr class=\"admin\">";
-            say "                    <td colspan=\"3\">";
-            say "                        <script>";
-            say "                            function groupOnclick(n){";
-            say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
-            say "                                var cross = document.getElementById(\"cross[\" + n + ']');";
-            say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
-            say "                                var td    = document.getElementById(\"td[\" + n + ']');";
-            say "                                var val   = hdd.value;";
-            say "                                var name  = btn.value;";
-            say "                                alert(\"val == \" + val + \"\\nname == \" + name);";
-            say "                                td.remove();";
-            say "                                var groupSelect = document.getElementById(\"groupSelect\");";
-            say "                                var opt = document.createElement(\"OPTION\");";
-            say "                                opt.setAttribute(\"value\", \"\" + val);";
-            say "                                opt.setAttribute(\"id\", \"row_id[\" + val + \"]\");";
-            say "                                opt.innerHTML = name;";
-            say "                                groupSelect.appendChild(opt);";
-            say "                            }";
-            say "                            let cnt = 0;";
-            say "                            function group_selected() {";
-            say "                                var groupSelect = document.getElementById(\"groupSelect\");";
-            say "                                var val = groupSelect.value;";
-            say "                                if(val == 0) return";
-            say "                                var opt = document.getElementById(\"row_id[\" + val + \"]\");";
-            say "                                var name = opt.innerHTML;";
-            say "                                opt.remove();";
-            say "                                var btn = document.createElement(\"INPUT\");";
-            say "                                btn.setAttribute(\"type\", \"button\");";
-            say "                                btn.setAttribute(\"value\", name);";
-            say "                                btn.name = \"btn[\" + cnt + ']';";
-            say "                                btn.id   = \"btn[\" + cnt + ']';";
-            say "                                var cross = document.createElement(\"button\");";
-            say "                                cross.setAttribute(\"type\", \"button\");";
-            say "                                cross.setAttribute(\"value\", \"\" + cnt);";
-            say "                                cross.setAttribute(\"class\", \"inner\");";
-            #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
-            say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
-            say "                                cross.innerHTML = \"&otimes;\";";
-            say "                                cross.name = \"chk[\" + cnt + ']';";
-            say "                                cross.id   = \"cross[\" + cnt + ']';";
-            say "                                var hdn = document.createElement(\"INPUT\");";
-            say "                                hdn.setAttribute(\"type\", \"hidden\");";
-            say "                                hdn.setAttribute(\"value\", \"\" + val);";
-            say "                                hdn.name = \"group_id_add[\" + val + ']';";
-            say "                                hdn.id   = \"hdd[\" + cnt + ']';";
-            say "                                var row = document.getElementById(\"row\");";
-            say "                                var elt = document.createElement(\"TD\");";
-            say "                                elt.setAttribute(\"id\", \"td[\" + cnt + ']');";
-            say "                                elt.setAttribute(\"class\", \"elts\");";
-            say "                                elt.appendChild(btn);";
-            say "                                elt.appendChild(cross);";
-            say "                                elt.appendChild(hdn);";
-            say "                                row.appendChild(elt);";
-            say "                                cnt++;";
-            say "                            }";
-            say "                        </script>";
-            say "                        <table class=\"outter\">";
-            say "                           <tr class=\"outter\">";
-            say "                              <td class=\"outter\">";
-            say "                                  <table id=\"tbl\" class=\"elts inner\">";
-            say "                                      <tr id=\"row\" class=\"elts\">";
-            say "                                          <td class=\"elts inner\">";
-            say "                                               Groups:";
-            say "                                          </td>";
-            say "                                      </tr>";
-            say "                                  </table>";
-            say "                              </td>";
-            say "                           </tr>";
-            say "                        </table>";
-            say "                    </td>";
-            say "                </tr>";
-            say "                <tr>";
-            say "                    <td>";
-            say "                        <select id=\"groupSelect\" onchange=\"group_selected()\">";
-            say "                            <option id=\"row_id[0]\" value=\"0\" selected>-- nothinng selected --</option>";
-            for my $row (@groups){
-                my $available_group_id = $row->{id};
-                my $_name = $row->{_name};
-                say "                            <option id=\"row_id[$available_group_id]\" value=\"$available_group_id\">$_name</option>";
-            }
-            say "                        </select>";
-            say "                    </td>";
-            say "                </tr>";
         }else{
             say "                <tr hidden class=\"admin\">";
             say "                    <td colspan=\"3\">";
@@ -6790,8 +7245,133 @@ use HTML::Entities;
             say "                    </td>";
             say "                </tr>";
         }
-        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Change', }, );
+        say "                <tr class=\"admin\">";
+        say "                    <td colspan=\"3\">";
+        say "                        <script>";
+        my $size = @additional_groups;
+        say "                            let cnt = $size;";
+        say "                            let lower_limit = $size;";
+        say "                            function groupOnclick(n){";
+        say "                                var btn   = document.getElementById(\"btn[\" + n + ']');";
+        say "                                var cross = document.getElementById(\"cross[\" + n + ']');";
+        say "                                var hdd   = document.getElementById(\"hdd[\" + n + ']');";
+        say "                                var td    = document.getElementById(\"td[\" + n + ']');";
+        say "                                var val   = hdd.value;";
+        say "                                var name  = btn.value;";
+        say "                                //alert(\"val == \" + val + \"\\nname == \" + name);";
+        say "                                td.remove();";
+        say "                                if(n < lower_limit){";
+        say "                                    var base = document.getElementById(\"base\");";
+        say "                                    var deleter = document.createElement(\"INPUT\");";
+        say "                                    deleter.setAttribute(\"type\", \"hidden\");";
+        say "                                    deleter.setAttribute(\"value\", \"\" + val);";
+        say "                                    deleter.name = \"group_id_delete[\" + val + ']';";
+        say "                                    deleter.id   = \"hdd[\" + n + ']';";
+        say "                                    base.appendChild(deleter);";
+        say "                                }else{";
+        say "                                    var groupSelect = document.getElementById(\"groupSelect\");";
+        say "                                    var opt = document.createElement(\"OPTION\");";
+        say "                                    opt.setAttribute(\"value\", \"\" + val);";
+        say "                                    opt.setAttribute(\"id\", \"row_id[\" + val + \"]\");";
+        say "                                    opt.innerHTML = name;";
+        say "                                    groupSelect.appendChild(opt);";
+        say "                                }";
+        say "                            }";
+        say "                            function group_selected() {";
+        say "                                var groupSelect = document.getElementById(\"groupSelect\");";
+        say "                                var val = groupSelect.value;";
+        say "                                if(val == 0) return";
+        say "                                var opt = document.getElementById(\"row_id[\" + val + \"]\");";
+        say "                                var name = opt.innerHTML;";
+        say "                                opt.remove();";
+        say "                                var btn = document.createElement(\"INPUT\");";
+        say "                                btn.setAttribute(\"type\", \"button\");";
+        say "                                btn.setAttribute(\"value\", name);";
+        say "                                btn.name = \"btn[\" + cnt + ']';";
+        say "                                btn.id   = \"btn[\" + cnt + ']';";
+        say "                                var cross = document.createElement(\"button\");";
+        say "                                cross.setAttribute(\"type\", \"button\");";
+        say "                                cross.setAttribute(\"value\", \"\" + cnt);";
+        say "                                cross.setAttribute(\"class\", \"inner\");";
+        #say "                                cross.setAttribute(\"src\", \"img_submit.gif\");";
+        say "                                cross.setAttribute(\"onclick\", \"groupOnclick(\" + cnt + ')');";
+        say "                                cross.innerHTML = \"&otimes;\";";
+        say "                                cross.name = \"cross[\" + cnt + ']';";
+        say "                                cross.id   = \"cross[\" + cnt + ']';";
+        say "                                var hdn = document.createElement(\"INPUT\");";
+        say "                                hdn.setAttribute(\"type\", \"hidden\");";
+        say "                                hdn.setAttribute(\"value\", \"\" + val);";
+        say "                                hdn.name = \"group_id_add[\" + val + ']';";
+        say "                                hdn.id   = \"hdd[\" + cnt + ']';";
+        say "                                var row = document.getElementById(\"row\");";
+        say "                                var elt = document.createElement(\"TD\");";
+        say "                                elt.setAttribute(\"id\", \"td[\" + cnt + ']');";
+        say "                                elt.setAttribute(\"class\", \"elts\");";
+        say "                                elt.appendChild(btn);";
+        say "                                elt.appendChild(cross);";
+        say "                                elt.appendChild(hdn);";
+        say "                                row.appendChild(elt);";
+        say "                                cnt++;";
+        say "                            }";
+        say "                        </script>";
+        say "                        <table class=\"outter\">";
+        say "                           <tr class=\"outter\">";
+        say "                              <td class=\"outter\">";
+        say "                                  <table id=\"tbl\" class=\"elts inner\">";
+        say "                                      <tr id=\"row\" class=\"elts\">";
+        say "                                          <td class=\"elts inner\" id=\"base\">";
+        say "                                               Groups:";
+        say "                                          </td>";
+        my $cnt = 0;
+        for my $row (@additional_groups){
+            my $group_name = $row->{group_name};
+            my $_group_id  = $row->{_group_id};
+            say "                                          <td class=\"elts\" id=\"td[$cnt]\">";
+            say "                                              <input type=\"button\" id=\"btn[$cnt]\" name=\"btn[$cnt]\" value=\"$group_name\">";
+            say "                                              <input type=\"hidden\" id=\"hdd[$cnt]\" name=\"group_id_add[$_group_id]\" value=\"$_group_id\">";
+            say "                                              <button type=\"button\" id=\"cross[$cnt]\" name=\"cross[$cnt]\" class=\"inner\" onclick=\"groupOnclick($cnt)\" value=\"$cnt\">&otimes;</button>";
+            say "                                          </td>";
+            $cnt++;
+        }
+        say "                                      </tr>";
+        say "                                  </table>";
+        say "                              </td>";
+        say "                           </tr>";
+        say "                        </table>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr>";
+        say "                    <td>";
+        say "                        <select id=\"groupSelect\" onchange=\"group_selected()\">";
+        say "                            <option id=\"row_id[0]\" value=\"0\" selected>-- nothinng selected --</option>";
+        for my $row (@groups){
+            my $available_group_id = $row->{id};
+            my $_name = $row->{_name};
+            say "                            <option id=\"row_id[$available_group_id]\" value=\"$available_group_id\">$_name</option>";
+        }
+        say "                        </select>";
+        say "                    </td>";
+        say "                </tr>";
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Save Changes', colspan => 2, }, );
         $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
+        #say "                <tr>";
+        #say "                    <td>";
+        #if($debug){
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\" checked> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\"> nodebug</div></label>";
+        #}else{
+        #    say "                        <label for=\"debug\"><div class=\"ex\"><input name=\"debug\" id=\"debug\" type=\"radio\" value=\"1\"> debug</div></label>";
+        #    say "                    </td>";
+        #    say "                    <td>";
+        #    say "                        <label for=\"nodebug\"><div class=\"ex\"><input name=\"debug\" id=\"nodebug\" type=\"radio\" value=\"0\" checked> nodebug</div></label>";
+        #}
+        #say "                    </td>";
+        #say "                    <td colspan=\"2\">";
+        #say "                        <input name=\"submit\" type=\"submit\" value=\"Save Changes\">";
+        #say "                    </td>";
+        #say "                </tr>";
         say "            </table>";
         say "        </form>";
 
