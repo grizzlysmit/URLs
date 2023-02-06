@@ -6330,7 +6330,6 @@ use HTML::Entities;
                 $region             = $r->{region};
                 $country            = $r->{country};
                 $postal_unit        = $r->{postal_unit};
-                $postal_prefix      = $r->{postal_prefix};
                 $postal_city_suburb = $r->{postal_city_suburb};
                 $postal_postcode    = $r->{postal_postcode};
                 $postal_region      = $r->{postal_region};
