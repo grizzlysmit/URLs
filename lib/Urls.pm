@@ -6906,7 +6906,7 @@ use HTML::Entities;
 
         my $title   = "only a-z, A-Z, 0-9 and _  allowed";
         my $pattern = '[a-zA-Z0-9_]+';
-        say "        <form action=\"user-details.pl\" method=\"post\">";
+        say "        <form action=\"profile.pl\" method=\"post\">";
         say "            <h1>Edit Account: $username</h1>";
         say "            <table>";
         say "                <tr>";
@@ -6924,11 +6924,12 @@ use HTML::Entities;
         say "                        <input type=\"hidden\" name=\"primary_phone_id\" value=\"$primary_phone_id\"/>" if $primary_phone_id;
         say "                        <input type=\"hidden\" name=\"passwd_details_id\" value=\"$passwd_details_id\"/>"; 
         say "                        <input type=\"hidden\" name=\"secondary_phone_id\" value=\"$secondary_phone_id\"/>" if $secondary_phone_id;
-        if($user_id == 1){
-            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
-        }else{
-            say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
-        }
+        say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
+        #if($user_id == 1){
+        #    say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" readonly/>";
+        #}else{
+        #    say "                        <input type=\"text\" name=\"username\" id=\"username\" placeholder=\"username\" pattern=\"$pattern\" title=\"$title\" value=\"$username\" autofocus required/>";
+        #}
         say "                    </td>";
         say "                </tr>";
         $title   = "only a-z 0-9 '.', '+', '-', and '_' followed by \@ a-z, 0-9 '.' and '-' allowed (no uppercase)";
@@ -6938,11 +6939,12 @@ use HTML::Entities;
         say "                        <label for=\"email\">email</label>";
         say "                    </td>";
         say "                    <td colspan=\"3\">";
-        if($user_id == 1){
-            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
-        }else{
-            say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
-        }
+        say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
+        #if($user_id == 1){
+        #    say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" autofocus required/>";
+        #}else{
+        #    say "                        <input type=\"email\" name=\"email\" id=\"email\" placeholder=\"fred\@flintstone.com\" pattern=\"$pattern\" title=\"$title\" value=\"$email\" required/>";
+        #}
         say "                    </td>";
         say "                </tr>";
         $title   = "Must supply between 10 and 100 character's the more the better.\nAlso must include a least one lowercase one uppercase a digit and a puntuation character.";
