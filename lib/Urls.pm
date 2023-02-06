@@ -3539,26 +3539,7 @@ use HTML::Entities;
                 $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
                 $given = '' unless defined $given;
                 $family = '' unless defined $family;
-                $display_name = "$given $family" unless $display_name;
-                $self->log(Data::Dumper->Dump([$given, $family, $display_name], [qw(given family display_name)]));
-                my @msgs;
-                my $return = 1;
-                if($submit eq 'Save Changes'){
-                    my $hashed_password;
-                    if($password && $repeat && $password eq $repeat){
-                        $hashed_password = $self->generate_hash($password);
-                    }else{
-                        push @msgs, "password and repeat password did nnot match ignoring";
-                    }
-                    my $line = __LINE__;
-                    $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                    if(!$hashed_password || $self->validate($hashed_password, $password)){
-                        my $line = __LINE__;
-                        $self->log(Data::Dumper->Dump([$password, $hashed_password, $line], [qw(password hashed_password line)]));
-                        my $sql    = "UPDATE _group SET _name = ? WHERE id = ? RETURNING id;\n";
-                        my $query  = $db->prepare($sql);
-                        my $result;
-                        if($group_id == 1){
+                $display_name = "$given $familif($group_id == 1){
                             $result = 1; # dont't change the group (group_id == 1) i.e. Admin #
                             $username = 'admin';
                         }else{
@@ -6278,16 +6259,16 @@ use HTML::Entities;
         my $change  = $req->param('change');
 
         my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
-        my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same);
+        my ($unit, $street, $city_suburb, $country, $postcode, $region, $postal_same, $group_id, $groupname);
         my ($postal_unit, $postal_street, $postal_city_suburb, $postal_country, $postal_postcode, $postal_region);
         my ($admin, $isadmin);
         my @additional_groups;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
         $sql    .= "e._email, ph._number phone_number, ph2._number secondary_phone, g._name groupname, g.id group_id, c._flag, c.cc, c.prefix, cr.landline_pattern, cr.mobile_pattern,\n";
-        $sql    .= "a1.unit, a1.street, a1.city_suburb, a1.postcode, a1.region, a1.country,\n";
+        $sql    .= "a1.unit, a1.street, a1.city_suburb, a1.postcode, a1.region, a1.country, g._name groupname, g.id group_id,\n";
         $sql    .= "a2.unit postal_unit, a2.street postal_street, a2.city_suburb postal_city_suburb, a2.postcode postal_postcode, a2.region postal_region, a2.country postal_country,\n";
         $sql    .= "ARRAY((SELECT g1._name FROM _group g1 JOIN groups gs ON g1.id = gs.group_id WHERE gs.passwd_id = p.id))  additional_groups\n";
-        $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id\n";
+        $sql    .= "FROM passwd p JOIN passwd_details pd ON p.passwd_details_id = pd.id JOIN email e ON p.email_id = e.id JOIN _group g ON p.primary_group_id = g.id\n";
         $sql    .= "         LEFT JOIN phone  ph ON ph.id = pd.primary_phone_id LEFT JOIN phone ph2 ON ph2.id = pd.secondary_phone_id\n";
         $sql    .= "                 JOIN _group g ON p.primary_group_id = g.id LEFT JOIN country c ON pd.country_id = c.id LEFT JOIN country_regions  cr ON cr.id = pd.country_region_id\n";
         $sql    .= "                           JOIN address a1 ON pd.residential_address_id = a1.id JOIN address a2  ON a2.id = pd.postal_address_id\n";
@@ -6340,7 +6321,17 @@ use HTML::Entities;
                 $postal_postcode    = $r->{postal_postcode};
                 $postal_region      = $r->{postal_region};
                 $postal_country     = $r->{postal_country};
-                @additional_groups  = $r->{additional_groups};
+                $group_id           = $r->{group_id};
+                $groupname          = $r->{groupname};
+                my @_groups         = @{$r->{additional_groups}};
+                for my $group_name (@_groups){
+                    my ($_group_id, $return_group, @msgs_group) = $self->getgroup_id($group_name, $db);
+                    unless($return_group){
+                        $self->message($cfg, $debug, \%session, $db, ($return_group?'user':'user_details'), ($return_group ? 'login' : undef), !$return_group, @msgs_group);
+                        next;
+                    }
+                    push @additional_groups, {  _group_id => $_group_id, group_name => $group_name, };
+                }
             }
         }else{
             push @msgs, "SELECT FROM passwd failed";
