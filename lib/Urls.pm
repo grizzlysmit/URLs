@@ -6910,7 +6910,7 @@ use HTML::Entities;
         my $title   = "only a-z, A-Z, 0-9 and _  allowed";
         my $pattern = '[a-zA-Z0-9_]+';
         say "        <form action=\"profile.pl\" method=\"post\">";
-        say "            <h1>Edit Account: $username</h1>";
+        say "            <h1>Edit Profile: $username</h1>";
         say "            <table>";
         say "                <tr>";
         say "                    <td>";
