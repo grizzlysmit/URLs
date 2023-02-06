@@ -4394,16 +4394,18 @@ use HTML::Entities;
                 my $lndl_placeholder = $region_r->{landline_placeholder};
                 my $mob_placeholder  = $region_r->{mobile_placeholder};
                 if($country_id == $cc_id && $cr_id == $_cr_id){
-                    $self->log(Data::Dumper->Dump([$country_id, $cc_id, $cr_id, $_cr_id],
-                            [qw(country_id cc_id cr_id _cr_id)]));
+                    my $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$line, $country_id, $cc_id, $cr_id, $_cr_id],
+                            [qw(line country_id cc_id cr_id _cr_id)]));
                     $mobile_title         = $mob_title;
                     $mobile_pattern       = $mob_pattern;
                     $mobile_placeholder   = $mob_placeholder;
                     $landline_title       = $lndl_title;
                     $landline_pattern     = $lndl_pattern;
                     $landline_placeholder = $lndl_placeholder;
-                    $self->log(Data::Dumper->Dump([$country_id, $cr_id, $mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder],
-                            [qw(country_id cr_id mobile_title mobile_pattern mobile_placeholder landline_title landline_pattern landline_placeholder)]));
+                    $line = __LINE__;
+                    $self->log(Data::Dumper->Dump([$line, $country_id, $cr_id, $mobile_title, $mobile_pattern, $mobile_placeholder, $landline_title, $landline_pattern, $landline_placeholder],
+                            [qw(line country_id cr_id mobile_title mobile_pattern mobile_placeholder landline_title landline_pattern landline_placeholder)]));
                 }
                 $lndl_pattern             =~ s/\\/\\\\/g;
                 $mob_pattern              =~ s/\\/\\\\/g;
