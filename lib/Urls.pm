@@ -6273,7 +6273,7 @@ use HTML::Entities;
 
         my ($given, $family, $display_name, $email, $mobile, $phone, $country_id, $cr_id, $cc, $prefix, $_landline_pattern, $_mobile_pattern);
         my ($unit, $street, $city_suberb, $country, $postcode, $region, $postal_same);
-        my ($postal_unit, $postal_street, $postal_city_suberb, $postal_country, $postal_postcode, $postal_region);
+        my ($postal_unit, $postal_street, $postal_city_suburb, $postal_country, $postal_postcode, $postal_region);
         my ($admin, $isadmin);
         my @groups;
         my $sql  = "SELECT p.id, p.username, p.primary_group_id, p._admin, pd.display_name, pd.given, pd._family, pd.country_id, pd.country_region_id,\n";
