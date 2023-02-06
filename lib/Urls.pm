@@ -7233,10 +7233,14 @@ use HTML::Entities;
             say "                        <label for=\"admin\">admin</label>";
             say "                    </td>";
             say "                    <td>";
+            my $readonly = '';
+            if($loggedin_id == 1){
+                $readonly = 'readonly';
+            }
             if($admin){
-                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked/>";
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" checked $readonly/>";
             }else{
-                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\"/>";
+                say "                        <input type=\"checkbox\" name=\"admin\" id=\"admin\" $readonly/>";
             }
             say "                    </td>";
             say "                </tr>";
