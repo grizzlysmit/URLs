@@ -78,6 +78,13 @@ use HTML::Entities;
             { href => 'admin.pl', name => "Admin", fun => 'admin', visability => 'admin', }, 
             { href => 'register.pl', name => "Register", fun => 'register', visability => 'loggedout', }, 
             { href => 'chmod-alias.pl', name => 'change alias permisions', fun => 'chmod_alias', visability => 'loggedin', }, 
+            { href => 'chmod-link.pl', name => 'change link permisions', fun => 'chmod_link', visability => 'loggedin', }, 
+            { href => 'chmod-page.pl', name => 'change page permisions', fun => 'chmod_page', visability => 'loggedin', }, 
+            { href => 'chmod-pseudo_page.pl', name => 'change pseudo_page permisions', fun => 'chmod_pseudo_page', visability => 'loggedin', }, 
+            { href => 'chown-alias.pl', name => 'change alias ownership', fun => 'chown_alias', visability => 'loggedin', }, 
+            { href => 'chown-link.pl', name => 'change link ownership', fun => 'chown_link', visability => 'loggedin', }, 
+            { href => 'chown-page.pl', name => 'change page ownership', fun => 'chown_page', visability => 'loggedin', }, 
+            { href => 'chown-pseudo_page.pl', name => 'change pseudo_page ownership', fun => 'chown_pseudo_page', visability => 'loggedin', }, 
         ];
 
         return $new_object;
