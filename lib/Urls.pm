@@ -487,7 +487,6 @@ use HTML::Entities;
             #next if $fun eq $Fun;
             $cnt++;
             say "                <td>";
-            #say "                    <a href=\"$href\" >$name</a>\n";
             if($fun eq 'profile'){
                 if($fun eq $Fun){
                     say "                    <button id=\"$fun\" type=\"button\" disabled>$name: $loggedin_username</button>";
@@ -499,6 +498,8 @@ use HTML::Entities;
                 $from    =~ tr/_/-/;
                 $from    = 'index' if $Fun eq 'main';
                 say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$from.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>";
+            }elsif($fun =~ m/^dummy_page\d+$/){
+                say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>";
             }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>";
             }else{
