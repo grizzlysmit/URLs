@@ -9593,7 +9593,7 @@ use HTML::Entities;
             $self->debug_init($debug, $log);
         }
 
-        $self->links('update_countries', \%session);
+        $self->links('chmod_alias', \%session);
 
         my $loggedin                  = $session{loggedin};
         my $loggedin_id               = $session{loggedin_id};
