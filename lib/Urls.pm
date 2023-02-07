@@ -81,7 +81,7 @@ use HTML::Entities;
             { href => 'chmod-alias.pl', name => 'change alias permisions', fun => 'chmod_alias', visability => 'loggedin', }, 
             { href => 'chmod-link.pl', name => 'change link permisions', fun => 'chmod_link', visability => 'loggedin', }, 
             { href => 'chmod-page.pl', name => 'change page permisions', fun => 'chmod_page', visability => 'loggedin', }, 
-            { href => 'chmod-pseudo_page.pl', name => 'change pseudo_page permisions', fun => 'chmod_pseudo_page', visability => 'loggedin', }, 
+            { href => 'chmod-pseudo-page.pl', name => 'change pseudo_page permisions', fun => 'chmod_pseudo_page', visability => 'loggedin', }, 
             { href => 'dummy-page1.pl', name => 'dummy page', fun => 'dummy_page1', visability => 'loggedin', }, 
             { href => 'dummy-page2.pl', name => 'dummy page', fun => 'dummy_page2', visability => 'loggedin', }, 
             { href => 'dummy-page3.pl', name => 'dummy page', fun => 'dummy_page3', visability => 'loggedin', }, 
@@ -9774,7 +9774,7 @@ use HTML::Entities;
             $self->debug_init($debug, $log);
         }
 
-        $self->links('update_countries', \%session);
+        $self->links('chmod_pseudo_page', \%session);
         return 1;
     } ## --- end sub chmod_pseudo_page
 
