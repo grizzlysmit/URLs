@@ -77,6 +77,7 @@ use HTML::Entities;
             { href => 'logout.pl', name => "logout", fun => 'logout', visability => 'loggedin', }, 
             { href => 'admin.pl', name => "Admin", fun => 'admin', visability => 'admin', }, 
             { href => 'register.pl', name => "Register", fun => 'register', visability => 'loggedout', }, 
+            { href => 'chmod-alias.pl', name => 'change alias permisions', fun => 'chmod_alias', visability => 'loggedin', }, 
         ];
 
         return $new_object;
@@ -8669,7 +8670,7 @@ use HTML::Entities;
             }
             say "$indent    </td>";
         }
-        for my$button (@buttons){
+        for my $button (@buttons){
             my $colspan = $button->{colspan};
             my $name    = $button->{name};
             my $type    = $button->{type};
@@ -8705,7 +8706,7 @@ use HTML::Entities;
                 $class = '';
             }
             if(defined $id){
-                $id = qq(class="$id");
+                $id = qq(id="$id");
             }else{
                 $id = '';
             }
