@@ -88,7 +88,7 @@ use HTML::Entities;
             { href => 'chown-alias.pl', name => 'change alias ownership', fun => 'chown_alias', visability => 'loggedin', }, 
             { href => 'chown-link.pl', name => 'change link ownership', fun => 'chown_link', visability => 'loggedin', }, 
             { href => 'chown-page.pl', name => 'change page ownership', fun => 'chown_page', visability => 'loggedin', }, 
-            { href => 'chown-pseudo_page.pl', name => 'change pseudo_page ownership', fun => 'chown_pseudo_page', visability => 'loggedin', }, 
+            { href => 'chown-pseudo-page.pl', name => 'change pseudo_page ownership', fun => 'chown_pseudo_page', visability => 'loggedin', }, 
             { href => 'dummy-page4.pl', name => 'dummy page', fun => 'dummy_page4', visability => 'loggedin', }, 
             { href => 'dummy-page5.pl', name => 'dummy page', fun => 'dummy_page5', visability => 'loggedin', }, 
         ];
