@@ -500,7 +500,7 @@ use HTML::Entities;
                 say "                    <form action=\"$href\" method=\"post\" ><input type=\"hidden\" name=\"from\" value=\"$from.pl\"/><input name=\"$fun\" type=\"submit\" value=\"$name\" /></form>";
             }elsif($fun =~ m/^dummy_page\d+$/){
                 #say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>";
-                say "                    <button id=\"$fun\" type=\"button\" disabled></button>";
+                say "                    <button id=\"$fun\" type=\"button\" disabled>&nbsp;</button>";
             }elsif($fun eq $Fun){
                 say "                    <button id=\"$fun\" type=\"button\" disabled>$name</button>";
             }else{
