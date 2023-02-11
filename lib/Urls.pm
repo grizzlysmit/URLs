@@ -9610,6 +9610,125 @@ use HTML::Entities;
         my $loggedin_primary_group_id = $session{loggedin_groupnname_id};
 
         my $submit               = $req->param('submit');
+
+        say "        <form action=\"user.pl\" method=\"post\" id=\"main_form\">";
+        say "            <h1>Edit User Details</h1>";
+        my $page_length = $req->param('page_length');
+        $page_length = $session{page_length} if !defined $page_length && exists $session{page_length};
+        $page_length    = 25 if !defined $page_length || $page_length < 10 || $page_length > 180;
+        $session{page_length} = $page_length;
+
+        my @aliases;
+        my $sql = qq(
+                        SELECT a.id, a.userid, a.groupid, a._perms, a.name,  FROM alias a
+                    );
+
+        untie %session;
+        $db->disconnect;
+
+        say "            <input type=\"hidden\" name=\"passwd_id\" id=\"passwd_id_hidden\" value=\"0\">";
+        say "            <script>";
+        say "                function doSubmit(self, hidden_val){";
+        say "                    var h = document.getElementById(\"passwd_id_hidden\");";
+        say "                    h.value = hidden_val;";
+        say "                    var frm = document.getElementById(\"main_form\");";
+        say "                    frm.action = 'user-details.pl';";
+        say "                    var btn = document.getElementById(self);";
+        say "                    //alert(\"h.value == \" + h.value + \"\\nfrm.action == \" + frm.action + \"\\nbtn.name == \" + btn.name + \"\\nbtn.value == \" + btn.value);";
+        say "                }";
+        say "            </script>";
+        say "            <table>";
+        say "                <tr>";
+        say "                    <td colspan=\"5\">";
+        say "                        <label for=\"page_length\">Page Length:";
+        say "                            <input type=\"number\" name=\"page_length\" id=\"page_length\" min=\"10\" max=\"180\" step=\"1\" value=\"$page_length\" size=\"3\">";
+        say "                        </label>";
+        say "                    </td>";
+        say "                    <td colspan=\"8\">";
+        say "                    <input type=\"submit\" name=\"submit\" id=\"apply_page_length\" value=\"Apply Page Length\"/>";
+        say "                    </td>";
+        say "                </tr>";
+        say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobile</th><th>land line</th><th>group</th><th>admin</th><th>additional groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
+        my $cnt = 0;
+        for my $user (@aliases){
+            $cnt++;
+            my $passwd_id         = $user->{id};
+            my $username          = $user->{username};
+            my $primary_group_id  = $user->{group_id};
+            my $_admin            = $user->{_admin};
+            my $display_name      = $user->{display_name};
+            my $given             = $user->{given};
+            my $family            = $user->{_family};
+            my $email             = $user->{_email};
+            my $phone_number      = $user->{phone_number};
+            $phone_number         = '' unless defined $phone_number;
+            my $secondary_phone   = $user->{secondary_phone};
+            $secondary_phone      = '' unless defined $secondary_phone;
+            my $groupname         = $user->{groupname};
+            my $_flag             = $user->{_flag};
+            my $additional_groups = $user->{additional_groups};
+            $additional_groups    = join ', ', @{$additional_groups};
+            my $_admin_checked;
+            if($_admin){
+                $_admin_checked = '&radic;';
+            }else{
+                $_admin_checked = '&otimes;';
+            }
+            say "                <tr>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$passwd_id</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$username</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$given</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$family</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$email</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            $phone_number = '&nbsp;' unless $phone_number;
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$phone_number</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            $secondary_phone = '&nbsp;' unless $secondary_phone;
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$secondary_phone</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$groupname</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$_admin_checked</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">$additional_groups</div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\"><img src=\"$_flag\" alt=\"$display_name\"/></div></label>";
+            say "                    </td>";
+            say "                    <td>";
+            if($passwd_id == 1){
+                say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\">&nbsp;</div></label>";
+            }else{
+                say "                        <label for=\"selected_$passwd_id\"><div class=\"ex\"><input type=\"checkbox\" name=\"selected_[$cnt]\" id=\"selected_$passwd_id\" value=\"$passwd_id\"/></div></label>";
+            }
+            say "                    </td>";
+            say "                    <td>";
+            say "                        <input type=\"submit\" name=\"submit\" id=\"user_details[$cnt]\" value=\"Edit user: $username\" onclick=\"doSubmit('user_details[$cnt]', '$passwd_id')\">";
+            say "                    </td>";
+            say "                </tr>";
+            if($cnt % $page_length == 0){
+                say "                <tr><th>id</th><th>username</th><th>given names</th><th>family name</th><th>email</th><th>mobiler</th><th>land line</th><th>group</th><th>admin</th><th>additional groups</th><th>Flag</th><th>selected</th><th>Edit Button</th></tr>";
+            }
+        }
+        my @buttons = ({tag => 'input', name => 'submit', type => 'submit', value => 'Delete Users', colspan => 3, }, {tag => 'input', name => 'submit', type => 'submit', value => 'Toggle Admin Flag', colspan => 8, }, );
+        $self->bottom_buttons($debug, $dont_showdebug, undef, 16, @buttons);
+        say "            </table>";
+        say "        </form>";
         return 1;
     } ## --- end sub chmod_alias
 
