@@ -6341,7 +6341,7 @@ use HTML::Entities;
         my @group_id_add;
         my @group_id_delete;
         
-        if($submit eq 'Save Changes'){
+        if(defined $submit && $submit eq 'Save Changes'){
             $user_id                = $req->param('user_id');
             $username               = $req->param('username');
             $email                  = $req->param('email');
@@ -6550,7 +6550,7 @@ use HTML::Entities;
         $postal_city_suburb  = encode_entities($postal_city_suburb) if defined $postal_city_suburb;
         $postal_country      = encode_entities($postal_country)     if defined $postal_country;
 
-        if($submit eq 'Save Changes'){
+        if(defined $submit && $submit eq 'Save Changes'){
             my $cond = defined $postal_street && defined $postal_country
                         && (!$postal_city_suburb || $postal_city_suburb =~ m/^[^\'\"]+$/)
                         && (!$postal_unit || $postal_unit =~ m/^[^\'\"]+$/) && $postal_street =~ m/^[^;\'\"]+$/
