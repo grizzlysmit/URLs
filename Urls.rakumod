@@ -18,7 +18,7 @@ use IO::Prompt;
 use Terminal::Getpass;
 use Terminal::Width;
 use Terminal::WCWidth;
-use GzzPrompt;
+use Gzz::Prompt;
 
 my @signal;
 
@@ -1211,7 +1211,7 @@ sub gzzreadline_call(Str:D $prompt, Str:D $prefill, Gzz_readline:D $gzzreadline 
         my $original-flags := Term::termios.new(:fd($*IN.native-descriptor)).getattr;
         @signal.push: {
             $original-flags.setattr(:NOW);
-        }; # insure that we call thee reset command if it dies on a signal #
+        }; # insure that we call the reset command if it dies on a signal #
         $result = $gzzreadline.gzzreadline($prompt, $prefill);
         $original-flags.setattr(:NOW);
         @signal.pop if @signal; # done without signal so remove our handler #
@@ -2666,7 +2666,7 @@ sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Re
         }
     } 
     $w   = min($w0 + $w1 + $w2 + $w3 +$w4 + $w5 + $w6 + 32, $width);
-    my Int:D $num = $width div $w;
+    my Int:D $num = $width div $w2;
     $num = 1 if $num < 1;
     my Int:D $cols = 0;
     my Str:D $line = '';
@@ -2685,7 +2685,7 @@ sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Re
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w - 14)) ~ t.text-reset;
             $cnt++;
         }
-    } else {
+    } else { # if $recursive #
         if $show-id && $full {
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10s%18s    %-*s%-*s%-*s%-*s", 'id', trailing-dots('    perms', 18, ' '), $w0, 'username', $w1, 'group_name', $w2, 'name', $w3, 'full-name') ~ t.text-reset;
             $cnt++;
@@ -2697,7 +2697,7 @@ sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Re
             put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ ('=' x ($w - 14)) ~ t.text-reset;
             $cnt++;
         }
-    }
+    } # if $recursive else #
     for @pages -> %values {
         my IdType $id       = %values«id»;
         my Str:D $name      = %values«name»;
@@ -2772,7 +2772,7 @@ sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Re
                     } # for @links -> %link #
                 } # for @link-sections -> %link-section #
             } # for @page-sections -> %page-section #
-        } else {
+        } else { # if $recursive #
             if $show-id && $full {
                 put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ sprintf("%-10d%18s    %-*s%-*s%-*s%-*s", $id, centre($perms, 18, ' '), $w0, $username, $w1, $group_name, $w2, $name, $w3, $full-name) ~ t.text-reset;
                 $cnt++;
@@ -2785,11 +2785,11 @@ sub list-page-perms(Bool:D $recursive, Bool:D $show-id, Bool:D $full is copy, Re
                 $line = '';
                 $cols = 0;
             } else {
-                $line ~= sprintf "%-*s", $w0, $name;
+                $line ~= sprintf "%-*s", $w2, $name;
                 $cols++;
             }
-        }
-    }
+        } # if $recursive else #
+    } # for @pages -> %values #
     if $line ne '' {
         put (($cnt % 2 == 0) ?? t.bg-yellow !! t.bg-color(0,255,0)) ~ t.bold ~ t.bright-blue ~ $line ~ t.text-reset;
         $cnt++;
