@@ -8,3 +8,4 @@ flags/*.zip
 flags/old/*
 flags/new/*
 .precomp/*
+lib/.precomp/
